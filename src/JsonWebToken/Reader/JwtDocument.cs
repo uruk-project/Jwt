@@ -30,9 +30,7 @@ namespace JsonWebToken
         private readonly bool _isDisposable;
         private readonly List<IDisposable> _disposableRegistry;
 
-        /// <summary>
-        /// Gets the raw binary value of the <see cref="JwtDocument"/>.
-        /// </summary>
+        /// <summary>Gets the raw binary value of the <see cref="JwtDocument"/>.</summary>
         public ReadOnlyMemory<byte> RawValue => _utf8Json;
 
         internal bool IsDisposable => _isDisposable;
@@ -615,46 +613,31 @@ namespace JsonWebToken
         }
 
 
-        /// <summary>
-        /// Determines whether the <see cref="JwtPayload"/> contains the specified key.
-        /// </summary>
-        /// <param name="key"></param>
-        /// <returns></returns>
+        /// <summary>Determines whether the <see cref="JwtDocument"/> contains the specified key.</summary>
         public bool ContainsKey(ReadOnlySpan<byte> key)
-        {
-            return _root.TryGetProperty(key, out _);
-        }
+            => _root.TryGetProperty(key, out _);
 
-        /// <summary>
-        /// Gets the value associated with the specified key.
-        /// </summary>
+        /// <summary>Determines whether the <see cref="JwtPayload"/> contains the specified key.</summary>
+        public bool ContainsKey(string key)
+            => _root.TryGetProperty(key, out _);
+
+        /// <summary>Gets the value associated with the specified key.</summary>
         public bool TryGetProperty(ReadOnlySpan<byte> key, [NotNullWhen(true)] out JwtElement value)
-        {
-            return _root.TryGetProperty(key, out value);
-        }
+            => _root.TryGetProperty(key, out value);
 
-        /// <summary>
-        /// Gets the value associated with the specified key.
-        /// </summary>
+        /// <summary>Gets the value associated with the specified key.</summary>
         public bool TryGetProperty(string key, out JwtElement value)
         {
-            return _root.TryGetProperty(key, out value);
-        }
+            if (key == null)
+            {
+                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.key);
+            }
 
-        /// <summary>
-        /// Determines whether the <see cref="JwtPayload"/> contains the specified key.
-        /// </summary>
-        /// <param name="key"></param>
-        /// <returns></returns>
-        public bool ContainsKey(string key)
-        {
-            return ContainsKey(Utf8.GetBytes(key));
+            return _root.TryGetProperty(key, out value);
         }
 
         /// <inheritdoc/>
         public override string ToString()
-        {
-            return Utf8.GetString(_utf8Json.Span);
-        }
+            => Utf8.GetString(_utf8Json.Span);
     }
 }

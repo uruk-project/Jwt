@@ -13,14 +13,6 @@ namespace JsonWebToken
     [DebuggerDisplay("{DebuggerDisplay,nq}")]
     public readonly struct JwtElement
     {
-        //TODO : add private void CheckValidInstance()
-        //{
-        //    if (_parent == null)
-        //    {
-        //        throw new InvalidOperationException();
-        //    }
-        //}
-
         private readonly JwtDocument _parent;
         private readonly int _idx;
 
@@ -40,13 +32,7 @@ namespace JsonWebToken
         public bool IsEmpty => _parent is null;
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-        private JsonTokenType TokenType
-        {
-            get
-            {
-                return _parent?.GetJsonTokenType(_idx) ?? JsonTokenType.None;
-            }
-        }
+        private JsonTokenType TokenType => _parent is null ? JsonTokenType.None : _parent.GetJsonTokenType(_idx);
 
         /// <summary>The <see cref="JsonValueKind"/> that the value is.</summary>
         public JsonValueKind ValueKind => ToValueKind(TokenType);
@@ -59,7 +45,17 @@ namespace JsonWebToken
         ///   <paramref name="index"/> is not in the range [0, <see cref="GetArrayLength"/>()).
         /// </exception>
         public JwtElement this[int index]
-            => _parent.GetArrayIndexElement(_idx, index);
+        {
+            get
+            {
+                if (_parent != null)
+                {
+                    return _parent.GetArrayIndexElement(_idx, index);
+                }
+
+                throw new IndexOutOfRangeException();
+            }
+        }
 
         /// <summary>
         ///   Get the value for a specified key when the current value is a
@@ -75,11 +71,14 @@ namespace JsonWebToken
         {
             get
             {
-                foreach (var item in EnumerateObject())
+                if (_parent != null)
                 {
-                    if (item.NameEquals(key))
+                    foreach (var item in EnumerateObject())
                     {
-                        return item.Value;
+                        if (item.NameEquals(key))
+                        {
+                            return item.Value;
+                        }
                     }
                 }
 
@@ -101,11 +100,14 @@ namespace JsonWebToken
         {
             get
             {
-                foreach (var item in EnumerateObject())
+                if (_parent != null)
                 {
-                    if (item.NameEquals(key))
+                    foreach (var item in EnumerateObject())
                     {
-                        return item.Value;
+                        if (item.NameEquals(key))
+                        {
+                            return item.Value;
+                        }
                     }
                 }
 
@@ -120,114 +122,27 @@ namespace JsonWebToken
         /// <exception cref="InvalidOperationException">
         ///   This value's <see cref="ValueKind"/> is not <see cref="JsonValueKind.Array"/>.
         /// </exception>
-        public int GetArrayLength()
-            => _parent.GetArrayLength(_idx);
+        public int GetArrayLength() => _parent is null ? 0 : _parent.GetArrayLength(_idx);
 
-        /// <summary>
-        ///   Get the number of members contained within the current object value.
-        /// </summary>
+        /// <summary>Get the number of members contained within the current object value.</summary>
         /// <returns>The number of members contained within the current object value.</returns>
         /// <exception cref="InvalidOperationException">
         ///   This value's <see cref="ValueKind"/> is not <see cref="JsonValueKind.Object"/>.
         /// </exception>
         public int GetMemberCount()
-            => _parent.GetMemberCount(_idx);
+            => _parent is null ? 0 : _parent.GetMemberCount(_idx);
 
-        /// <summary>
-        ///   Looks for a property named <paramref name="propertyName"/> in the current object, returning
-        ///   whether or not such a property existed. When the property exists <paramref name="value"/>
-        ///   is assigned to the value of that property.
-        /// </summary>
-        /// <remarks>
-        ///   <para>
-        ///     Property name matching is performed as an ordinal, case-sensitive, comparison.
-        ///   </para>
-        ///   <para>
-        ///     If a property is defined multiple times for the same object, the last such definition is
-        ///     what is matched.
-        ///   </para>
-        /// </remarks>
-        /// <param name="propertyName">Name of the property to find.</param>
-        /// <param name="value">Receives the value of the located property.</param>
-        /// <returns>
-        ///   <see langword="true"/> if the property was found, <see langword="false"/> otherwise.
-        /// </returns>
-        /// <exception cref="InvalidOperationException">
-        ///   This value's <see cref="ValueKind"/> is not <see cref="JsonValueKind.Object"/>.
-        /// </exception>
-        /// <exception cref="ArgumentNullException">
-        ///   <paramref name="propertyName"/> is <see langword="null"/>.
-        /// </exception>
         internal bool TryGetProperty(string propertyName, out JwtElement value)
-        {
-            if (propertyName == null)
-            {
-                throw new ArgumentNullException(nameof(propertyName));
-            }
+            => TryGetProperty(propertyName.AsSpan(), out value);
 
-            return TryGetProperty(propertyName.AsSpan(), out value);
-        }
-
-        /// <summary>
-        ///   Looks for a property named <paramref name="propertyName"/> in the current object, returning
-        ///   whether or not such a property existed. When the property exists <paramref name="value"/>
-        ///   is assigned to the value of that property.
-        /// </summary>
-        /// <remarks>
-        ///   <para>
-        ///     Property name matching is performed as an ordinal, case-sensitive, comparison.
-        ///   </para>
-        ///   <para>
-        ///     If a property is defined multiple times for the same object, the last such definition is
-        ///     what is matched.
-        ///   </para>
-        /// </remarks>
-        /// <param name="propertyName">Name of the property to find.</param>
-        /// <param name="value">Receives the value of the located property.</param>
-        /// <returns>
-        ///   <see langword="true"/> if the property was found, <see langword="false"/> otherwise.
-        /// </returns>
-        /// <seealso cref="EnumerateObject"/>
-        /// <exception cref="InvalidOperationException">
-        ///   This value's <see cref="ValueKind"/> is not <see cref="JsonValueKind.Object"/>.
-        /// </exception>
         internal bool TryGetProperty(ReadOnlySpan<char> propertyName, out JwtElement value)
             => _parent.TryGetNamedPropertyValue(propertyName, out value);
 
-        /// <summary>
-        ///   Looks for a property named <paramref name="utf8PropertyName"/> in the current object, returning
-        ///   whether or not such a property existed. When the property exists <paramref name="value"/>
-        ///   is assigned to the value of that property.
-        /// </summary>
-        /// <remarks>
-        ///   <para>
-        ///     Property name matching is performed as an ordinal, case-sensitive, comparison.
-        ///   </para>
-        ///
-        ///   <para>
-        ///     If a property is defined multiple times for the same object, the last such definition is
-        ///     what is matched.
-        ///   </para>
-        /// </remarks>
-        /// <param name="utf8PropertyName">
-        ///   The UTF-8 (with no Byte-Order-Mark (BOM)) representation of the name of the property to return.
-        /// </param>
-        /// <param name="value">Receives the value of the located property.</param>
-        /// <returns>
-        ///   <see langword="true"/> if the property was found, <see langword="false"/> otherwise.
-        /// </returns>
-        /// <exception cref="InvalidOperationException">
-        ///   This value's <see cref="ValueKind"/> is not <see cref="JsonValueKind.Object"/>.
-        /// </exception>
         internal bool TryGetProperty(ReadOnlySpan<byte> utf8PropertyName, out JwtElement value)
             => _parent.TryGetNamedPropertyValue(utf8PropertyName, out value);
 
-        /// <summary>
-        ///   Gets the value of the element as a <see cref="bool"/>.
-        /// </summary>
-        /// <remarks>
-        ///   This method does not parse the contents of a JSON string value.
-        /// </remarks>
+        /// <summary>Gets the value of the element as a <see cref="bool"/>.</summary>
+        /// <remarks>This method does not parse the contents of a JSON string value.</remarks>
         /// <returns>The value of the element as a <see cref="bool"/>.</returns>
         /// <exception cref="InvalidOperationException">
         ///   This value's <see cref="ValueKind"/> is neither <see cref="JsonValueKind.True"/> or
@@ -241,12 +156,8 @@ namespace JsonWebToken
                 throw ThrowHelper.CreateInvalidOperationException_NotSupportedJsonType(type));
         }
 
-        /// <summary>
-        ///   Gets the value of the element as a <see cref="string"/>.
-        /// </summary>
-        /// <remarks>
-        ///   This method does not create a string representation of values other than JSON strings.
-        /// </remarks>
+        /// <summary>Gets the value of the element as a <see cref="string"/>.</summary>
+        /// <remarks>This method does not create a string representation of values other than JSON strings.</remarks>
         /// <returns>The value of the element as a <see cref="string"/>.</returns>
         /// <exception cref="InvalidOperationException">
         ///   This value's <see cref="ValueKind"/> is neither <see cref="JsonValueKind.String"/> nor <see cref="JsonValueKind.Null"/>.
@@ -261,33 +172,20 @@ namespace JsonWebToken
             return _parent.GetString(_idx, JsonTokenType.String);
         }
 
-        /// <summary>
-        ///   Gets the original input data backing this value, returning it as an array of <see cref="string"/>.
-        /// </summary>
-        /// <returns>
-        ///   The original input data backing this value, returning it as an array of <see cref="string"/>.
-        /// </returns>
+        /// <summary>Gets the original input data backing this value, returning it as an array of <see cref="string"/>.</summary>
+        /// <returns>The original input data backing this value, returning it as an array of <see cref="string"/>.</returns>
         public string?[]? GetStringArray()
             => _parent.GetStringArray(_idx);
 
-        /// <summary>
-        ///   Parses the UTF-8 encoded text representing a single JSON value into an instance
-        ///     of the type specified by a generic type parameter.
-        /// </summary>
-        /// <returns>
-        ///   The original input data backing this value, returning it as a <see cref="string"/>.
-        /// </returns>
+        /// <summary>Parses the UTF-8 encoded text representing a single JSON value into an instance of the type specified by a generic type parameter.</summary>
+        /// <returns>The original input data backing this value, returning it as a <see cref="string"/>.</returns>
         public TValue? Deserialize<TValue>(JsonSerializerOptions? options = null)
             where TValue : class
             => _parent.Deserialize<TValue>(_idx, options);
 
-        /// <summary>
-        ///   Attempts to represent the current JSON number as a <see cref="long"/>.
-        /// </summary>
+        /// <summary>Attempts to represent the current JSON number as a <see cref="long"/>.</summary>
         /// <param name="value">Receives the value.</param>
-        /// <remarks>
-        ///   This method does not parse the contents of a JSON string value.
-        /// </remarks>
+        /// <remarks>This method does not parse the contents of a JSON string value.</remarks>
         /// <returns>
         ///   <see langword="true"/> if the number can be represented as a <see cref="long"/>,
         ///   <see langword="false"/> otherwise.
@@ -296,7 +194,15 @@ namespace JsonWebToken
         ///   This value's <see cref="ValueKind"/> is not <see cref="JsonValueKind.Number"/>.
         /// </exception>
         public bool TryGetInt64(out long value)
-            => _parent.TryGetValue(_idx, out value);
+        {
+            if (_parent is null)
+            {
+                value = 0L;
+                return false;
+            }
+
+            return _parent.TryGetValue(_idx, out value);
+        }
 
         /// <summary>
         ///   Gets the current JSON number as a <see cref="long"/>.
@@ -321,9 +227,7 @@ namespace JsonWebToken
             throw ThrowHelper.CreateFormatException_MalformedJson();
         }
 
-        /// <summary>
-        ///   Attempts to represent the current JSON number as a <see cref="double"/>.
-        /// </summary>
+        /// <summary>Attempts to represent the current JSON number as a <see cref="double"/>.</summary>
         /// <param name="value">Receives the value.</param>
         /// <remarks>
         ///   <para>
@@ -344,11 +248,17 @@ namespace JsonWebToken
         ///   This value's <see cref="ValueKind"/> is not <see cref="JsonValueKind.Number"/>.
         /// </exception>
         public bool TryGetDouble(out double value)
-            => _parent.TryGetValue(_idx, out value);
+        {
+            if (_parent is null)
+            {
+                value = 0;
+                return false;
+            }
 
-        /// <summary>
-        ///   Attempts to represent the current JSON object as a <see cref="JwtDocument"/>.
-        /// </summary>
+            return _parent.TryGetValue(_idx, out value);
+        }
+
+        /// <summary>Attempts to represent the current JSON object as a <see cref="JwtDocument"/>.</summary>
         /// <param name="value">Receives the value.</param>
         /// <returns>
         ///   <see langword="true"/> if the JSON object can be represented as a <see cref="JwtDocument"/>,
@@ -358,17 +268,22 @@ namespace JsonWebToken
         ///   This value's <see cref="ValueKind"/> is not <see cref="JsonValueKind.Object"/>.
         /// </exception>
         public bool TryGetJsonDocument([NotNullWhen(true)] out JsonDocument? value)
-            => _parent.TryGetValue(_idx, out value);
+        {
+            if (_parent is null)
+            {
+                value = null;
+                return false;
+            }
 
-        /// <summary>
-        ///   Gets the current JSON number as a <see cref="double"/>.
-        /// </summary>
+            return _parent.TryGetValue(_idx, out value);
+        }
+
+        /// <summary>Gets the current JSON number as a <see cref="double"/>.</summary>
         /// <returns>The current JSON number as a <see cref="double"/>.</returns>
         /// <remarks>
         ///   <para>
         ///     This method does not parse the contents of a JSON string value.
         ///   </para>
-        ///
         ///   <para>
         ///     On .NET Core this method returns <see cref="double.PositiveInfinity"/> (or
         ///     <see cref="double.NegativeInfinity"/>) for values larger than
@@ -391,9 +306,7 @@ namespace JsonWebToken
             throw ThrowHelper.CreateFormatException_MalformedJson();
         }
 
-        /// <summary>
-        ///   Gets the current JSON object as a <see cref="JwtDocument"/>.
-        /// </summary>
+        /// <summary>Gets the current JSON object as a <see cref="JwtDocument"/>.</summary>
         /// <returns>The current JSON object as a <see cref="JwtDocument"/>.</returns>
         /// <remarks>
         ///   <para>
@@ -404,7 +317,7 @@ namespace JsonWebToken
         ///   This value's <see cref="ValueKind"/> is not <see cref="JsonValueKind.Object"/>.
         /// </exception>
         /// <exception cref="FormatException">
-        ///   The value cannot be represented as a <see cref="double"/>.
+        ///   The value cannot be represented as a <see cref="JwtDocument"/>.
         /// </exception>
         public JsonDocument GetJsonDocument()
         {
@@ -417,32 +330,22 @@ namespace JsonWebToken
         }
 
         internal string GetPropertyName()
-            => _parent.GetNameOfPropertyValue(_idx);
+            => _parent is null ? string.Empty : _parent.GetNameOfPropertyValue(_idx);
 
-        /// <summary>
-        ///   Gets the original input data backing this value, returning it as a <see cref="string"/>.
-        /// </summary>
-        /// <returns>
-        ///   The original input data backing this value, returning it as a <see cref="string"/>.
-        /// </returns>
+        /// <summary>Gets the original input data backing this value, returning it as a <see cref="string"/>.</summary>
+        /// <returns>The original input data backing this value, returning it as a <see cref="string"/>.</returns>
         public string GetRawText()
-            => _parent.GetRawValueAsString(_idx);
+            => _parent is null ? string.Empty : _parent.GetRawValueAsString(_idx);
 
-        /// <summary>
-        ///   Gets the original input data backing this value, returning it as a <see cref="ReadOnlyMemory{T}"/> of byte.
-        /// </summary>
-        /// <returns>
-        ///   The original input data backing this value, returning it as a <see cref="string"/>.
-        /// </returns>
+        /// <summary>Gets the original input data backing this value, returning it as a <see cref="ReadOnlyMemory{T}"/> of byte.</summary>
+        /// <returns>The original input data backing this value, returning it as a <see cref="ReadOnlyMemory{T}"/> of byte.</returns>
         public ReadOnlyMemory<byte> GetRawValue()
-            => _parent.GetRawValue(_idx);
+            => _parent is null ? default : _parent.GetRawValue(_idx);
 
         internal string GetPropertyRawText()
-            => _parent.GetPropertyRawValueAsString(_idx);
+            => _parent is null ? string.Empty : _parent.GetPropertyRawValueAsString(_idx);
 
-        /// <summary>
-        ///   Compares <paramref name="text" /> to the string value of this element.
-        /// </summary>
+        /// <summary>Compares <paramref name="text" /> to the string value of this element.</summary>
         /// <param name="text">The text to compare against.</param>
         /// <returns>
         ///   <see langword="true" /> if the string value of this element matches <paramref name="text"/>,
@@ -456,18 +359,11 @@ namespace JsonWebToken
         ///   the result of calling <see cref="GetString" />, but avoids creating the string instance.
         /// </remarks>
         public bool ValueEquals(string? text)
-        {
-            if (TokenType == JsonTokenType.Null)
-            {
-                return text == null;
-            }
+            => TokenType == JsonTokenType.Null
+                ? text is null
+                : TextEqualsHelper(text.AsSpan(), isPropertyName: false);
 
-            return TextEqualsHelper(text.AsSpan(), isPropertyName: false);
-        }
-
-        /// <summary>
-        ///   Compares the text represented by <paramref name="utf8Text" /> to the string value of this element.
-        /// </summary>
+        /// <summary>Compares the text represented by <paramref name="utf8Text" /> to the string value of this element.</summary>
         /// <param name="utf8Text">The UTF-8 encoded text to compare against.</param>
         /// <returns>
         ///   <see langword="true" /> if the string value of this element has the same UTF-8 encoding as
@@ -478,7 +374,7 @@ namespace JsonWebToken
         /// </exception>
         /// <remarks>
         ///   This method is functionally equal to doing an ordinal comparison of the string produced by UTF-8 decoding
-        ///   <paramref name="utf8Text" /> with the result of calling <see cref="GetString" />, but avoids creating the
+        ///   <paramref name="utf8Text" /> with the result of <see cref="GetString" />, but avoids creating the
         ///   string instances.
         /// </remarks>
         public bool ValueEquals(ReadOnlySpan<byte> utf8Text)
@@ -492,9 +388,7 @@ namespace JsonWebToken
             return TextEqualsHelper(utf8Text, isPropertyName: false, shouldUnescape: true);
         }
 
-        /// <summary>
-        ///   Compares <paramref name="text" /> to the string value of this element.
-        /// </summary>
+        /// <summary>Compares <paramref name="text" /> to the string value of this element.</summary>
         /// <param name="text">The text to compare against.</param>
         /// <returns>
         ///   <see langword="true" /> if the string value of this element matches <paramref name="text"/>,
@@ -509,9 +403,7 @@ namespace JsonWebToken
         /// </remarks>
         public bool ValueEquals(ReadOnlySpan<char> text)
         {
-            // CheckValidInstance is done in the helper
-
-            if (TokenType == JsonTokenType.Null | _parent is null)
+            if (TokenType == JsonTokenType.Null)
             {
                 // This is different than Length == 0, in that it tests true for null, but false for ""
                 return text == default;
@@ -521,24 +413,19 @@ namespace JsonWebToken
         }
 
         internal bool TextEqualsHelper(ReadOnlySpan<byte> utf8Text, bool isPropertyName, bool shouldUnescape)
-            => _parent.TextEquals(_idx, utf8Text, isPropertyName, shouldUnescape);
+            => _parent is null ? utf8Text == default : _parent.TextEquals(_idx, utf8Text, isPropertyName, shouldUnescape);
 
         internal bool TextEqualsHelper(ReadOnlySpan<char> text, bool isPropertyName)
-            => _parent.TextEquals(_idx, text, isPropertyName);
+            => _parent is null ? text == default : _parent.TextEquals(_idx, text, isPropertyName);
 
-        /// <summary>
-        ///   Get an enumerator to enumerate the values in the JSON array represented by this JsonElement.
-        /// </summary>
-        /// <returns>
-        ///   An enumerator to enumerate the values in the JSON array represented by this JsonElement.
-        /// </returns>
+        /// <summary>Get an enumerator to enumerate the values in the JSON array represented by this JsonElement.</summary>
+        /// <returns>An enumerator to enumerate the values in the JSON array represented by this JsonElement.</returns>
         /// <exception cref="InvalidOperationException">
         ///   This value's <see cref="ValueKind"/> is not <see cref="JsonValueKind.Array"/>.
         /// </exception>
         public ArrayEnumerator EnumerateArray()
         {
             JsonTokenType tokenType = TokenType;
-
             if (tokenType != JsonTokenType.StartArray)
             {
                 ThrowHelper.ThrowJsonElementWrongType_InvalidOperationException(JsonTokenType.StartArray, tokenType);
@@ -547,19 +434,14 @@ namespace JsonWebToken
             return new ArrayEnumerator(this);
         }
 
-        /// <summary>
-        ///   Get an enumerator to enumerate the values in the JSON array represented by this JsonElement.
-        /// </summary>
-        /// <returns>
-        ///   An enumerator to enumerate the values in the JSON array represented by this JsonElement.
-        /// </returns>
+        /// <summary>Get an enumerator to enumerate the values in the JSON array represented by this JsonElement.</summary>
+        /// <returns>An enumerator to enumerate the values in the JSON array represented by this JsonElement.</returns>
         /// <exception cref="InvalidOperationException">
         ///   This value's <see cref="ValueKind"/> is not <see cref="JsonValueKind.Array"/>.
         /// </exception>
         public ArrayEnumerator<T> EnumerateArray<T>()
         {
             JsonTokenType tokenType = TokenType;
-
             if (tokenType != JsonTokenType.StartArray)
             {
                 ThrowHelper.ThrowJsonElementWrongType_InvalidOperationException(JsonTokenType.StartArray, tokenType);
@@ -568,19 +450,12 @@ namespace JsonWebToken
             return new ArrayEnumerator<T>(this);
         }
 
-        /// <summary>
-        ///   Get an enumerator to enumerate the properties in the JSON object represented by this JsonElement.
-        /// </summary>
-        /// <returns>
-        ///   An enumerator to enumerate the properties in the JSON object represented by this JsonElement.
-        /// </returns>
-        /// <exception cref="InvalidOperationException">
-        ///   This value's <see cref="ValueKind"/> is not <see cref="JsonValueKind.Object"/>.
-        /// </exception>
+        /// <summary>Get an enumerator to enumerate the properties in the JSON object represented by this JsonElement.</summary>
+        /// <returns>An enumerator to enumerate the properties in the JSON object represented by this JsonElement.</returns>
+        /// <exception cref="InvalidOperationException">This value's <see cref="ValueKind"/> is not <see cref="JsonValueKind.Object"/>.</exception>
         public ObjectEnumerator EnumerateObject()
         {
             JsonTokenType tokenType = TokenType;
-
             if (tokenType != JsonTokenType.StartObject)
             {
                 ThrowHelper.ThrowJsonElementWrongType_InvalidOperationException(JsonTokenType.StartObject, tokenType);
@@ -589,11 +464,7 @@ namespace JsonWebToken
             return new ObjectEnumerator(this);
         }
 
-        /// <summary>
-        /// Determines whether the <see cref="JwtElement"/> contains the specified property.
-        /// </summary>
-        /// <param name="propertyName"></param>
-        /// <returns></returns>
+        /// <summary>Determines whether the <see cref="JwtElement"/> contains the specified property.</summary>
         public bool ContainsKey(string propertyName)
         {
             var value = GetRawValue();
@@ -635,11 +506,7 @@ namespace JsonWebToken
             return false;
         }
 
-        /// <summary>
-        /// Determines whether the <see cref="JwtElement"/> contains the specified property.
-        /// </summary>
-        /// <param name="propertyName"></param>
-        /// <returns></returns>
+        /// <summary>Determines whether the <see cref="JwtElement"/> contains the specified property.</summary>
         public bool ContainsKey(ReadOnlySpan<byte> propertyName)
         {
             var value = GetRawValue();
@@ -681,37 +548,7 @@ namespace JsonWebToken
             return false;
         }
 
-        /// <summary>
-        ///   Gets a string representation for the current value appropriate to the value type.
-        /// </summary>
-        /// <remarks>
-        ///   <para>
-        ///     For JsonElement built from <see cref="JwtDocument"/>:
-        ///   </para>
-        ///
-        ///   <para>
-        ///     For <see cref="JsonValueKind.Null"/>, <see cref="string.Empty"/> is returned.
-        ///   </para>
-        ///
-        ///   <para>
-        ///     For <see cref="JsonValueKind.True"/>, <see cref="bool.TrueString"/> is returned.
-        ///   </para>
-        ///
-        ///   <para>
-        ///     For <see cref="JsonValueKind.False"/>, <see cref="bool.FalseString"/> is returned.
-        ///   </para>
-        ///
-        ///   <para>
-        ///     For <see cref="JsonValueKind.String"/>, the value of <see cref="GetString"/>() is returned.
-        ///   </para>
-        ///
-        ///   <para>
-        ///     For other types, the value of <see cref="GetRawText"/>() is returned.
-        ///   </para>
-        /// </remarks>
-        /// <returns>
-        ///   A string representation for the current value appropriate to the value type.
-        /// </returns>
+        /// <inheritdoc/>
         public override string? ToString()
         {
             switch (TokenType)
@@ -738,20 +575,11 @@ namespace JsonWebToken
             }
         }
 
-        /// <summary>
-        ///   Get a JwtElement which can be safely stored beyond the lifetime of the
-        ///   original <see cref="JwtDocument"/>.
-        /// </summary>
-        /// <returns>
-        ///   A JwtElement which can be safely stored beyond the lifetime of the
-        ///   original <see cref="JwtDocument"/>.
-        /// </returns>
+        /// <summary>Get a JwtElement which can be safely stored beyond the lifetime of theoriginal <see cref="JwtDocument"/>.</summary>
         /// <remarks>
-        ///   <para>
         ///     If this JwtElement is itself the output of a previous call to Clone, or
         ///     a value contained within another JwtElement which was the output of a previous
         ///     call to Clone, this method results in no additional memory allocation.
-        ///   </para>
         /// </remarks>
         public JwtElement Clone()
         {
@@ -792,9 +620,7 @@ namespace JsonWebToken
             }
         }
 
-        /// <summary>
-        ///   An enumerable and enumerator for the properties of a JSON object.
-        /// </summary>
+        /// <summary>An enumerable and enumerator for the properties of a JSON object.</summary>
         [DebuggerDisplay("{Current,nq}")]
         public struct ObjectEnumerator
         {
@@ -831,13 +657,7 @@ namespace JsonWebToken
                 }
             }
 
-            /// <summary>
-            ///   Returns an enumerator that iterates the properties of an object.
-            /// </summary>
-            /// <returns>
-            ///   An <see cref="ObjectEnumerator"/> value that can be used to iterate
-            ///   through the object.
-            /// </returns>
+            /// <summary>Returns an enumerator that iterates the properties of an object.</summary>
             /// <remarks>
             ///   The enumerator will enumerate the properties in the order they are
             ///   declared, and when an object has multiple definitions of a single
@@ -971,9 +791,7 @@ namespace JsonWebToken
             }
         }
 
-        /// <summary>
-        ///   An enumerable and enumerator for the contents of a JSON array.
-        /// </summary>
+        /// <summary>An enumerable and enumerator for the contents of a JSON array.</summary>
         [DebuggerDisplay("{Current,nq}")]
         public struct ArrayEnumerator
         {
@@ -1009,13 +827,7 @@ namespace JsonWebToken
                 }
             }
 
-            /// <summary>
-            ///   Returns an enumerator that iterates through a collection.
-            /// </summary>
-            /// <returns>
-            ///   An <see cref="ArrayEnumerator"/> value that can be used to iterate
-            ///   through the array.
-            /// </returns>
+            /// <summary>Returns an enumerator that iterates through a collection.</summary>
             public ArrayEnumerator GetEnumerator()
             {
                 ArrayEnumerator ator = this;
@@ -1132,9 +944,7 @@ namespace JsonWebToken
             }
         }
 
-        /// <summary>
-        ///   An enumerable and enumerator for the contents of a JSON array.
-        /// </summary>
+        /// <summary>An enumerable and enumerator for the contents of a JSON array.</summary>
         [DebuggerDisplay("{Current,nq}")]
         public struct ArrayEnumerator<T>
         {
@@ -1175,13 +985,7 @@ namespace JsonWebToken
                 }
             }
 
-            /// <summary>
-            ///   Returns an enumerator that iterates through a collection.
-            /// </summary>
-            /// <returns>
-            ///   An <see cref="ArrayEnumerator"/> value that can be used to iterate
-            ///   through the array.
-            /// </returns>
+            /// <summary>Returns an enumerator that iterates through a collection.</summary>
             public ArrayEnumerator<T> GetEnumerator()
             {
                 ArrayEnumerator<T> ator = this;
@@ -1285,6 +1089,14 @@ namespace JsonWebToken
             Error:
                 document = null;
                 return false;
+            }
+        }
+
+        private void CheckValidInstance()
+        {
+            if (_parent is null)
+            {
+                throw new InvalidOperationException();
             }
         }
     }

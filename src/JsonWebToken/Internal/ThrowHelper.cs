@@ -10,13 +10,10 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
 using System.Text.Json;
-using JsonWebToken.Cryptography;
 
 namespace JsonWebToken
 {
-    /// <summary>
-    /// Error messages.
-    /// </summary>
+    /// <summary>Error messages.</summary>
     [StackTraceHidden]
     internal static class ThrowHelper
     {
@@ -50,20 +47,12 @@ namespace JsonWebToken
         [DoesNotReturn]
         internal static void ThrowJwtDescriptorException_SecEventAttributeIsRequired(JsonEncodedText claim) => throw CreateJwtDescriptorException_SecEventAttributeIsRequired(claim);
         [MethodImpl(MethodImplOptions.NoInlining)]
-        private static Exception CreateJwtDescriptorException_SecEventAttributeIsRequired(JsonEncodedText claim)
-        {
-            var value = claim;
-            return new JwtDescriptorException($"The claim '{value}' is required.");
-        }
+        private static Exception CreateJwtDescriptorException_SecEventAttributeIsRequired(JsonEncodedText claim) => new JwtDescriptorException($"The claim '{claim}' is required.");
 
         [DoesNotReturn]
         internal static void ThrowJwtDescriptorException_SecEventAttributeMustBeOfType(JsonEncodedText utf8Name, JwtValueKind type) => throw CreateJwtDescriptorException_SecEventAttributeMustBeOfType(utf8Name, type);
         [MethodImpl(MethodImplOptions.NoInlining)]
-        private static Exception CreateJwtDescriptorException_SecEventAttributeMustBeOfType(JsonEncodedText utf8Name, JwtValueKind type)
-        {
-            var value = (utf8Name);
-            return new JwtDescriptorException($"The claim '{value}' must be of type {type}.");
-        }
+        private static Exception CreateJwtDescriptorException_SecEventAttributeMustBeOfType(JsonEncodedText utf8Name, JwtValueKind type) => new JwtDescriptorException($"The claim '{utf8Name}' must be of type {type}.");
 
         [DoesNotReturn]
         internal static void ThrowJwtDescriptorException_SecEventAttributeMustBeOfType(JsonEncodedText utf8Name, JwtValueKind[] types) => throw CreateJwtDescriptorException_SecEventAttributeMustBeOfType(utf8Name, types);
@@ -71,18 +60,13 @@ namespace JsonWebToken
         private static Exception CreateJwtDescriptorException_SecEventAttributeMustBeOfType(JsonEncodedText utf8Name, JwtValueKind[] types)
         {
             var claimTypes = string.Join(", ", types.Select(t => t.ToString()));
-            var value = (utf8Name);
-            return new JwtDescriptorException($"The claim '{value}' must be of type [{claimTypes}].");
+            return new JwtDescriptorException($"The claim '{utf8Name}' must be of type [{claimTypes}].");
         }
 
         [DoesNotReturn]
         internal static void ThrowJwtDescriptorException_ClaimIsRequired(JsonEncodedText claim) => throw CreateJwtDescriptorException_ClaimIsRequired(claim);
         [MethodImpl(MethodImplOptions.NoInlining)]
-        private static Exception CreateJwtDescriptorException_ClaimIsRequired(JsonEncodedText claim)
-        {
-            var value = claim;
-            return new JwtDescriptorException($"The claim '{value}' is required.");
-        }
+        private static Exception CreateJwtDescriptorException_ClaimIsRequired(JsonEncodedText claim) => new JwtDescriptorException($"The claim '{claim}' is required.");
 
         [DoesNotReturn]
         internal static void ThrowJwtDescriptorException_ClaimMustBeOfType(JsonEncodedText utf8Name, JwtValueKind[] types) => throw CreateJwtDescriptorException_ClaimMustBeOfType(utf8Name, types);
@@ -90,28 +74,13 @@ namespace JsonWebToken
         private static Exception CreateJwtDescriptorException_ClaimMustBeOfType(JsonEncodedText utf8Name, JwtValueKind[] types)
         {
             var claimTypes = string.Join(", ", types.Select(t => t.ToString()));
-            var value = (utf8Name);
-            return new JwtDescriptorException($"The claim '{value}' must be of type [{claimTypes}].");
-        }
-
-        [DoesNotReturn]
-        internal static void ThrowJwtDescriptorException_ClaimMustBeOfType(string utf8Name, JsonTokenType[] types) => throw CreateJwtDescriptorException_ClaimMustBeOfType(utf8Name, types);
-        [MethodImpl(MethodImplOptions.NoInlining)]
-        private static Exception CreateJwtDescriptorException_ClaimMustBeOfType(string utf8Name, JsonTokenType[] types)
-        {
-            var claimTypes = string.Join(", ", types.Select(t => t.ToString()));
-            var value = utf8Name;
-            return new JwtDescriptorException($"The claim '{value}' must be of type [{claimTypes}].");
+            return new JwtDescriptorException($"The claim '{utf8Name}' must be of type [{claimTypes}].");
         }
 
         [DoesNotReturn]
         internal static void ThrowJwtDescriptorException_ClaimMustBeOfType(JsonEncodedText utf8Name, JwtValueKind type) => throw CreateJwtDescriptorException_ClaimMustBeOfType(utf8Name, type);
         [MethodImpl(MethodImplOptions.NoInlining)]
-        private static Exception CreateJwtDescriptorException_ClaimMustBeOfType(JsonEncodedText utf8Name, JwtValueKind type)
-        {
-            var value = (utf8Name);
-            return new JwtDescriptorException($"The claim '{value}' must be of type {type}.");
-        }
+        private static Exception CreateJwtDescriptorException_ClaimMustBeOfType(JsonEncodedText utf8Name, JwtValueKind type) => new JwtDescriptorException($"The claim '{utf8Name}' must be of type {type}.");
 
         [DoesNotReturn]
         internal static void ThrowJwtDescriptorException_HeaderMustBeOfType(JsonEncodedText utf8Name, JwtValueKind[] types) => throw CreateJwtDescriptorException_HeaderMustBeOfType(utf8Name, types);
@@ -119,27 +88,18 @@ namespace JsonWebToken
         private static Exception CreateJwtDescriptorException_HeaderMustBeOfType(JsonEncodedText utf8Name, JwtValueKind[] types)
         {
             var claimTypes = string.Join(", ", types.Select(t => t.ToString()));
-            var value = (utf8Name);
-            return new JwtDescriptorException($"The header parameter '{value}' must be of type [{claimTypes}].");
+            return new JwtDescriptorException($"The header parameter '{utf8Name}' must be of type [{claimTypes}].");
         }
 
         [DoesNotReturn]
         internal static void ThrowJwtDescriptorException_HeaderMustBeOfType(JsonEncodedText utf8Name, JwtValueKind type) => throw CreateJwtDescriptorException_HeaderMustBeOfType(utf8Name, type);
         [MethodImpl(MethodImplOptions.NoInlining)]
-        private static Exception CreateJwtDescriptorException_HeaderMustBeOfType(JsonEncodedText utf8Name, JwtValueKind type)
-        {
-            var value = (utf8Name);
-            return new JwtDescriptorException($"The header parameter '{value}' must be of type {type}.");
-        }
+        private static Exception CreateJwtDescriptorException_HeaderMustBeOfType(JsonEncodedText utf8Name, JwtValueKind type) => new JwtDescriptorException($"The header parameter '{utf8Name}' must be of type {type}.");
 
         [DoesNotReturn]
         internal static void ThrowJwtDescriptorException_HeaderIsRequired(JsonEncodedText header) => throw CreateJwtDescriptorException_HeaderIsRequired(header);
         [MethodImpl(MethodImplOptions.NoInlining)]
-        private static Exception CreateJwtDescriptorException_HeaderIsRequired(JsonEncodedText header)
-        {
-            var value = (header);
-            return new JwtDescriptorException($"The header parameter '{value}' is required.");
-        }
+        private static Exception CreateJwtDescriptorException_HeaderIsRequired(JsonEncodedText header) => new JwtDescriptorException($"The header parameter '{header}' is required.");
 
         [DoesNotReturn]
         internal static void ThrowInvalidOperationException_ConcurrentOperationsNotSupported() => throw CreateInvalidOperationException_ConcurrentOperationsNotSupported();
@@ -223,19 +183,9 @@ namespace JsonWebToken
         private static Exception CreateArgumentOutOfRangeException_SigningKeyTooSmall(Jwk key, int minimalValue) => new ArgumentOutOfRangeException(nameof(key.KeySizeInBits), key.Kid.EncodedUtf8Bytes.IsEmpty ? $"The signing key cannot be smaller than '{minimalValue}' bits. Key size: '{key.KeySizeInBits}'." : $"The signing key '{key.Kid}' cannot be smaller than '{minimalValue}' bits. Key size: '{key.KeySizeInBits}'.");
 
         [DoesNotReturn]
-        internal static void ThrowArgumentOutOfRangeException_InvalidSigningKeySize(Jwk key, int minimalValue) => throw CreateArgumentOutOfRangeException_InvalidSigningKeySize(key, minimalValue);
-        [MethodImpl(MethodImplOptions.NoInlining)]
-        private static Exception CreateArgumentOutOfRangeException_InvalidSigningKeySize(Jwk key, int minimalValue) => new ArgumentOutOfRangeException(nameof(key.KeySizeInBits), key.Kid.EncodedUtf8Bytes.IsEmpty ? $"The signing key must be of '{minimalValue}' bits. Key size: '{key.KeySizeInBits}'." : $"The signing key '{key.Kid}' must be of '{minimalValue}' bits. Key size: '{key.KeySizeInBits}'.");
-
-        [DoesNotReturn]
         internal static void ThrowArgumentOutOfRangeException_EncryptionKeyTooSmall(EncryptionAlgorithm algorithm, int minimalValue, int currentKeySize) => throw CreateArgumentOutOfRangeException_EncryptionKeyTooSmall(algorithm, minimalValue, currentKeySize);
         [MethodImpl(MethodImplOptions.NoInlining)]
         private static Exception CreateArgumentOutOfRangeException_EncryptionKeyTooSmall(EncryptionAlgorithm algorithm, int minimalValue, int currentKeySize) => new ArgumentOutOfRangeException("key", $"The key for encryption with algorithm '{algorithm}' cannot be smaller than '{minimalValue}' bits. Key size: '{currentKeySize}'.");
-
-        [DoesNotReturn]
-        internal static void ThrowArgumentOutOfRangeException_KeyWrapKeySizeIncorrect(KeyManagementAlgorithm algorithm, int requiredValue, Jwk key, int currentKeySize) => throw CreateArgumentOutOfRangeException_KeyWrapKeySizeIncorrect(algorithm, requiredValue, key, currentKeySize);
-        [MethodImpl(MethodImplOptions.NoInlining)]
-        private static Exception CreateArgumentOutOfRangeException_KeyWrapKeySizeIncorrect(KeyManagementAlgorithm algorithm, int requiredValue, Jwk key, int currentKeySize) => new ArgumentOutOfRangeException(nameof(key), $"The key '{key.Kid}' for key wrapping with algorithm '{algorithm}' must be of '{requiredValue}' bits. Key size: '{currentKeySize}'.");
 
         [DoesNotReturn]
         internal static void ThrowNotSupportedException_SignatureAlgorithm(SignatureAlgorithm algorithm, Jwk? key) => throw CreateNotSupportedException_SignatureAlgorithm(algorithm, key);
@@ -256,11 +206,6 @@ namespace JsonWebToken
         internal static void ThrowNotSupportedException_Jwk(ReadOnlySpan<byte> name) => throw CreateNotSupportedException_Jwk(name);
         [MethodImpl(MethodImplOptions.NoInlining)]
         private static Exception CreateNotSupportedException_Jwk(ReadOnlySpan<byte> name) => new NotSupportedException($"JWK type '{Utf8.GetString(name)}' is not supported.");
-
-        [DoesNotReturn]
-        internal static void ThrowNotSupportedException_SignatureAlgorithm(SignatureAlgorithm? algorithm) => throw CreateNotSupportedException_SignatureAlgorithm(algorithm);
-        [MethodImpl(MethodImplOptions.NoInlining)]
-        private static Exception CreateNotSupportedException_SignatureAlgorithm(SignatureAlgorithm? algorithm) => new NotSupportedException($"Signature failed. No support for: Algorithm: '{algorithm}'.");
 
 #if SUPPORT_ELLIPTIC_CURVE
         [DoesNotReturn]
@@ -290,11 +235,6 @@ namespace JsonWebToken
         private static Exception CreateCryptographicException_KeyWrapFailed() => new CryptographicException("Key wrapping failed.");
 
         [DoesNotReturn]
-        internal static void ThrowCryptographicException_CreateSymmetricAlgorithmFailed(Jwk key, KeyManagementAlgorithm algorithm, Exception innerException) => throw CreateCryptographicException_CreateSymmetricAlgorithmFailed(key, algorithm, innerException);
-        [MethodImpl(MethodImplOptions.NoInlining)]
-        private static Exception CreateCryptographicException_CreateSymmetricAlgorithmFailed(Jwk key, KeyManagementAlgorithm algorithm, Exception innerException) => new CryptographicException($"Failed to create symmetric algorithm for key wrap with key: '{key.Kid}', algorithm: '{algorithm}'.", innerException);
-
-        [DoesNotReturn]
         internal static void ThrowArgumentException_KeySizeMustBeMultipleOf64(ReadOnlySpan<byte> keyBytes) => throw CreateArgumentException_KeySizeMustBeMultipleOf64(keyBytes);
         [MethodImpl(MethodImplOptions.NoInlining)]
         private static Exception CreateArgumentException_KeySizeMustBeMultipleOf64(ReadOnlySpan<byte> keyBytes) => new ArgumentException($"The length of the key to unwrap must be a multiple of 64 bits. The size is: '{keyBytes.Length << 3}' bits.", nameof(keyBytes));
@@ -313,11 +253,6 @@ namespace JsonWebToken
         internal static void ThrowArgumentException_DestinationTooSmall(int size, int requiredSize) => throw CreateArgumentException_DestinationTooSmall(size, requiredSize);
         [MethodImpl(MethodImplOptions.NoInlining)]
         private static Exception CreateArgumentException_DestinationTooSmall(int size, int requiredSize) => new ArgumentException($"destination is too small. Required: {requiredSize}. Current: {size}.", "destination");
-
-        [DoesNotReturn]
-        internal static void ThrowArgumentException_StaticKeyNotSupported() => throw CreateArgumentException_StaticKeyNotSupported();
-        [MethodImpl(MethodImplOptions.NoInlining)]
-        private static Exception CreateArgumentException_StaticKeyNotSupported() => new ArgumentException("Direct encryption does not support the use of static key.", "staticKey");
 
         [DoesNotReturn]
         internal static void ThrowInvalidOperationException_InvalidCertificate() => throw CreateInvalidOperationException_InvalidCertificate();
