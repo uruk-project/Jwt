@@ -4,11 +4,13 @@
 using System;
 using System.Collections.Generic;
 using System.Buffers;
+using System.ComponentModel;
 
 namespace JsonWebToken
 {
     /// <summary>Reads and validates a JWT.</summary>
     [Obsolete("This class is obsolete. Use the class " + nameof(Jwt) + " instead.", true)]
+    [EditorBrowsable(EditorBrowsableState.Never)]
     public sealed class JwtReader
     {
         /// <summary>Initializes a new instance of <see cref="JwtReader"/>.</summary>

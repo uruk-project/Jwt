@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE in the project root for license information.
 
 using System;
+using System.ComponentModel;
 
 namespace JsonWebToken
 {
@@ -9,6 +10,7 @@ namespace JsonWebToken
     {
         /// <summary>Initializes a new instance of the <see cref="JweDescriptor"/> class.</summary>
         [Obsolete("This constructor is obsolete. Use the constructor JweDescriptor(Jwk encryptionKey, KeyManagementAlgorithm alg, EncryptionAlgorithm enc, CompressionAlgorithm? zip = null, string? typ = null, string? cty = Constants.Jwt) instead.", true)]
+        [EditorBrowsable(EditorBrowsableState.Never)]
         public JweDescriptor()
             : base(Jwk.None, KeyManagementAlgorithm.Create("obsolete"), EncryptionAlgorithm.Create("obsolete"), null, null)
             => throw new NotImplementedException();

@@ -6,10 +6,10 @@ using System.ComponentModel;
 
 namespace JsonWebToken
 {
-    /// <summary>Defines an encrypted JWT with a <typeparamref name="TPayload"/> payload.</summary>
-    [Obsolete("This class is obsolete. use the class JweDescriptorBase<TPayload> instead.", true)]
+    /// <summary>This struct is obsolete. Represents a JSON array.</summary>
+    [Obsolete("This struct is obsolete. Use C# Array instead.", true)]
     [EditorBrowsable(EditorBrowsableState.Never)]
-    public abstract class EncryptedJwtDescriptor<TPayload>
+    public readonly struct JwtArray
     {
     }
 }

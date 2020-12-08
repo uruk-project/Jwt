@@ -2,11 +2,13 @@
 // Licensed under the MIT license. See LICENSE in the project root for license information.
 
 using System;
+using System.ComponentModel;
 
 namespace JsonWebToken
 {
     /// <summary>Represents the result of a token validation.</summary>
     [Obsolete("This class is obsolete. Use the class " + nameof(TokenValidationError) + " instead.", true)]
+    [EditorBrowsable(EditorBrowsableState.Never)]
     public sealed class TokenValidationResult
     {
         /// <summary>Gets whether the token validation is successful.</summary>
