@@ -145,3 +145,6 @@ The main reason of the efficiency of this library is the usage of the new API pr
 | A128GCMKW          | Key wrapping with AES GCM using 128-bit key                                   | netcoreapp3.0
 | A192GCMKW          | Key wrapping with AES GCM using 192-bit key                                   | netcoreapp3.0
 | A256GCMKW          | Key wrapping with AES GCM using 256-bit key                                   | netcoreapp3.0
+| PBES2-HS256+A128KW | PBES2 with HMAC SHA-256 and "A128KW" wrapping                                 | netstandard2.0
+| PBES2-HS384+A192KW | PBES2 with HMAC SHA-384 and "A192KW" wrapping                                 | netstandard2.0
+| PBES2-HS512+A256KW | PBES2 with HMAC SHA-512 and "A256KW" wrapping                                 | netstandard2.0
