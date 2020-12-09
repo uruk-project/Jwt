@@ -12,11 +12,9 @@ namespace BinaryJwtCreationSample
 
             // Creates a JWE descriptor with all its properties
             var payload = new byte[] { 76, 105, 102, 101, 32, 108, 111, 110, 103, 32, 97, 110, 100, 32, 112, 114, 111, 115, 112, 101, 114, 46 };
-            var descriptor = new BinaryJweDescriptor(payload)
+            var descriptor = new BinaryJweDescriptor(encryptionKey, KeyManagementAlgorithm.A128KW, EncryptionAlgorithm.A128CbcHS256)
             {
-                EncryptionKey = encryptionKey,
-                EncryptionAlgorithm = EncryptionAlgorithm.Aes128CbcHmacSha256,
-                Algorithm = KeyManagementAlgorithm.Aes128KW
+                Payload = payload
             };
 
             // Generates the UTF-8 string representation of the JWT

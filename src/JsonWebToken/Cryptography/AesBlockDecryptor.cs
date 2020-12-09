@@ -2,16 +2,13 @@
 // Licensed under the MIT license. See LICENSE in the project root for license information.
 
 using System;
-using System.Security.Cryptography;
-#if SUPPORT_SIMD
-#endif
 
-namespace JsonWebToken
+namespace JsonWebToken.Cryptography
 {
     /// <summary>
     /// Provides AES decryption.
     /// </summary>
-    public abstract class AesBlockDecryptor : IDisposable
+    internal abstract class AesBlockDecryptor : IDisposable
     {
         /// <summary>
         /// The size of the AES block.

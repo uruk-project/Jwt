@@ -3,38 +3,31 @@
 
 using System;
 using System.Buffers;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text.Json;
-using JsonWebToken.Internal;
 
 namespace JsonWebToken
 {
-    /// <summary>
-    /// Contains a collection of <see cref="Jwk"/>.
-    /// </summary>
+    /// <summary>Contains a collection of <see cref="Jwk"/>.</summary>
     [DebuggerDisplay("{DebuggerDisplay(),nq}")]
-    public sealed class Jwks : IDisposable
+    public sealed class Jwks : IDisposable, IEnumerable<Jwk>
     {
         private const uint keys = 1937335659u;
         private readonly List<Jwk> _keys = new List<Jwk>();
 
-        private Jwk[]? _keyArray;
-        private Jwk[]? _unidentifiedKeys;
-        private Dictionary<string, Jwk[]>? _identifiedKeys;
+        private KeyValuePair<JsonEncodedText, Jwk[]>[]? _identifiedKeys;
 
-        /// <summary>
-        /// Initializes an new instance of <see cref="Jwks"/>.
-        /// </summary>
+        /// <summary>Initializes an new instance of <see cref="Jwks"/>.</summary>
         public Jwks()
         {
         }
 
-        /// <summary>
-        /// Initializes an new instance of <see cref="Jwks"/>.
-        /// </summary>
+        /// <summary>Initializes an new instance of <see cref="Jwks"/>.</summary>
         /// <param name="key"></param>
         public Jwks(Jwk key)
         {
@@ -46,9 +39,7 @@ namespace JsonWebToken
             _keys.Add(key);
         }
 
-        /// <summary>
-        /// Initializes an new instance of <see cref="Jwks"/>.
-        /// </summary>
+        /// <summary>Initializes an new instance of <see cref="Jwks"/>.</summary>
         public Jwks(IList<Jwk> keys)
         {
             if (keys is null)
@@ -66,9 +57,7 @@ namespace JsonWebToken
             }
         }
 
-        /// <summary>
-        /// Gets or sets the first <see cref="Jwk"/> with its 'kid'.
-        /// </summary>
+        /// <summary>Gets or sets the first <see cref="Jwk"/> with its 'kid'.</summary>
         public Jwk? this[string kid]
         {
             get
@@ -77,7 +66,7 @@ namespace JsonWebToken
                 for (int i = 0; i < keys.Count; i++)
                 {
                     var key = keys[i];
-                    if (string.Equals(kid, key.Kid, StringComparison.Ordinal))
+                    if (kid == key.Kid.ToString())
                     {
                         return key;
                     }
@@ -87,9 +76,26 @@ namespace JsonWebToken
             }
         }
 
-        /// <summary>
-        /// Adds the <paramref name="key"/> to the JWKS.
-        /// </summary>
+        /// <summary>Gets or sets the first <see cref="Jwk"/> with its 'kid'.</summary>
+        public Jwk? this[JsonEncodedText kid]
+        {
+            get
+            {
+                var keys = _keys;
+                for (int i = 0; i < keys.Count; i++)
+                {
+                    var key = keys[i];
+                    if (kid.EncodedUtf8Bytes.SequenceEqual(key.Kid.EncodedUtf8Bytes))
+                    {
+                        return key;
+                    }
+                }
+
+                return null;
+            }
+        }
+
+        /// <summary>Adds the <paramref name="key"/> to the JWKS.</summary>
         /// <param name="key"></param>
         public void Add(Jwk key)
         {
@@ -99,14 +105,10 @@ namespace JsonWebToken
             }
 
             _identifiedKeys = null;
-            _unidentifiedKeys = null;
-            _keyArray = null;
             _keys.Add(key);
         }
 
-        /// <summary>
-        /// Removes the <paramref name="key"/> from the JWKS.
-        /// </summary>
+        /// <summary>Removes the <paramref name="key"/> from the JWKS.</summary>
         /// <param name="key"></param>
         public void Remove(Jwk key)
         {
@@ -116,8 +118,6 @@ namespace JsonWebToken
             }
 
             _identifiedKeys = null;
-            _unidentifiedKeys = null;
-            _keyArray = null;
             _keys.Remove(key);
         }
 
@@ -137,13 +137,14 @@ namespace JsonWebToken
         internal void WriteTo(Utf8JsonWriter writer)
         {
             writer.WriteStartObject();
-            writer.WriteStartObject(JwksParameterNames.KeysUtf8);
+            writer.WriteStartArray(JwksParameterNames.Keys);
             var keys = _keys;
             for (int i = 0; i < keys.Count; i++)
             {
                 keys[i].WriteTo(writer);
             }
 
+            writer.WriteEndArray();
             writer.WriteEndObject();
         }
 
@@ -159,65 +160,263 @@ namespace JsonWebToken
             return Utf8.GetString(input);
         }
 
-        private Jwk[] UnidentifiedKeys
+        internal KeyValuePair<JsonEncodedText, Jwk[]>[] GetIdentifiedKeys()
         {
-            get
+            if (_identifiedKeys is null)
             {
-                if (_unidentifiedKeys is null)
-                {
-                    _unidentifiedKeys = _keys
-                                        .Where(jwk => jwk.Kid is null)
-                                        .ToArray();
-                }
-
-                return _unidentifiedKeys;
+                _identifiedKeys = InitializeIdentifiedKeys();
             }
+
+            return _identifiedKeys;
         }
 
-        private Dictionary<string, Jwk[]> IdentifiedKeys
+        private KeyValuePair<JsonEncodedText, Jwk[]>[] InitializeIdentifiedKeys()
         {
-            get
+            KeyValuePair<JsonEncodedText, Jwk[]>[] keys;
+            if (_keys.Count == 1)
             {
-                if (_identifiedKeys is null)
+                var key1 = _keys[0];
+                if (key1.Kid.EncodedUtf8Bytes.IsEmpty)
                 {
-                    _identifiedKeys = _keys
-                                        .Where(jwk => !(jwk.Kid is null))
-                                        .GroupBy(k => k.Kid!)
-                                        .ToDictionary(k => k.Key, k => k.Concat(UnidentifiedKeys).ToArray());
+                    keys = Array.Empty<KeyValuePair<JsonEncodedText, Jwk[]>>();
                 }
-
-                return _identifiedKeys;
+                else
+                {
+                    keys = new KeyValuePair<JsonEncodedText, Jwk[]>[1]
+                    {
+                        new KeyValuePair<JsonEncodedText, Jwk[]>(key1.Kid, new[] { key1 })
+                    };
+                }
             }
+            else if (_keys.Count == 2)
+            {
+                var key2 = _keys[1];
+                var key1 = _keys[0];
+                if (key1.Kid.Equals(key2.Kid))
+                {
+                    if (key1.Kid.EncodedUtf8Bytes.IsEmpty)
+                    {
+                        keys = Array.Empty<KeyValuePair<JsonEncodedText, Jwk[]>>();
+                    }
+                    else
+                    {
+                        keys = new KeyValuePair<JsonEncodedText, Jwk[]>[1]
+                        {
+                            new KeyValuePair<JsonEncodedText, Jwk[]>(key1.Kid, new[] { key1, key2 })
+                        };
+                    }
+                }
+                else
+                {
+                    if (key1.Kid.EncodedUtf8Bytes.IsEmpty)
+                    {
+                        keys = new KeyValuePair<JsonEncodedText, Jwk[]>[1]
+                        {
+                            new KeyValuePair<JsonEncodedText, Jwk[]>(key2.Kid, new[] { key2, key1 })
+                        };
+                    }
+                    else if (key2.Kid.EncodedUtf8Bytes.IsEmpty)
+                    {
+                        keys = new KeyValuePair<JsonEncodedText, Jwk[]>[1]
+                        {
+                            new KeyValuePair<JsonEncodedText, Jwk[]>(key1.Kid, new[] { key1, key2 })
+                        };
+                    }
+                    else
+                    {
+                        keys = new KeyValuePair<JsonEncodedText, Jwk[]>[2]
+                        {
+                            new KeyValuePair<JsonEncodedText, Jwk[]>(key1.Kid, new[] { key1 }),
+                            new KeyValuePair<JsonEncodedText, Jwk[]>(key2.Kid, new[] { key2 })
+                        };
+                    }
+                }
+            }
+            else if (_keys.Count == 3)
+            {
+                var key3 = _keys[2];
+                var key2 = _keys[1];
+                var key1 = _keys[0];
+                if (key1.Kid.Equals(key2.Kid))
+                {
+                    if (key1.Kid.Equals(key3.Kid))
+                    {
+                        if (key1.Kid.EncodedUtf8Bytes.IsEmpty)
+                        {
+                            keys = Array.Empty<KeyValuePair<JsonEncodedText, Jwk[]>>();
+                        }
+                        else
+                        {
+                            keys = new KeyValuePair<JsonEncodedText, Jwk[]>[1]
+                            {
+                                new KeyValuePair<JsonEncodedText, Jwk[]>(key1.Kid, new[] { key1, key2, key3 })
+                            };
+                        }
+                    }
+                    else
+                    {
+                        if (key1.Kid.EncodedUtf8Bytes.IsEmpty)
+                        {
+                            keys = new KeyValuePair<JsonEncodedText, Jwk[]>[1]
+                            {
+                                new KeyValuePair<JsonEncodedText, Jwk[]>(key3.Kid, new[] { key3, key1, key2 })
+                            };
+                        }
+                        else if (key3.Kid.EncodedUtf8Bytes.IsEmpty)
+                        {
+                            keys = new KeyValuePair<JsonEncodedText, Jwk[]>[1]
+                            {
+                                new KeyValuePair<JsonEncodedText, Jwk[]>(key1.Kid, new[] { key1, key2, key3 })
+                            };
+                        }
+                        else
+                        {
+                            keys = new KeyValuePair<JsonEncodedText, Jwk[]>[2]
+                            {
+                                new KeyValuePair<JsonEncodedText, Jwk[]>(key1.Kid, new[] { key1, key2 }),
+                                new KeyValuePair<JsonEncodedText, Jwk[]>(key3.Kid, new[] { key3 })
+                            };
+                        }
+                    }
+                }
+                else
+                {
+                    if (key2.Kid.Equals(key3.Kid))
+                    {
+                        if (key1.Kid.EncodedUtf8Bytes.IsEmpty)
+                        {
+                            keys = new KeyValuePair<JsonEncodedText, Jwk[]>[1]
+                            {
+                                new KeyValuePair<JsonEncodedText, Jwk[]>(key2.Kid, new[] { key2, key3, key1 })
+                            };
+                        }
+                        else if (key2.Kid.EncodedUtf8Bytes.IsEmpty)
+                        {
+                            keys = new KeyValuePair<JsonEncodedText, Jwk[]>[1]
+                            {
+                                new KeyValuePair<JsonEncodedText, Jwk[]>(key1.Kid, new[] { key1, key2, key3 })
+                            };
+                        }
+                        else
+                        {
+                            keys = new KeyValuePair<JsonEncodedText, Jwk[]>[2]
+                            {
+                                new KeyValuePair<JsonEncodedText, Jwk[]>(key1.Kid, new[] { key1 }),
+                                new KeyValuePair<JsonEncodedText, Jwk[]>(key2.Kid, new[] { key2, key3 })
+                            };
+                        }
+                    }
+                    else
+                    {
+                        if (key1.Kid.Equals(key3.Kid))
+                        {
+                            if (key1.Kid.EncodedUtf8Bytes.IsEmpty)
+                            {
+                                keys = new KeyValuePair<JsonEncodedText, Jwk[]>[1]
+                                {
+                                    new KeyValuePair<JsonEncodedText, Jwk[]>(key2.Kid, new[] { key2, key1, key3 })
+                                };
+                            }
+                            else if (key2.Kid.EncodedUtf8Bytes.IsEmpty)
+                            {
+                                keys = new KeyValuePair<JsonEncodedText, Jwk[]>[1]
+                                {
+                                    new KeyValuePair<JsonEncodedText, Jwk[]>(key1.Kid, new[] { key1, key3, key2 })
+                                };
+                            }
+                            else
+                            {
+                                keys = new KeyValuePair<JsonEncodedText, Jwk[]>[2]
+                                {
+                                    new KeyValuePair<JsonEncodedText, Jwk[]>(key1.Kid, new[] { key1, key3 }),
+                                    new KeyValuePair<JsonEncodedText, Jwk[]>(key2.Kid, new[] { key2 })
+                                };
+                            }
+                        }
+                        else
+                        {
+                            if (key1.Kid.EncodedUtf8Bytes.IsEmpty)
+                            {
+                                keys = new KeyValuePair<JsonEncodedText, Jwk[]>[2]
+                                {
+                                    new KeyValuePair<JsonEncodedText, Jwk[]>(key2.Kid, new[] { key2, key1 }),
+                                    new KeyValuePair<JsonEncodedText, Jwk[]>(key3.Kid, new[] { key3, key1 })
+                                };
+                            }
+                            else if (key2.Kid.EncodedUtf8Bytes.IsEmpty)
+                            {
+                                keys = new KeyValuePair<JsonEncodedText, Jwk[]>[2]
+                                {
+                                    new KeyValuePair<JsonEncodedText, Jwk[]>(key1.Kid, new[] { key1, key2 }),
+                                    new KeyValuePair<JsonEncodedText, Jwk[]>(key3.Kid, new[] { key3, key2 })
+                                };
+                            }
+                            else if (key3.Kid.EncodedUtf8Bytes.IsEmpty)
+                            {
+                                keys = new KeyValuePair<JsonEncodedText, Jwk[]>[2]
+                                {
+                                    new KeyValuePair<JsonEncodedText, Jwk[]>(key1.Kid, new[] { key1, key3 }),
+                                    new KeyValuePair<JsonEncodedText, Jwk[]>(key2.Kid, new[] { key2, key3 })
+                                };
+                            }
+                            else
+                            {
+                                keys = new KeyValuePair<JsonEncodedText, Jwk[]>[3]
+                                {
+                                    new KeyValuePair<JsonEncodedText, Jwk[]>(key1.Kid, new[] { key1 }),
+                                    new KeyValuePair<JsonEncodedText, Jwk[]>(key2.Kid, new[] { key2 }),
+                                    new KeyValuePair<JsonEncodedText, Jwk[]>(key3.Kid, new[] { key3 })
+                                };
+                            }
+                        }
+                    }
+                }
+            }
+            else if (_keys.Count == 0)
+            {
+                keys = Array.Empty<KeyValuePair<JsonEncodedText, Jwk[]>>();
+            }
+            else
+            {
+                var unidentified = _keys.Where(jwk => jwk.Kid.EncodedUtf8Bytes.IsEmpty);
+                keys = _keys
+                        .GroupBy(k => k.Kid)
+                        .Where(k => !k.Key.EncodedUtf8Bytes.IsEmpty)
+                        .ToDictionary(k => k.Key, k => k.Concat(unidentified).ToArray())
+                        .ToArray();
+            }
+
+            return keys;
         }
 
-        /// <summary>
-        /// Gets the number of keys contained in the <see cref="Jwks"/>.
-        /// </summary>
+        /// <summary>Gets the number of keys contained in the <see cref="Jwks"/>.</summary>
         public int Count => _keys.Count;
 
-        /// <summary>
-        /// Gets the list of <see cref="Jwk"/> identified by the 'kid'.
-        /// </summary>
+        /// <summary>Gets the list of <see cref="Jwk"/> identified by the 'kid'.</summary>
         /// <param name="kid"></param>
         /// <returns></returns>
-        public Jwk[] GetKeys(string? kid)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public Jwk[] GetKeys(JwtElement kid)
         {
-            if (kid is null)
+            if (kid.IsEmpty)
             {
-                return _keyArray ??= _keys.ToArray();
+                return _keys.ToArray();
             }
 
-            if (IdentifiedKeys.TryGetValue(kid, out var jwks))
+            var keys = GetIdentifiedKeys();
+            for (int i = 0; i < keys.Length; i++)
             {
-                return jwks;
+                var key = keys[i];
+                if (kid.ValueEquals(key.Key.EncodedUtf8Bytes))
+                {
+                    return key.Value;
+                }
             }
 
-            return UnidentifiedKeys;
+            return Array.Empty<Jwk>();
         }
 
-        /// <summary>
-        /// Returns a new instance of <see cref="Jwks"/>.
-        /// </summary>
+        /// <summary>Returns a new instance of <see cref="Jwks"/>.</summary>
         /// <param name="json">a string that contains JSON Web Key parameters in JSON format.</param>
         /// <returns><see cref="Jwks"/></returns>
         public static Jwks FromJson(string json)
@@ -246,9 +445,7 @@ namespace JsonWebToken
             }
         }
 
-        /// <summary>
-        /// Returns a new instance of <see cref="Jwks"/>.
-        /// </summary>
+        /// <summary>Returns a new instance of <see cref="Jwks"/>.</summary>
         /// <param name="json">a string that contains JSON Web Key parameters in JSON format.</param>
         /// <returns><see cref="Jwks"/></returns>
         public static Jwks FromJson(ReadOnlySpan<byte> json)
@@ -268,7 +465,7 @@ namespace JsonWebToken
             {
                 while (reader.TokenType is JsonTokenType.PropertyName)
                 {
-                    var propertyName = reader.ValueSpan /* reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan */;
+                    var propertyName = reader.ValueSpan;
                     if (propertyName.Length == 4)
                     {
                         ref byte propertyNameRef = ref MemoryMarshal.GetReference(propertyName);
@@ -328,6 +525,18 @@ namespace JsonWebToken
             {
                 keys[i].Dispose();
             }
+        }
+
+        /// <inheritdoc/>
+        public IEnumerator<Jwk> GetEnumerator()
+        {
+            return ((IEnumerable<Jwk>)_keys).GetEnumerator();
+        }
+
+        /// <inheritdoc/>
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return ((IEnumerable)_keys).GetEnumerator();
         }
     }
 }

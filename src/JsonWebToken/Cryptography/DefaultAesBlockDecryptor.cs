@@ -4,7 +4,7 @@
 using System;
 using System.Security.Cryptography;
 
-namespace JsonWebToken
+namespace JsonWebToken.Cryptography
 {
     internal sealed class DefaultAesBlockDecryptor : AesBlockDecryptor
     {
@@ -31,7 +31,6 @@ namespace JsonWebToken
         {
             var block = _decryptor.TransformFinalBlock(ciphertext.ToArray(), 0, 16);
             block.CopyTo(plaintext);
-
         }
 
         public override void Dispose()

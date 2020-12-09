@@ -1,5 +1,4 @@
-﻿using System;
-using JsonWebToken.Internal;
+﻿using JsonWebToken.Cryptography;
 using Xunit;
 
 namespace JsonWebToken.Tests.Cryptography
@@ -188,10 +187,10 @@ namespace JsonWebToken.Tests.Cryptography
             VerifyEmptySpan("000000000000000000000000000000000000000000000000".HexToByteArray(), "00000000000000000000000000000000".HexToByteArray());
         }
 
-        protected override AesDecryptor CreateDecryptor()
-            => new AesCbcDecryptor(EncryptionAlgorithm.Aes192CbcHmacSha384);
+        private protected override AesDecryptor CreateDecryptor()
+            => new AesCbcDecryptor(EncryptionAlgorithm.A192CbcHS384);
 
-        protected override AesEncryptor CreateEncryptor()
-            => new AesCbcEncryptor(EncryptionAlgorithm.Aes192CbcHmacSha384);
+        private protected override AesEncryptor CreateEncryptor()
+            => new AesCbcEncryptor(EncryptionAlgorithm.A192CbcHS384);
     }
 }

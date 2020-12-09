@@ -14,7 +14,11 @@ namespace JsonWebToken.Tests
             var properties = type.GetFields(BindingFlags.Public | BindingFlags.Static).Where(p => p.FieldType == typeof(T));
             foreach (var item in properties)
             {
-                yield return new object[] { item.GetValue(null) };
+                var obsolete = item.GetCustomAttribute<ObsoleteAttribute>();
+                if (obsolete is null)
+                {
+                    yield return new object[] { item.GetValue(null) };
+                }
             }
         }
 

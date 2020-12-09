@@ -4,6 +4,8 @@
 #if !SUPPORT_ELLIPTIC_CURVE
 using System;
 using System.Buffers;
+using System.Text.Json;
+using JsonWebToken.Cryptography;
 
 namespace JsonWebToken
 {
@@ -13,7 +15,10 @@ namespace JsonWebToken
     public sealed class ECJwk : AsymmetricJwk
     {
         /// <inheritsdoc />
-        public override ReadOnlySpan<byte> Kty => throw new NotImplementedException();
+        public override bool HasPrivateKey => throw new NotImplementedException();
+
+        /// <inheritsdoc />
+        public override JsonEncodedText Kty => throw new NotImplementedException();
 
         /// <inheritsdoc />
         public override int KeySizeInBits => throw new NotImplementedException();
@@ -22,7 +27,6 @@ namespace JsonWebToken
         public override ReadOnlySpan<byte> AsSpan() => throw new NotImplementedException();
 
         /// <inheritsdoc />
-        public override bool Equals(Jwk? other) => throw new NotImplementedException();
 
         /// <inheritsdoc />
         public override bool SupportSignature(SignatureAlgorithm algorithm) => throw new NotImplementedException();
@@ -33,8 +37,11 @@ namespace JsonWebToken
         /// <inheritsdoc />
         public override bool SupportEncryption(EncryptionAlgorithm algorithm) => throw new NotImplementedException();
 
-        /// <inheritsdoc />
-        protected override void Canonicalize(IBufferWriter<byte> bufferWriter) => throw new NotImplementedException();
+        /// <inheritdoc />
+        protected internal override void Canonicalize(Span<byte> buffer) => throw new NotImplementedException();
+
+        /// <inheritdoc />
+        protected internal override int GetCanonicalizeSize() => throw new NotImplementedException();  
 
         /// <inheritsdoc />
         protected override KeyUnwrapper CreateKeyUnwrapper(EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm algorithm) => throw new NotImplementedException();
@@ -43,7 +50,10 @@ namespace JsonWebToken
         protected override KeyWrapper CreateKeyWrapper(EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm algorithm) => throw new NotImplementedException();
 
         /// <inheritsdoc />
-        protected override Signer CreateSigner(SignatureAlgorithm algorithm) => throw new NotImplementedException();
+        protected override Signer CreateSigner(SignatureAlgorithm algorithm) => throw new NotImplementedException();    
+ 
+        /// <inheritsdoc />
+        protected override SignatureVerifier CreateSignatureVerifier(SignatureAlgorithm algorithm) => throw new NotImplementedException();    
     }
 }
 #endif

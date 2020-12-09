@@ -8,7 +8,7 @@ using System.Runtime.InteropServices;
 using System.Runtime.Intrinsics;
 using System.Runtime.Intrinsics.X86;
 
-namespace JsonWebToken.Internal
+namespace JsonWebToken.Cryptography
 {
     internal readonly struct Aes256DecryptionKeys
     {
@@ -34,7 +34,7 @@ namespace JsonWebToken.Internal
         {
             if (key.Length < 32)
             {
-                ThrowHelper.ThrowArgumentOutOfRangeException_EncryptionKeyTooSmall(EncryptionAlgorithm.Aes256CbcHmacSha512, 256, key.Length * 8);
+                ThrowHelper.ThrowArgumentOutOfRangeException_EncryptionKeyTooSmall(EncryptionAlgorithm.A256CbcHS512, 256, key.Length * 8);
             }
 
             ref var keyRef = ref MemoryMarshal.GetReference(key);

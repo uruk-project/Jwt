@@ -6,7 +6,7 @@ using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
-namespace JsonWebToken.Internal
+namespace JsonWebToken.Cryptography
 {
     /// <summary>
     /// Provides AES key wrapping services.
@@ -21,24 +21,25 @@ namespace JsonWebToken.Internal
         private readonly AesBlockEncryptor _encryptor;
         private bool _disposed;
 
-        public AesKeyWrapper(SymmetricJwk key, EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm algorithm)
-            : base(key, encryptionAlgorithm, algorithm)
+        public AesKeyWrapper(ReadOnlySpan<byte> key, EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm algorithm)
+            : base(encryptionAlgorithm, algorithm)
         {
+            Debug.Assert(SymmetricJwk.SupportedKeyManagement(key.Length << 3, algorithm));
             Debug.Assert(algorithm.Category == AlgorithmCategory.Aes);
 #if SUPPORT_SIMD
             if (System.Runtime.Intrinsics.X86.Aes.IsSupported && EncryptionAlgorithm.EnabledAesInstructionSet)
             {
-                if (algorithm == KeyManagementAlgorithm.Aes128KW)
+                if (algorithm == KeyManagementAlgorithm.A128KW)
                 {
-                    _encryptor = new Aes128BlockEncryptor(key.K);
+                    _encryptor = new Aes128BlockEncryptor(key);
                 }
-                else if (algorithm == KeyManagementAlgorithm.Aes256KW)
+                else if (algorithm == KeyManagementAlgorithm.A256KW)
                 {
-                    _encryptor = new Aes256BlockEncryptor(key.K);
+                    _encryptor = new Aes256BlockEncryptor(key);
                 }
-                else if (algorithm == KeyManagementAlgorithm.Aes192KW)
+                else if (algorithm == KeyManagementAlgorithm.A192KW)
                 {
-                    _encryptor = new Aes192BlockEncryptor(key.K);
+                    _encryptor = new Aes192BlockEncryptor(key);
                 }
                 else
                 {
@@ -48,10 +49,10 @@ namespace JsonWebToken.Internal
             }
             else
             {
-                _encryptor= new DefaultAesBlockEncryptor(key.K);
+                _encryptor = new DefaultAesBlockEncryptor(key);
             }
 #else
-            _encryptor = new DefaultAesBlockEncryptor(key.K);
+            _encryptor = new DefaultAesBlockEncryptor(key);
 #endif
         }
 
@@ -67,20 +68,15 @@ namespace JsonWebToken.Internal
                 _disposed = true;
             }
         }
-
+        
         /// <summary>
         /// Wrap a key using AES encryption.
         /// </summary>
         /// <param name="staticKey">the key to be wrapped. If <c>null</c>, a new <see cref="SymmetricJwk"/> will be generated.</param>
         /// <param name="header"></param>
         /// <param name="destination"></param>
-        public override SymmetricJwk WrapKey(Jwk? staticKey, JwtObject header, Span<byte> destination)
+        public override SymmetricJwk WrapKey(Jwk? staticKey, JwtHeader header, Span<byte> destination)
         {
-            if (_disposed)
-            {
-                ThrowHelper.ThrowObjectDisposedException(GetType());
-            }
-
             if (destination.Length < GetKeyWrapSize())
             {
                 ThrowHelper.ThrowArgumentException_DestinationTooSmall(destination.Length, GetKeyWrapSize());

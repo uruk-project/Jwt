@@ -2,22 +2,47 @@
 using System.Collections.Generic;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
+using System.Text.Json;
 using Xunit;
 
 namespace JsonWebToken.Tests
 {
     public class JsonWebKeyTests
     {
+        [Fact]
+        public void GetKeys_Empty_Default()
+        {
+            var jwks = new Jwks();
+            var noKeys = jwks.GetKeys(default);
+
+            Assert.Empty(noKeys);
+        }
+        
+        [Fact]
+        public void GetKeys_Full_Default()
+        {
+            var jwks = new Jwks
+            { 
+                SymmetricJwk.GenerateKey(SignatureAlgorithm.HS256, computeThumbprint: false),
+                SymmetricJwk.GenerateKey(SignatureAlgorithm.HS256, computeThumbprint: false),
+                SymmetricJwk.GenerateKey(SignatureAlgorithm.HS256, computeThumbprint: false),
+                SymmetricJwk.GenerateKey(SignatureAlgorithm.HS256, computeThumbprint: true),
+            };
+            var allKeys = jwks.GetKeys(default);
+
+            Assert.Equal(4, allKeys.Length);
+        }
+
         [Theory]
         [MemberData(nameof(GetJsonKeys))]
-        public void CreateFromJson(string json, string kid, string alg)
+        public void CreateFromJson(string json, JsonEncodedText kid, JsonEncodedText alg)
         {
             var jwk = Jwk.FromJson(json);
 
             Assert.Equal(jwk.Kid, kid);
-            if (!(jwk.Alg.IsEmpty))
+            if (!(jwk.Alg.EncodedUtf8Bytes.IsEmpty))
             {
-                Assert.Equal(Encoding.UTF8.GetString(jwk.Alg), alg);
+                Assert.Equal(jwk.Alg, alg);
             }
         }
 
@@ -34,9 +59,9 @@ namespace JsonWebToken.Tests
         public static IEnumerable<object[]> GetJsonKeys()
         {
             var fixture = new KeyFixture();
-            foreach (var key in fixture.Jwks.GetKeys(null))
+            foreach (var key in fixture.Jwks)
             {
-                yield return new object[] { key.ToString(), key.Kid, Encoding.UTF8.GetString(key.Alg.ToArray() ?? new byte[0]) };
+                yield return new object[] { key.ToString(), key.Kid, key.Alg };
             }
         }
 
@@ -49,15 +74,14 @@ namespace JsonWebToken.Tests
         public void Thumbprint()
         {
             // https://tools.ietf.org/html/rfc7638#section-3.1
-            var key = new RsaJwk
+            var key = RsaJwk.FromBase64Url
             (
                 e: "AQAB",
                 n: "0vx7agoebGcQSuuPiLJXZptN9nndrQmbXEps2aiAFbWhM78LhWx4cbbfAAtVT86zwu1RK7aPFFxuhDR1L6tSoc_BJECPebWKRXjBZCiFV4n3oknjhMstn64tZ_2W-5JsGY4Hc5n9yBXArwl93lqt7_RN5w6Cf0h4QyQ5v-65YGjQR0_FDW2QvzqY368QQMicAtaSqzs8KJZgnYb9c7d0zgdAZHzu6qMQvRL5hajrn1n91CbOpbISD08qNLyrdkt-bFTWhAI4vMQFh6WeZu0fM4lFd2NcRwr3XPksINHaQ-G_xBniIqbw0Ls1jF44-csFCur-kEgU8awapJzKnqDKgw",
-                alg: SignatureAlgorithm.RsaSha256
-            )
-            {
-                Kid = "2011-04-29"
-            };
+                alg: SignatureAlgorithm.RS256
+            );
+            Assert.Equal("NzbLsXh8uDCcd-6MNwXF4W_7noWXFZAfHkxZsRGC9Xs", key.Kid.ToString());
+            key.Kid = JsonEncodedText.Encode("2011-04-29");
 
             var thumbprint = key.ComputeThumbprint();
 

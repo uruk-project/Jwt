@@ -1,14 +1,15 @@
 ﻿using System;
 using Xunit;
+using JsonWebToken.Cryptography;
 
 namespace JsonWebToken.Tests.Cryptography
 {
     // Test data set from https://csrc.nist.gov/CSRC/media/Projects/Cryptographic-Algorithm-Validation-Program/documents/aes/AESAVS.pdf
     public abstract class AesTests
     {
-        protected abstract AesEncryptor CreateEncryptor();
+        private protected abstract AesEncryptor CreateEncryptor();
 
-        protected abstract AesDecryptor CreateDecryptor();
+        private protected abstract AesDecryptor CreateDecryptor();
 
         protected void VerifyGfsBoxKat(ReadOnlySpan<byte> plaintext, ReadOnlySpan<byte> expectedCiphertext, ReadOnlySpan<byte> key)
         {

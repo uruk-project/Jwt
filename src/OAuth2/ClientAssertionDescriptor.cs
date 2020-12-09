@@ -1,8 +1,6 @@
 ﻿// Copyright (c) 2020 Yann Crumeyrolle. All rights reserved.
 // Licensed under the MIT license. See LICENSE in the project root for license information.
 
-using JsonWebToken.Internal;
-
 namespace JsonWebToken
 {
     /// <summary>
@@ -10,34 +8,19 @@ namespace JsonWebToken
     /// </summary>
     public sealed class ClientAssertionDescriptor : JwsDescriptor
     {
-        public ClientAssertionDescriptor()
-            : base()
-        {
-        }
-
-        public ClientAssertionDescriptor(JwtObject payload)
-            : base(new JwtObject(), payload)
-        {
-        }
-
-        public ClientAssertionDescriptor(JwtObject header, JwtObject payload)
-            : base(header, payload)
+        public ClientAssertionDescriptor(SignatureAlgorithm alg, Jwk signingKey)
+            : base(signingKey, alg)
         {
         }
 
         public override void Validate()
         {
-            if (Key is null)
-            {
-                throw new JwtDescriptorException("No key is defined.");
-            }
-
             base.Validate();
 
-            RequireClaim(Claims.IssUtf8, JwtTokenType.String);
-            RequireClaim(Claims.SubUtf8, JwtTokenType.String);
-            ValidateClaim(Claims.AudUtf8, new[] { JwtTokenType.String, JwtTokenType.Array });
-            RequireClaim(Claims.ExpUtf8, JwtTokenType.Integer);
+            CheckRequiredClaimAsString(JwtClaimNames.Iss);
+            CheckRequiredClaimAsString(JwtClaimNames.Sub);
+            CheckRequiredClaimAsStringOrArray(JwtClaimNames.Aud);
+            CheckRequiredClaimAsInteger(JwtClaimNames.Exp);
         }
     }
 }

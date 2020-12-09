@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Text;
-using JsonWebToken.Internal;
 using Xunit;
+using JsonWebToken.Cryptography;
 
 namespace JsonWebToken.Tests
 {
@@ -16,9 +16,9 @@ namespace JsonWebToken.Tests
             var plaintext = new Span<byte>(new byte[data.Length]);
             var key = SymmetricJwk.GenerateKey(256);
             var nonce = new byte[] { 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1 };
-            var encryptor = new AesCbcHmacEncryptor(EncryptionAlgorithm.Aes128CbcHmacSha256, new AesCbcEncryptor(EncryptionAlgorithm.Aes128CbcHmacSha256));
+            var encryptor = new AesCbcHmacEncryptor(EncryptionAlgorithm.A128CbcHS256, new AesCbcEncryptor(EncryptionAlgorithm.A128CbcHS256));
             encryptor.Encrypt(key.AsSpan(), data, nonce, nonce, ciphertext, authenticationTag, out int tagSize);
-            var decryptor = new AesCbcHmacDecryptor(EncryptionAlgorithm.Aes128CbcHmacSha256);
+            var decryptor = new AesCbcHmacDecryptor(EncryptionAlgorithm.A128CbcHS256);
             bool decrypted = decryptor.TryDecrypt(key.K, ciphertext, nonce, nonce, authenticationTag.Slice(0, tagSize), plaintext, out int bytesWritten);
             Assert.True(decrypted);
             Assert.Equal(16, tagSize);
@@ -33,9 +33,9 @@ namespace JsonWebToken.Tests
             var plaintext = new Span<byte>(new byte[data.Length]);
             var key = SymmetricJwk.GenerateKey(256);
             var nonce = new byte[] { 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1 };
-            var encryptor = new AesCbcHmacEncryptor(EncryptionAlgorithm.Aes128CbcHmacSha256, new AesCbcEncryptor(EncryptionAlgorithm.Aes128CbcHmacSha256));
+            var encryptor = new AesCbcHmacEncryptor(EncryptionAlgorithm.A128CbcHS256, new AesCbcEncryptor(EncryptionAlgorithm.A128CbcHS256));
             encryptor.Encrypt(key.AsSpan(), data, nonce, nonce, ciphertext, authenticationTag, out int tagSize);
-            var decryptor = new AesCbcHmacDecryptor(EncryptionAlgorithm.Aes128CbcHmacSha256);
+            var decryptor = new AesCbcHmacDecryptor(EncryptionAlgorithm.A128CbcHS256);
             bool decrypted = decryptor.TryDecrypt(key.K, ciphertext, nonce, nonce, authenticationTag.Slice(0, tagSize), plaintext, out int bytesWritten);
             Assert.True(decrypted);
             Assert.Equal(16, tagSize);
@@ -70,16 +70,16 @@ namespace JsonWebToken.Tests
                 var ciphertext = new Span<byte>(new byte[(data.Length + 16) & ~15]);
                 var authenticationTag = new Span<byte>(new byte[32]);
                 var plaintext = new Span<byte>(new byte[ciphertext.Length]);
-                var key = new SymmetricJwk(Encoding.UTF8.GetBytes("ThisIsA128bitKey" + "ThisIsA128bitKey"));
+                var key = SymmetricJwk.FromByteArray(Encoding.UTF8.GetBytes("ThisIsA128bitKey" + "ThisIsA128bitKey"));
                 var nonce = Encoding.UTF8.GetBytes("ThisIsAnInitVect");
-                var encryptorNi = new AesCbcHmacEncryptor(EncryptionAlgorithm.Aes128CbcHmacSha256, new Aes128CbcEncryptor());
+                var encryptorNi = new AesCbcHmacEncryptor(EncryptionAlgorithm.A128CbcHS256, new Aes128CbcEncryptor());
                 encryptorNi.Encrypt(key.K, data, nonce, nonce, ciphertext, authenticationTag, out int tagSize);
-                var decryptor = new AesCbcHmacDecryptor(EncryptionAlgorithm.Aes128CbcHmacSha256);
+                var decryptor = new AesCbcHmacDecryptor(EncryptionAlgorithm.A128CbcHS256);
                 bool decrypted = decryptor.TryDecrypt(key.K, ciphertext, nonce, nonce, authenticationTag.Slice(0, tagSize), plaintext, out int bytesWritten);
                 Assert.True(decrypted, "decrypted");
                 Assert.Equal(data, plaintext.Slice(0, bytesWritten).ToArray());
 
-                var decryptorNi = new AesCbcHmacDecryptor(EncryptionAlgorithm.Aes128CbcHmacSha256, new Aes128CbcDecryptor());
+                var decryptorNi = new AesCbcHmacDecryptor(EncryptionAlgorithm.A128CbcHS256, new Aes128CbcDecryptor());
                 plaintext.Clear();
                 decrypted = decryptorNi.TryDecrypt(key.K, ciphertext, nonce, nonce, authenticationTag.Slice(0, tagSize), plaintext, out bytesWritten);
                 Assert.True(decrypted, "decrypted NI");
@@ -126,7 +126,7 @@ namespace JsonWebToken.Tests
 
             var t = new byte[] { 0x65, 0x2c, 0x3f, 0xa3, 0x6b, 0x0a, 0x7c, 0x5b, 0x32, 0x19, 0xfa, 0xb3, 0xa3, 0x0b, 0xc1, 0xc4 };
 
-            var encryptor = new AesCbcHmacEncryptor(EncryptionAlgorithm.Aes128CbcHmacSha256, new AesCbcEncryptor(EncryptionAlgorithm.Aes128CbcHmacSha256));
+            var encryptor = new AesCbcHmacEncryptor(EncryptionAlgorithm.A128CbcHS256, new AesCbcEncryptor(EncryptionAlgorithm.A128CbcHS256));
 
             var ciphertext = new byte[encryptor.GetCiphertextSize(p.Length)];
             var authenticationTag = new byte[encryptor.GetTagSize()];
@@ -142,12 +142,16 @@ namespace JsonWebToken.Tests
             Jwk encryptionKey = SymmetricJwk.FromBase64Url("GawgguFyGrWKav7AX4VKUg");
             string token = "eyJhbGciOiJBMTI4S1ciLCJlbmMiOiJBMTI4Q0JDLUhTMjU2In0.6KB707dM9YTIgHtLvtgWQ8mKwboJW3of9locizkDTHzBC2IlrT1oOQ.AxY8DCtDaGlsbGljb3RoZQ.KDlTtXchhZTGufMYmOYGS4HffxPSUrfmqCHXaI9wOGY.U0m_YmjN04DJvceFICbCVQ";
 
-            JwtReader jwtReader = new JwtReader(encryptionKey);
+            var policy = new TokenValidationPolicyBuilder()
+                .WithDecryptionKey(encryptionKey)
+                .IgnoreSignatureByDefault()
+                .Build();
 
-            var result = jwtReader.TryReadToken(token, TokenValidationPolicy.NoValidation);
+            var result = Jwt.TryParse(token, policy, out var jwt);
 
-            Assert.True(result.Succedeed);
-            Assert.Equal("Live long and prosper.", result.Token.Plaintext);
+            Assert.True(result);
+            Assert.Equal("Live long and prosper.", jwt.Plaintext);
+            jwt.Dispose();
         }
     }
 }

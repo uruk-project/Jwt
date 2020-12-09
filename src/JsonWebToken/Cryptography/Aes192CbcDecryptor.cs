@@ -8,7 +8,7 @@ using System.Runtime.InteropServices;
 using System.Runtime.Intrinsics;
 using System.Runtime.Intrinsics.X86;
 
-namespace JsonWebToken.Internal
+namespace JsonWebToken.Cryptography
 {
     internal sealed class Aes192CbcDecryptor : AesDecryptor
     {
@@ -27,7 +27,7 @@ namespace JsonWebToken.Internal
                 var feedback = nonce.AsVector128<byte>();
                 ref byte inputEnd = ref Unsafe.AddByteOffset(ref input, (IntPtr)ciphertext.Length - BlockSize + 1);
 
-                var keys = new AesDecryption192Keys(key);
+                var keys = new Aes192DecryptionKeys(key);
                 try
                 {
                     while (Unsafe.IsAddressLessThan(ref input, ref inputEnd))

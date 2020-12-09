@@ -6,7 +6,7 @@ using System.Buffers;
 using System.Buffers.Binary;
 using System.Diagnostics;
 
-namespace JsonWebToken.Internal
+namespace JsonWebToken.Cryptography
 {
     /// <summary>
     /// Provides authenticated encryption and decryption for AES CBC HMAC algorithm.
@@ -29,7 +29,7 @@ namespace JsonWebToken.Internal
             Debug.Assert(decryptor != null);
 
             _encryptionAlgorithm = encryptionAlgorithm;
-            _decryptor = decryptor!;
+            _decryptor = decryptor;
         }
 
         /// <summary>
@@ -95,7 +95,7 @@ namespace JsonWebToken.Internal
                 ciphertext.CopyTo(bytes);
                 bytes = bytes.Slice(ciphertext.Length);
                 BinaryPrimitives.WriteInt64BigEndian(bytes, associatedData.Length << 3);
-               
+
                 Sha2 hashAlgorithm = _encryptionAlgorithm.SignatureAlgorithm.Sha;
                 Span<byte> hmacKey = stackalloc byte[hashAlgorithm.BlockSize * 2];
                 Hmac hmac = new Hmac(hashAlgorithm, key, hmacKey);

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using JsonWebToken.Internal;
 using Xunit;
+using JsonWebToken.Cryptography;
 
 namespace JsonWebToken.Tests
 {
@@ -14,26 +14,18 @@ namespace JsonWebToken.Tests
             var cek = WrapKey(wrapper, keyToWrap, out var header);
 
             Assert.Equal(0, header.Count);
-            Assert.Equal(keyEncryptionKey, cek);
+            Assert.True(keyEncryptionKey.K.SequenceEqual(((SymmetricJwk)cek).K));
             return cek;
-        }
-
-        [Theory]
-        [MemberData(nameof(GetAesWrappingAlgorithms))]
-        public void TryWrapKey_WithStaticKey_Throws(EncryptionAlgorithm enc, KeyManagementAlgorithm alg)
-        {
-            var contentEncryptionKey = SymmetricJwk.GenerateKey(enc.RequiredKeySizeInBits);
-            Assert.Throws<ArgumentException>(() => TryWrapKey_Success(contentEncryptionKey, enc, alg));
         }
 
         public static IEnumerable<object[]> GetAesWrappingAlgorithms()
         {
-            yield return new object[] { EncryptionAlgorithm.Aes128CbcHmacSha256, KeyManagementAlgorithm.Direct };
-            yield return new object[] { EncryptionAlgorithm.Aes192CbcHmacSha384, KeyManagementAlgorithm.Direct };
-            yield return new object[] { EncryptionAlgorithm.Aes256CbcHmacSha512, KeyManagementAlgorithm.Direct };
-            yield return new object[] { EncryptionAlgorithm.Aes128Gcm, KeyManagementAlgorithm.Direct };
-            yield return new object[] { EncryptionAlgorithm.Aes192Gcm, KeyManagementAlgorithm.Direct };
-            yield return new object[] { EncryptionAlgorithm.Aes256Gcm, KeyManagementAlgorithm.Direct };
+            yield return new object[] { EncryptionAlgorithm.A128CbcHS256, KeyManagementAlgorithm.Dir };
+            yield return new object[] { EncryptionAlgorithm.A192CbcHS384, KeyManagementAlgorithm.Dir };
+            yield return new object[] { EncryptionAlgorithm.A256CbcHS512, KeyManagementAlgorithm.Dir };
+            yield return new object[] { EncryptionAlgorithm.A128Gcm, KeyManagementAlgorithm.Dir };
+            yield return new object[] { EncryptionAlgorithm.A192Gcm, KeyManagementAlgorithm.Dir };
+            yield return new object[] { EncryptionAlgorithm.A256Gcm, KeyManagementAlgorithm.Dir };
         }
 
         [Theory]

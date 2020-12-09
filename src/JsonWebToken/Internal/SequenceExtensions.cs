@@ -4,7 +4,7 @@
 using System;
 using System.Buffers;
 
-namespace JsonWebToken.Internal
+namespace JsonWebToken
 {
     /// <summary>
     /// Provides extension methods for <see cref="ReadOnlySequence{T}"/>.

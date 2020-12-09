@@ -28,7 +28,7 @@ namespace JsonWebToken.Performance
         public static readonly JwtSecurityTokenHandler Handler = new JwtSecurityTokenHandler();
         public static readonly JsonWebTokenHandler Handler2 = new JsonWebTokenHandler();
 
-        public static readonly SigningCredentials signingCredentials = new SigningCredentials(JsonWebKey.Create(Tokens.SigningKey.ToString()), Tokens.SigningKey.SignatureAlgorithm!.Name);
+        public static readonly SigningCredentials signingCredentials = new SigningCredentials(JsonWebKey.Create(Tokens.SigningKey.ToString()), Tokens.SigningKey.SignatureAlgorithm!.Name.ToString());
         public static readonly EncryptingCredentials encryptingCredentials = new EncryptingCredentials(new SymmetricSecurityKey(Tokens.EncryptionKey.ToArray()), "A128KW", "A128CBC-HS256");
 
         public static readonly JwtWriter Writer = new JwtWriter() { EnableHeaderCaching = true };
@@ -186,10 +186,7 @@ namespace JsonWebToken.Performance
             var descriptors = new Dictionary<string, JwtDescriptor>();
             foreach (var payload in Tokens.Payloads)
             {
-                var descriptor = new JwsDescriptor()
-                {
-                    Algorithm = SignatureAlgorithm.None
-                };
+                var descriptor = new JwsDescriptor(SigningKey, SignatureAlgorithm.HS256);
 
                 foreach (var property in payload.Value.Properties())
                 {
@@ -198,23 +195,20 @@ namespace JsonWebToken.Performance
                         case "iat":
                         case "nbf":
                         case "exp":
-                            descriptor.AddClaim(property.Name, EpochTime.DateTime((long)property.Value));
+                            descriptor.Payload!.Add(property.Name, (long)property.Value);
                             break;
                         default:
-                            descriptor.AddClaim(property.Name, (string)property.Value);
+                            descriptor.Payload!.Add(property.Name, (string)property.Value);
                             break;
                     }
                 }
 
-                descriptors.Add("JWT " + (payload.Key == "0" ? "" : payload.Key) + "6 claims", descriptor);
+                descriptors.Add("JWT " + payload.Key + "6 claims", descriptor);
             }
 
             foreach (var payload in Tokens.Payloads)
             {
-                var descriptor = new JwsDescriptor()
-                {
-                    SigningKey = SigningKey
-                };
+                var descriptor = new JwsDescriptor(SigningKey, SignatureAlgorithm.HS256);
 
                 foreach (var property in payload.Value.Properties())
                 {
@@ -223,23 +217,20 @@ namespace JsonWebToken.Performance
                         case "iat":
                         case "nbf":
                         case "exp":
-                            descriptor.AddClaim(property.Name, EpochTime.DateTime((long)property.Value));
+                            descriptor.Payload!.Add(property.Name, (long)property.Value);
                             break;
                         default:
-                            descriptor.AddClaim(property.Name, (string)property.Value);
+                            descriptor.Payload!.Add(property.Name, (string)property.Value);
                             break;
                     }
                 }
 
-                descriptors.Add("JWS " + (payload.Key == "0" ? "" : payload.Key) + "6 claims", descriptor);
+                descriptors.Add("JWS " + payload.Key + "6 claims", descriptor);
             }
 
             foreach (var payload in Tokens.Payloads)
             {
-                var descriptor = new JwsDescriptor()
-                {
-                    SigningKey = SigningKey
-                };
+                var descriptor = new JwsDescriptor(SigningKey, SignatureAlgorithm.HS256);
 
                 foreach (var property in payload.Value.Properties())
                 {
@@ -248,31 +239,26 @@ namespace JsonWebToken.Performance
                         case "iat":
                         case "nbf":
                         case "exp":
-                            descriptor.AddClaim(property.Name, Microsoft.IdentityModel.Tokens.EpochTime.DateTime((long)property.Value));
+                            descriptor.Payload!.Add(property.Name, (long)property.Value);
                             break;
                         default:
-                            descriptor.AddClaim(property.Name, (string)property.Value);
+                            descriptor.Payload!.Add(property.Name, (string)property.Value);
                             break;
                     }
                 }
 
-                var jwe = new JweDescriptor
+                var jwe = new JweDescriptor(EncryptionKey, KeyManagementAlgorithm.A128KW, EncryptionAlgorithm.A128CbcHS256)
                 {
                     Payload = descriptor,
-                    EncryptionKey = EncryptionKey,
-                    EncryptionAlgorithm = EncryptionAlgorithm.Aes128CbcHmacSha256
                 };
 
-                descriptors.Add("JWE " + (payload.Key == "0" ? "" : payload.Key) + "6 claims", jwe);
+                descriptors.Add("JWE " + payload.Key + "6 claims", jwe);
 
-                var jwc = new JweDescriptor
+                var jwec = new JweDescriptor(EncryptionKey, KeyManagementAlgorithm.A128KW, EncryptionAlgorithm.A128CbcHS256, CompressionAlgorithm.Def)
                 {
-                    Payload = descriptor,
-                    EncryptionKey = EncryptionKey,
-                    EncryptionAlgorithm = EncryptionAlgorithm.Aes128CbcHmacSha256,
-                    CompressionAlgorithm = CompressionAlgorithm.Deflate
+                    Payload = descriptor
                 };
-                descriptors.Add("JWE DEF " + (payload.Key == "0" ? "" : payload.Key) + "6 claims", jwc);
+                descriptors.Add("JWE DEF " + payload.Key + "6 claims", jwec);
             }
 
             return descriptors;
@@ -285,10 +271,9 @@ namespace JsonWebToken.Performance
             {
                 var descriptor = new SecurityTokenDescriptor()
                 {
-                    //SigningCredentials = new SigningCredentials(WilsonSharedKey, SigningKey.Alg),
                     Subject = new ClaimsIdentity(),
-                    Expires = payload.Value.TryGetValue("exp", out var _) ? EpochTime.DateTime(payload.Value.Value<long>("exp")) : default(DateTime?),
-                    IssuedAt = payload.Value.TryGetValue("iat", out var _) ? EpochTime.DateTime(payload.Value.Value<long>("iat")) : default(DateTime?),
+                    Expires = payload.Value.TryGetValue("exp", out var _) ? EpochTime.ToDateTime(payload.Value.Value<long>("exp")) : default(DateTime?),
+                    IssuedAt = payload.Value.TryGetValue("iat", out var _) ? EpochTime.ToDateTime(payload.Value.Value<long>("iat")) : default(DateTime?),
                 };
 
                 foreach (var property in payload.Value.Properties())
@@ -305,17 +290,17 @@ namespace JsonWebToken.Performance
                     }
                 }
 
-                descriptors.Add("JWT " + (payload.Key == "0" ? "" : payload.Key) + "6 claims", descriptor);
+                descriptors.Add("JWT " + payload.Key + "6 claims", descriptor);
             }
 
             foreach (var payload in Tokens.Payloads)
             {
                 var descriptor = new SecurityTokenDescriptor()
                 {
-                    SigningCredentials = new SigningCredentials(WilsonSharedKey, SigningKey.SignatureAlgorithm!.Name),
+                    SigningCredentials = new SigningCredentials(WilsonSharedKey, SigningKey.SignatureAlgorithm!.Name.ToString()),
                     Subject = new ClaimsIdentity(),
-                    Expires = payload.Value.TryGetValue("exp", out var _) ? EpochTime.DateTime(payload.Value.Value<long>("exp")) : default(DateTime?),
-                    IssuedAt = payload.Value.TryGetValue("iat", out var _) ? EpochTime.DateTime(payload.Value.Value<long>("iat")) : default(DateTime?),
+                    Expires = payload.Value.TryGetValue("exp", out var _) ? EpochTime.ToDateTime(payload.Value.Value<long>("exp")) : default(DateTime?),
+                    IssuedAt = payload.Value.TryGetValue("iat", out var _) ? EpochTime.ToDateTime(payload.Value.Value<long>("iat")) : default(DateTime?),
                 };
 
                 foreach (var property in payload.Value.Properties())
@@ -332,18 +317,18 @@ namespace JsonWebToken.Performance
                     }
                 }
 
-                descriptors.Add("JWS " + (payload.Key == "0" ? "" : payload.Key) + "6 claims", descriptor);
+                descriptors.Add("JWS " + payload.Key + "6 claims", descriptor);
             }
 
             foreach (var payload in Tokens.Payloads)
             {
                 var descriptor = new SecurityTokenDescriptor()
                 {
-                    SigningCredentials = new SigningCredentials(WilsonSharedKey, SigningKey.SignatureAlgorithm!.Name),
-                    EncryptingCredentials = new EncryptingCredentials(new SymmetricSecurityKey(EncryptionKey.K.ToArray()), KeyManagementAlgorithm.Aes128KW.Name, EncryptionAlgorithm.Aes128CbcHmacSha256.Name),
+                    SigningCredentials = new SigningCredentials(WilsonSharedKey, SigningKey.SignatureAlgorithm!.Name.ToString()),
+                    EncryptingCredentials = new EncryptingCredentials(new SymmetricSecurityKey(EncryptionKey.K.ToArray()), KeyManagementAlgorithm.A128KW.Name.ToString(), EncryptionAlgorithm.A128CbcHS256.Name.ToString()),
                     Subject = new ClaimsIdentity(),
-                    Expires = payload.Value.TryGetValue("exp", out var _) ? EpochTime.DateTime(payload.Value.Value<long>("exp")) : default(DateTime?),
-                    IssuedAt = payload.Value.TryGetValue("iat", out var _) ? EpochTime.DateTime(payload.Value.Value<long>("iat")) : default(DateTime?),
+                    Expires = payload.Value.TryGetValue("exp", out var _) ? EpochTime.ToDateTime(payload.Value.Value<long>("exp")) : default(DateTime?),
+                    IssuedAt = payload.Value.TryGetValue("iat", out var _) ? EpochTime.ToDateTime(payload.Value.Value<long>("iat")) : default(DateTime?),
                 };
 
                 foreach (var property in payload.Value.Properties())
@@ -360,18 +345,18 @@ namespace JsonWebToken.Performance
                     }
                 }
 
-                descriptors.Add("JWE " + (payload.Key == "0" ? "" : payload.Key) + "6 claims", descriptor);
+                descriptors.Add("JWE " + payload.Key + "6 claims", descriptor);
             }
 
             foreach (var payload in Tokens.Payloads)
             {
                 var descriptor = new SecurityTokenDescriptor()
                 {
-                    SigningCredentials = new SigningCredentials(WilsonSharedKey, SigningKey.SignatureAlgorithm!.Name),
-                    EncryptingCredentials = new EncryptingCredentials(new SymmetricSecurityKey(EncryptionKey.K.ToArray()), KeyManagementAlgorithm.Aes128KW.Name, EncryptionAlgorithm.Aes128CbcHmacSha256.Name),
+                    SigningCredentials = new SigningCredentials(WilsonSharedKey, SigningKey.SignatureAlgorithm!.Name.ToString()),
+                    EncryptingCredentials = new EncryptingCredentials(new SymmetricSecurityKey(EncryptionKey.K.ToArray()), KeyManagementAlgorithm.A128KW.Name.ToString(), EncryptionAlgorithm.A128CbcHS256.Name.ToString()),
                     Subject = new ClaimsIdentity(),
-                    Expires = payload.Value.TryGetValue("exp", out var _) ? EpochTime.DateTime(payload.Value.Value<long>("exp")) : default(DateTime?),
-                    IssuedAt = payload.Value.TryGetValue("iat", out var _) ? EpochTime.DateTime(payload.Value.Value<long>("iat")) : default(DateTime?),
+                    Expires = payload.Value.TryGetValue("exp", out var _) ? EpochTime.ToDateTime(payload.Value.Value<long>("exp")) : default(DateTime?),
+                    IssuedAt = payload.Value.TryGetValue("iat", out var _) ? EpochTime.ToDateTime(payload.Value.Value<long>("iat")) : default(DateTime?),
                     CompressionAlgorithm = "DEF"
                 };
 
@@ -389,7 +374,7 @@ namespace JsonWebToken.Performance
                     }
                 }
 
-                descriptors.Add("JWE DEF " + (payload.Key == "0" ? "" : payload.Key) + "6 claims", descriptor);
+                descriptors.Add("JWE DEF " + payload.Key + "6 claims", descriptor);
             }
 
             return descriptors;
@@ -420,7 +405,7 @@ namespace JsonWebToken.Performance
                         }
                     }
 
-                    descriptors.Add(type + " " + (payload.Key == "0" ? "" : payload.Key) + "6 claims", descriptor);
+                    descriptors.Add(type + " " + payload.Key + "6 claims", descriptor);
                 }
             }
 

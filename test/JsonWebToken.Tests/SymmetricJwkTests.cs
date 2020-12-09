@@ -2,20 +2,13 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Text.Json;
-using JsonWebToken.Internal;
+using JsonWebToken.Cryptography;
 using Xunit;
 
 namespace JsonWebToken.Tests
 {
     public class SymmetricJwkTests : JwkTestsBase
     {
-        //[Theory]
-        //[MemberData(nameof(GetEncryptionKeys))]
-        //public override AuthenticatedEncryptor CreateAuthenticatedEncryptor_Succeed(Jwk key, EncryptionAlgorithm enc)
-        //{
-        //    return base.CreateAuthenticatedEncryptor_Succeed(key, enc);
-        //}
-
         [Theory]
         [MemberData(nameof(GetWrappingKeys))]
         public override KeyWrapper CreateKeyWrapper_Succeed(Jwk key, EncryptionAlgorithm enc, KeyManagementAlgorithm alg)
@@ -33,7 +26,7 @@ namespace JsonWebToken.Tests
         [Fact]
         public override void Canonicalize()
         {
-            var jwk = SymmetricJwk.GenerateKey(256, SignatureAlgorithm.HmacSha256);
+            var jwk = SymmetricJwk.GenerateKey(SignatureAlgorithm.HS256);
             var canonicalizedKey = (SymmetricJwk)CanonicalizeKey(jwk);
             Assert.NotEqual(0, canonicalizedKey.K.Length);
         }
@@ -61,50 +54,50 @@ namespace JsonWebToken.Tests
 
         public static IEnumerable<object[]> GetEncryptionKeys()
         {
-            yield return new object[] { _symmetric256Key, EncryptionAlgorithm.Aes128CbcHmacSha256 };
-            yield return new object[] { _symmetric384Key, EncryptionAlgorithm.Aes192CbcHmacSha384 };
-            yield return new object[] { _symmetric512Key, EncryptionAlgorithm.Aes256CbcHmacSha512 };
+            yield return new object[] { _symmetric256Key, EncryptionAlgorithm.A128CbcHS256 };
+            yield return new object[] { _symmetric384Key, EncryptionAlgorithm.A192CbcHS384 };
+            yield return new object[] { _symmetric512Key, EncryptionAlgorithm.A256CbcHS512 };
 #if SUPPORT_AESGCM
-            yield return new object[] { _symmetric256Key, EncryptionAlgorithm.Aes128Gcm };
-            yield return new object[] { _symmetric384Key, EncryptionAlgorithm.Aes192Gcm };
-            yield return new object[] { _symmetric512Key, EncryptionAlgorithm.Aes256Gcm };
+            yield return new object[] { _symmetric256Key, EncryptionAlgorithm.A128Gcm };
+            yield return new object[] { _symmetric384Key, EncryptionAlgorithm.A192Gcm };
+            yield return new object[] { _symmetric512Key, EncryptionAlgorithm.A256Gcm };
 #endif
         }
 
         public static IEnumerable<object[]> GetWrappingKeys()
         {
-            yield return new object[] { _symmetric128Key, EncryptionAlgorithm.Aes128CbcHmacSha256, KeyManagementAlgorithm.Aes128KW };
-            yield return new object[] { _symmetric192Key, EncryptionAlgorithm.Aes192CbcHmacSha384, KeyManagementAlgorithm.Aes192KW };
-            yield return new object[] { _symmetric256Key, EncryptionAlgorithm.Aes256CbcHmacSha512, KeyManagementAlgorithm.Aes256KW };
+            yield return new object[] { _symmetric128Key, EncryptionAlgorithm.A128CbcHS256, KeyManagementAlgorithm.A128KW };
+            yield return new object[] { _symmetric192Key, EncryptionAlgorithm.A192CbcHS384, KeyManagementAlgorithm.A192KW };
+            yield return new object[] { _symmetric256Key, EncryptionAlgorithm.A256CbcHS512, KeyManagementAlgorithm.A256KW };
 #if SUPPORT_AESGCM
-            yield return new object[] { _symmetric128Key, EncryptionAlgorithm.Aes128Gcm, KeyManagementAlgorithm.Aes128GcmKW };
-            yield return new object[] { _symmetric192Key, EncryptionAlgorithm.Aes192Gcm, KeyManagementAlgorithm.Aes192GcmKW };
-            yield return new object[] { _symmetric256Key, EncryptionAlgorithm.Aes256Gcm, KeyManagementAlgorithm.Aes256GcmKW };
-            yield return new object[] { _symmetric128Key, EncryptionAlgorithm.Aes128Gcm, KeyManagementAlgorithm.Aes128KW };
-            yield return new object[] { _symmetric192Key, EncryptionAlgorithm.Aes192Gcm, KeyManagementAlgorithm.Aes192KW };
-            yield return new object[] { _symmetric256Key, EncryptionAlgorithm.Aes256Gcm, KeyManagementAlgorithm.Aes256KW };
+            yield return new object[] { _symmetric128Key, EncryptionAlgorithm.A128Gcm, KeyManagementAlgorithm.A128GcmKW };
+            yield return new object[] { _symmetric192Key, EncryptionAlgorithm.A192Gcm, KeyManagementAlgorithm.A192GcmKW };
+            yield return new object[] { _symmetric256Key, EncryptionAlgorithm.A256Gcm, KeyManagementAlgorithm.A256GcmKW };
+            yield return new object[] { _symmetric128Key, EncryptionAlgorithm.A128Gcm, KeyManagementAlgorithm.A128KW };
+            yield return new object[] { _symmetric192Key, EncryptionAlgorithm.A192Gcm, KeyManagementAlgorithm.A192KW };
+            yield return new object[] { _symmetric256Key, EncryptionAlgorithm.A256Gcm, KeyManagementAlgorithm.A256KW };
 #endif
         }
 
         public static IEnumerable<object[]> GetSignatureKeys()
         {
-            yield return new object[] { _symmetric128Key, SignatureAlgorithm.HmacSha256 };
-            yield return new object[] { _symmetric192Key, SignatureAlgorithm.HmacSha256 };
-            yield return new object[] { _symmetric256Key, SignatureAlgorithm.HmacSha256 };
-            yield return new object[] { _symmetric384Key, SignatureAlgorithm.HmacSha256 };
-            yield return new object[] { _symmetric512Key, SignatureAlgorithm.HmacSha256 };
+            yield return new object[] { _symmetric128Key, SignatureAlgorithm.HS256 };
+            yield return new object[] { _symmetric192Key, SignatureAlgorithm.HS256 };
+            yield return new object[] { _symmetric256Key, SignatureAlgorithm.HS256 };
+            yield return new object[] { _symmetric384Key, SignatureAlgorithm.HS256 };
+            yield return new object[] { _symmetric512Key, SignatureAlgorithm.HS256 };
 
-            yield return new object[] { _symmetric128Key, SignatureAlgorithm.HmacSha384 };
-            yield return new object[] { _symmetric192Key, SignatureAlgorithm.HmacSha384 };
-            yield return new object[] { _symmetric256Key, SignatureAlgorithm.HmacSha384 };
-            yield return new object[] { _symmetric384Key, SignatureAlgorithm.HmacSha384 };
-            yield return new object[] { _symmetric512Key, SignatureAlgorithm.HmacSha384 };
+            yield return new object[] { _symmetric128Key, SignatureAlgorithm.HS384 };
+            yield return new object[] { _symmetric192Key, SignatureAlgorithm.HS384 };
+            yield return new object[] { _symmetric256Key, SignatureAlgorithm.HS384 };
+            yield return new object[] { _symmetric384Key, SignatureAlgorithm.HS384 };
+            yield return new object[] { _symmetric512Key, SignatureAlgorithm.HS384 };
 
-            yield return new object[] { _symmetric128Key, SignatureAlgorithm.HmacSha512 };
-            yield return new object[] { _symmetric192Key, SignatureAlgorithm.HmacSha512 };
-            yield return new object[] { _symmetric256Key, SignatureAlgorithm.HmacSha512 };
-            yield return new object[] { _symmetric384Key, SignatureAlgorithm.HmacSha512 };
-            yield return new object[] { _symmetric512Key, SignatureAlgorithm.HmacSha512 };
+            yield return new object[] { _symmetric128Key, SignatureAlgorithm.HS512 };
+            yield return new object[] { _symmetric192Key, SignatureAlgorithm.HS512 };
+            yield return new object[] { _symmetric256Key, SignatureAlgorithm.HS512 };
+            yield return new object[] { _symmetric384Key, SignatureAlgorithm.HS512 };
+            yield return new object[] { _symmetric512Key, SignatureAlgorithm.HS512 };
         }
 
         [Theory]
@@ -118,10 +111,10 @@ namespace JsonWebToken.Tests
             Assert.NotNull(key);
             var jwk = Assert.IsType<SymmetricJwk>(key);
 
-            Assert.Equal(KeyManagementAlgorithm.Aes128KW, jwk.KeyManagementAlgorithm);
-            Assert.Equal("kid1", jwk.Kid);
+            Assert.Equal(KeyManagementAlgorithm.A128KW, jwk.KeyManagementAlgorithm);
+            Assert.Equal("kid1", jwk.Kid.ToString());
             Assert.True(jwk.K.SequenceEqual(Base64Url.Decode("GawgguFyGrWKav7AX4VKUg")));
-            Assert.True(JwkUseNames.Sig.SequenceEqual(jwk.Use));
+            Assert.True(JwkUseValues.Sig.Equals(jwk.Use));
         }
 
         [Theory]
@@ -140,17 +133,17 @@ namespace JsonWebToken.Tests
 
             Assert.Equal(Base64Url.Decode("dGhpcyBpcyBhIFNIQTEgdGVzdCE"), jwk.X5t);
             Assert.Equal(Base64Url.Decode("dGhpcyBpcyBhIFNIQTI1NiB0ZXN0ISAgICAgICAgICAgIA"), jwk.X5tS256);
-            Assert.Equal("sign", jwk.KeyOps[0]);
+            Assert.Equal(JwkKeyOpsValues.Sign, jwk.KeyOps[0]);
             Assert.Equal("https://example.com", jwk.X5u);
         }
 
         [Fact]
         public override void WriteTo()
         {
-            var key = SymmetricJwk.GenerateKey(256, SignatureAlgorithm.HmacSha256);
-            key.Kid = "kid1";
-            key.KeyOps.Add("sign");
-            key.Use = JwkUseNames.Sig;
+            var key = SymmetricJwk.GenerateKey(SignatureAlgorithm.HS256);
+            key.Kid = JsonEncodedText.Encode("kid1");
+            key.KeyOps.Add(JwkKeyOpsValues.Sign);
+            key.Use = JwkUseValues.Sig;
             key.X5t = Base64Url.Decode("dGhpcyBpcyBhIFNIQTEgdGVzdCE");
             key.X5tS256 = Base64Url.Decode("dGhpcyBpcyBhIFNIQTI1NiB0ZXN0ISAgICAgICAgICAgIA");
             key.X5u = "https://example.com";
@@ -175,14 +168,14 @@ namespace JsonWebToken.Tests
             Assert.Contains("\"k\":\"" + Encoding.UTF8.GetString(Base64Url.Encode(key.K)) + "\"", json);
         }
 
-        private static SymmetricJwk _symmetric128Key => new SymmetricJwk("LxOcGxlu169Vxa1A7HyelQ");
+        private static SymmetricJwk _symmetric128Key => SymmetricJwk.FromBase64Url("LxOcGxlu169Vxa1A7HyelQ");
 
-        private static SymmetricJwk _symmetric192Key => new SymmetricJwk("kVdKe3BiLcrc7LujDzaD-3EdZCVTStnc");
+        private static SymmetricJwk _symmetric192Key => SymmetricJwk.FromBase64Url("kVdKe3BiLcrc7LujDzaD-3EdZCVTStnc");
 
-        private static SymmetricJwk _symmetric256Key => new SymmetricJwk("-PYUNdvLXVnc8yJQw7iQkSlNmAb202ZO-rfCyrAc1Lo");
+        private static SymmetricJwk _symmetric256Key => SymmetricJwk.FromBase64Url("-PYUNdvLXVnc8yJQw7iQkSlNmAb202ZO-rfCyrAc1Lo");
 
-        private static SymmetricJwk _symmetric384Key => new SymmetricJwk("V4hBa9WfvqqZ4ZWfm2oIoKZaCdy_FEf9cPXMwFSSOivAUMqs931xgQ-fSjTfB9tm");
+        private static SymmetricJwk _symmetric384Key => SymmetricJwk.FromBase64Url("V4hBa9WfvqqZ4ZWfm2oIoKZaCdy_FEf9cPXMwFSSOivAUMqs931xgQ-fSjTfB9tm");
 
-        private static SymmetricJwk _symmetric512Key => new SymmetricJwk("98TDxdDvd5mKZNFitgMCwH_z7nzKS6sk_vykNTowymsJ4e8eGviJnVWI9i-YLreuBfhHDhis3CY2aKoK1RT6sg");
+        private static SymmetricJwk _symmetric512Key => SymmetricJwk.FromBase64Url("98TDxdDvd5mKZNFitgMCwH_z7nzKS6sk_vykNTowymsJ4e8eGviJnVWI9i-YLreuBfhHDhis3CY2aKoK1RT6sg");
     }
 }

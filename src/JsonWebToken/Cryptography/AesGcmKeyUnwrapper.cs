@@ -3,56 +3,49 @@
 
 #if SUPPORT_AESGCM
 using System;
+using System.Diagnostics;
 using System.Security.Cryptography;
 
-namespace JsonWebToken.Internal
+namespace JsonWebToken.Cryptography
 {
     internal sealed class AesGcmKeyUnwrapper : KeyUnwrapper
     {
-        private bool _disposed;
+        private readonly SymmetricJwk _key;
 
         public AesGcmKeyUnwrapper(SymmetricJwk key, EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm algorithm)
-            : base(key, encryptionAlgorithm, algorithm)
+            : base(encryptionAlgorithm, algorithm)
         {
-            if (algorithm.Category != AlgorithmCategory.AesGcm)
-            {
-                ThrowHelper.ThrowNotSupportedException_AlgorithmForKeyWrap(algorithm);
-            }
+            Debug.Assert(key.SupportKeyManagement(algorithm));
+            Debug.Assert(algorithm.Category == AlgorithmCategory.AesGcm);
+            _key = key;
         }
 
         /// <inheritsdoc />
         public override int GetKeyUnwrapSize(int wrappedKeySize)
-        {
-            return wrappedKeySize;
-        }
+            => wrappedKeySize;
 
         /// <inheritsdoc />
-        public override bool TryUnwrapKey(ReadOnlySpan<byte> keyBytes, Span<byte> destination, JwtHeader header, out int bytesWritten)
+        public override bool TryUnwrapKey(ReadOnlySpan<byte> keyBytes, Span<byte> destination, JwtHeaderDocument header, out int bytesWritten)
         {
-            if (_disposed)
+            if (!header.TryGetHeaderParameter(JwtHeaderParameterNames.IV.EncodedUtf8Bytes,out var encodedIV))
             {
-                ThrowHelper.ThrowObjectDisposedException(GetType());
+                ThrowHelper.ThrowJwtDescriptorException_HeaderIsRequired(JwtHeaderParameterNames.IV);
             }
 
-            var encodedIV = header.IV;
-            var encodedTag = header.Tag;
-            if (encodedIV is null)
+            if (!header.TryGetHeaderParameter(JwtHeaderParameterNames.Tag.EncodedUtf8Bytes, out var encodedTag))
             {
-                ThrowHelper.ThrowJwtDescriptorException_HeaderIsRequired(HeaderParameters.IVUtf8);
+                ThrowHelper.ThrowJwtDescriptorException_HeaderIsRequired(JwtHeaderParameterNames.Tag);
             }
 
-            if (encodedTag is null)
-            {
-                ThrowHelper.ThrowJwtDescriptorException_HeaderIsRequired(HeaderParameters.TagUtf8);
-            }
-
-            Span<byte> nonce = stackalloc byte[Base64Url.GetArraySizeRequiredToDecode(encodedIV.Length)];
-            Span<byte> tag = stackalloc byte[Base64Url.GetArraySizeRequiredToDecode(encodedTag.Length)];
+            var rawIV = encodedIV.GetRawValue();
+            Span<byte> nonce = stackalloc byte[Base64Url.GetArraySizeRequiredToDecode(rawIV.Length)];
+            var rawTag = encodedTag.GetRawValue();
+            Span<byte> tag = stackalloc byte[Base64Url.GetArraySizeRequiredToDecode(rawTag.Length)];
             try
             {
-                Base64Url.Decode(encodedIV, nonce);
-                Base64Url.Decode(encodedTag, tag);
-                using var aesGcm = new AesGcm(Key.AsSpan());
+                Base64Url.Decode(rawIV.Span, nonce);
+                Base64Url.Decode(rawTag.Span, tag);
+                using var aesGcm = new AesGcm(_key.K);
                 if (destination.Length > keyBytes.Length)
                 {
                     destination = destination.Slice(0, keyBytes.Length);
@@ -72,7 +65,6 @@ namespace JsonWebToken.Internal
         /// <inheritsdoc />
         protected override void Dispose(bool disposing)
         {
-            _disposed = true;
         }
     }
 }

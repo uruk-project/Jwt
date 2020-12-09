@@ -37,10 +37,6 @@ jobs:
 #      COMPlus_EnableSSE: 0
     steps:
       - uses: actions/checkout@master
-#      - name: setup dotnet '2.0.x'
-#        uses: actions/setup-dotnet@v1
-#        with:
-#          dotnet-version: '2.0.x'
       - name: setup dotnet '2.2.x'
         uses: actions/setup-dotnet@v1
         with:
@@ -52,26 +48,13 @@ jobs:
       - name: Setup dotnet '5.x'
         uses: actions/setup-dotnet@v1
         with:
-          dotnet-version: '5.0.100-preview.7.20366.6'
-#      - name: DOTNET HACK
-#  https://github.com/actions/setup-dotnet/issues/25
-#        shell: pwsh
-#        run: |
-#            $version = Split-Path (Split-Path $ENV:DOTNET_ROOT -Parent) -Leaf;
-#            $root = Split-Path (Split-Path $ENV:DOTNET_ROOT -Parent) -Parent;
-#            $directories = Get-ChildItem $root | Where-Object { $_.Name -ne $version };
-#            foreach ($dir in $directories) {
-#              $from = $dir.FullName;
-#              $to = "$root/$version";
-#              Write-Host Copying from $from to $to;
-#              Copy-Item "$from\*" $to -Recurse -Force;
-#            }
+          dotnet-version: '5.0.100'
           
       - name: Build
         run: dotnet build -c ${{ matrix.configuration }}
 
       - name: Test
-        run: dotnet test -c ${{ matrix.configuration }} --no-build --collect:"XPlat Code Coverage" --settings coverlet.runsettings
+        run: dotnet test -c ${{ matrix.configuration }} --no-restore --collect:"XPlat Code Coverage" --settings coverlet.runsettings
       - name: Upload coverage to Codecov
         if: matrix.is-netfx
         uses: codecov/codecov-action@v1
@@ -87,7 +70,6 @@ jobs:
         with:
           name: nuget-packages
           path: nuget_packed/*.nupkg
-
 
   publish:
     name: Publish packages

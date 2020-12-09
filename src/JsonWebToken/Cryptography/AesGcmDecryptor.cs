@@ -3,9 +3,10 @@
 
 #if SUPPORT_AESGCM
 using System;
+using System.Diagnostics;
 using System.Security.Cryptography;
 
-namespace JsonWebToken.Internal
+namespace JsonWebToken.Cryptography
 {
     /// <summary>
     /// Provides authenticated decryption for AES GCM algorithm.
@@ -16,16 +17,8 @@ namespace JsonWebToken.Internal
 
         public AesGcmDecryptor(EncryptionAlgorithm encryptionAlgorithm)
         {
-            if (encryptionAlgorithm is null)
-            {
-                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.encryptionAlgorithm);
-            }
-
-            if (encryptionAlgorithm.Category != EncryptionType.AesGcm)
-            {
-                ThrowHelper.ThrowNotSupportedException_EncryptionAlgorithm(encryptionAlgorithm);
-            }
-
+            Debug.Assert(encryptionAlgorithm != null);
+            Debug.Assert(encryptionAlgorithm.Category == EncryptionType.AesGcm);
             _encryptionAlgorithm = encryptionAlgorithm;
         }
 

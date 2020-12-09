@@ -46,14 +46,14 @@ namespace JsonWebToken.Performance
 
         public override string Jwt_Net(BenchmarkPayload payload)
         {
-            throw new NotImplementedException();
+            return string.Empty;
         }
 
         public override IEnumerable<string> GetPayloads()
         {
             for (int i = 0; i < 10; i++)
             {
-                yield return "JWT " + (i == 0 ? "" : i.ToString()) + "6 claims";
+                yield return "JWT " + i + "6 claims";
             }
         }
     }

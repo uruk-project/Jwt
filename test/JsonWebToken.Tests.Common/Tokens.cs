@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
-using JsonWebToken.Internal;
 using Newtonsoft.Json.Linq;
 
 namespace JsonWebToken.Tests
@@ -15,7 +14,7 @@ namespace JsonWebToken.Tests
         public IDictionary<string, string> ValidTokens { get; }
         public IDictionary<string, byte[]> ValidBinaryTokens { get; }
         public IEnumerable<TokenState> InvalidTokens { get; }
-        public IDictionary<string, JObject> Payloads { get; }
+        public IDictionary<string, Dictionary<string, object>> Payloads { get; }
         public IDictionary<string, JwtDescriptor> Descriptors { get; }
 
         public TokenFixture()
@@ -43,7 +42,7 @@ namespace JsonWebToken.Tests
             return result;
         }
 
-        private static IDictionary<string, JObject> CreatePayloads()
+        private static IDictionary<string, Dictionary<string, object>> CreatePayloads()
         {
             byte[] bigData = new byte[1024 * 128];
             using (var rnd = RandomNumberGenerator.Create())
@@ -51,13 +50,13 @@ namespace JsonWebToken.Tests
                 rnd.GetNonZeroBytes(bigData);
             }
 
-            var payloads = new Dictionary<string, JObject>
+            var payloads = new Dictionary<string, Dictionary<string, object>>
             {
                 {
-                    "empty", new JObject()
+                    "empty", new Dictionary<string, object>()
                 },
                 {
-                    "small", new JObject
+                    "small", new Dictionary<string, object>
                     {
                         { "jti", "756E69717565206964656E746966696572"},
                         { "iss", "https://idp.example.com/"},
@@ -68,7 +67,7 @@ namespace JsonWebToken.Tests
                     }
                 },
                 {
-                    "multiAud", new JObject
+                    "multiAud", new Dictionary<string, object>
                     {
                         { "jti", "756E69717565206964656E746966696572"},
                         { "iss", "https://idp.example.com/"},
@@ -79,7 +78,7 @@ namespace JsonWebToken.Tests
                     }
                 },
                 {
-                    "nd-nbf", new JObject
+                    "nd-nbf", new Dictionary<string, object>
                     {
                         { "jti", "756E69717565206964656E746966696572"},
                         { "iss", "https://idp.example.com/"},
@@ -89,7 +88,7 @@ namespace JsonWebToken.Tests
                     }
                 },
                 {
-                    "medium", new JObject
+                    "medium", new Dictionary<string, object>
                     {
                         { "jti", "756E69717565206964656E746966696572"},
                         { "iss", "https://idp.example.com/"},
@@ -116,7 +115,7 @@ namespace JsonWebToken.Tests
                     }
                 },
                 {
-                    "big", new JObject
+                    "big", new Dictionary<string, object>
                     {
                         { "jti", "756E69717565206964656E746966696572" },
                         { "iss", "https://idp.example.com/" },
@@ -132,15 +131,12 @@ namespace JsonWebToken.Tests
             return payloads;
         }
 
-        private static IDictionary<string, JwtDescriptor> CreateDescriptors(IDictionary<string, JObject> payloads, SymmetricJwk signingKey, SymmetricJwk encryptionKey)
+        private static IDictionary<string, JwtDescriptor> CreateDescriptors(IDictionary<string, Dictionary<string, object>> payloads, SymmetricJwk signingKey, SymmetricJwk encryptionKey)
         {
             var descriptors = new Dictionary<string, JwtDescriptor>();
             foreach (var payload in payloads)
             {
-                var descriptor = new JwsDescriptor()
-                {
-                    Algorithm = SignatureAlgorithm.None
-                };
+                var descriptor = new JwsDescriptor(Jwk.None, SignatureAlgorithm.None);
 
                 FillPayload(payload, descriptor);
                 descriptors.Add("JWT-" + payload.Key, descriptor);
@@ -149,11 +145,7 @@ namespace JsonWebToken.Tests
 
             foreach (var payload in payloads)
             {
-                var descriptor = new JwsDescriptor()
-                {
-                    SigningKey = signingKey,
-                    Algorithm = signingKey.SignatureAlgorithm
-                };
+                var descriptor = new JwsDescriptor(signingKey, signingKey.SignatureAlgorithm);
 
                 FillPayload(payload, descriptor);
                 descriptors.Add("JWS-" + payload.Key, descriptor);
@@ -161,21 +153,17 @@ namespace JsonWebToken.Tests
 
             foreach (var payload in payloads)
             {
-                var descriptor = new JwsDescriptor()
-                {
-                    SigningKey = signingKey,
-                    Algorithm = signingKey.SignatureAlgorithm
-                };
+                var descriptor = new JwsDescriptor(signingKey, signingKey.SignatureAlgorithm);
 
                 FillPayload(payload, descriptor);
 
-                var jwe = new JweDescriptor
+                var jwe = new JweDescriptor(encryptionKey, KeyManagementAlgorithm.A128KW, EncryptionAlgorithm.A128CbcHS256)
                 {
                     Payload = descriptor,
-                    EncryptionKey = encryptionKey,
-                    EncryptionAlgorithm = EncryptionAlgorithm.Aes128CbcHmacSha256,
-                    Algorithm = KeyManagementAlgorithm.Aes128KW,
-                    ContentType = "JWT"
+                    Header = new JwtHeader
+                    {
+                        {"cty", "JWT" }
+                    }
                 };
 
                 descriptors.Add("JWE-" + payload.Key, jwe);
@@ -183,22 +171,17 @@ namespace JsonWebToken.Tests
 
             foreach (var payload in payloads)
             {
-                var descriptor = new JwsDescriptor()
-                {
-                    SigningKey = signingKey,
-                    Algorithm = signingKey.SignatureAlgorithm
-                };
+                var descriptor = new JwsDescriptor(signingKey, signingKey.SignatureAlgorithm);
 
                 FillPayload(payload, descriptor);
 
-                var jwe = new JweDescriptor
+                var jwe = new JweDescriptor(encryptionKey, KeyManagementAlgorithm.A128KW, EncryptionAlgorithm.A128CbcHS256, CompressionAlgorithm.Def)
                 {
                     Payload = descriptor,
-                    EncryptionKey = encryptionKey,
-                    EncryptionAlgorithm = EncryptionAlgorithm.Aes128CbcHmacSha256,
-                    Algorithm = KeyManagementAlgorithm.Aes128KW,
-                    ContentType = "JWT",
-                    CompressionAlgorithm = CompressionAlgorithm.Deflate
+                    Header = new JwtHeader
+                    {
+                        {"cty", "JWT" }
+                    }
                 };
 
                 descriptors.Add("JWE-DEF-" + payload.Key, jwe);
@@ -207,26 +190,33 @@ namespace JsonWebToken.Tests
             return descriptors;
         }
 
-        private static void FillPayload(KeyValuePair<string, JObject> payload, JwsDescriptor descriptor)
+        private static void FillPayload(KeyValuePair<string, Dictionary<string, object>> payload, JwsDescriptor descriptor)
         {
-            foreach (var property in payload.Value.Properties())
+            foreach (var property in payload.Value)
             {
-                switch (property.Name)
+                switch (property.Key)
                 {
                     case "iat":
                     case "nbf":
                     case "exp":
-                        descriptor.AddClaim(property.Name, EpochTime.ToDateTime((long)property.Value));
+                        if (property.Value is int intValue)
+                        {
+                            descriptor.Payload.Add(property.Key, intValue);
+                        }
+                        else
+                        {
+                            descriptor.Payload.Add(property.Key, (long)property.Value);
+                        }
                         break;
                     default:
                         if (property.Value is JArray)
                         {
                             var array = new List<string>(((JArray)property.Value).ToObject<string[]>());
-                            descriptor.Audiences = array;
+                            descriptor.Payload.Add("aud", array);
                         }
                         else
                         {
-                            descriptor.AddClaim(property.Name, (string)property.Value);
+                            descriptor.Payload.Add(property.Key, (string)property.Value);
                         }
                         break;
                 }
@@ -239,65 +229,65 @@ namespace JsonWebToken.Tests
             return descriptors.ToDictionary(k => k.Key, k => writer.WriteTokenString(k.Value));
         }
 
-        private static IList<TokenState> CreateInvalidToken(Jwk key, JObject json)
+        private static IList<TokenState> CreateInvalidToken(Jwk key, Dictionary<string, object> json)
         {
             var invalidTokens = new List<TokenState>();
 
-            var payload = CreateJws(json, TokenValidationStatus.Expired);
-            var token = CreateInvalidToken(key, TokenValidationStatus.Expired, payload);
+            var payload = CreateJws(key, json, TokenValidationStatus.Expired);
+            var token = CreateInvalidToken(TokenValidationStatus.Expired, payload);
             invalidTokens.Add(token);
 
-            payload = CreateJws(json, TokenValidationStatus.InvalidClaim, "aud");
-            payload.Audiences = new List<string>(new[] { "X", "Y", "Z" });
-            token = CreateInvalidToken(key, TokenValidationStatus.InvalidClaim, payload, "aud");
+            payload = CreateJws(key, json, TokenValidationStatus.InvalidClaim, "aud");
+            payload.Payload.Add("aud", new List<string>(new[] { "X", "Y", "Z" }));
+            token = CreateInvalidToken(TokenValidationStatus.InvalidClaim, payload, "aud");
             invalidTokens.Add(token);
 
-            payload = CreateJws(json, TokenValidationStatus.InvalidClaim, "aud");
-            token = CreateInvalidToken(key, TokenValidationStatus.InvalidClaim, payload, "aud");
+            payload = CreateJws(key, json, TokenValidationStatus.InvalidClaim, "aud");
+            token = CreateInvalidToken(TokenValidationStatus.InvalidClaim, payload, "aud");
             invalidTokens.Add(token);
 
-            payload = CreateJws(json, TokenValidationStatus.InvalidClaim, "iss");
-            token = CreateInvalidToken(key, TokenValidationStatus.InvalidClaim, payload, "iss");
+            payload = CreateJws(key, json, TokenValidationStatus.InvalidClaim, "iss");
+            token = CreateInvalidToken(TokenValidationStatus.InvalidClaim, payload, "iss");
             invalidTokens.Add(token);
 
-            payload = CreateJws(json, TokenValidationStatus.MissingClaim, "aud");
-            token = CreateInvalidToken(key, TokenValidationStatus.MissingClaim, payload, "aud");
+            payload = CreateJws(key, json, TokenValidationStatus.MissingClaim, "aud");
+            token = CreateInvalidToken(TokenValidationStatus.MissingClaim, payload, "aud");
             invalidTokens.Add(token);
 
-            payload = CreateJws(json, TokenValidationStatus.MissingClaim, "iss");
-            token = CreateInvalidToken(key, TokenValidationStatus.MissingClaim, payload, "iss");
+            payload = CreateJws(key, json, TokenValidationStatus.MissingClaim, "iss");
+            token = CreateInvalidToken(TokenValidationStatus.MissingClaim, payload, "iss");
             invalidTokens.Add(token);
 
-            payload = CreateJws(json, TokenValidationStatus.MissingClaim, "exp");
-            token = CreateInvalidToken(key, TokenValidationStatus.MissingClaim, payload, "exp");
+            payload = CreateJws(key, json, TokenValidationStatus.MissingClaim, "exp");
+            token = CreateInvalidToken(TokenValidationStatus.MissingClaim, payload, "exp");
             invalidTokens.Add(token);
 
-            payload = CreateJws(json, TokenValidationStatus.NotYetValid);
-            token = CreateInvalidToken(key, TokenValidationStatus.NotYetValid, payload);
+            payload = CreateJws(key, json, TokenValidationStatus.NotYetValid);
+            token = CreateInvalidToken(TokenValidationStatus.NotYetValid, payload);
             invalidTokens.Add(token);
 
-            payload = CreateJws(json, TokenValidationStatus.Success);
-            token = CreateInvalidToken(key, TokenValidationStatus.InvalidSignature, payload);
+            payload = CreateJws(key, json, TokenValidationStatus.NoError);
+            token = CreateInvalidToken(TokenValidationStatus.InvalidSignature, payload);
             invalidTokens.Add(token);
 
-            payload = CreateJws(json, TokenValidationStatus.Success);
-            token = CreateInvalidToken(key, TokenValidationStatus.MalformedSignature, payload);
+            payload = CreateJws(key, json, TokenValidationStatus.NoError);
+            token = CreateInvalidToken(TokenValidationStatus.MalformedSignature, payload);
             invalidTokens.Add(token);
 
-            payload = CreateJws(json, TokenValidationStatus.Success);
-            token = CreateInvalidToken(key, TokenValidationStatus.MalformedToken, payload);
+            payload = CreateJws(key, json, TokenValidationStatus.NoError);
+            token = CreateInvalidToken(TokenValidationStatus.MalformedToken, payload);
             invalidTokens.Add(token);
 
-            payload = CreateJws(json, TokenValidationStatus.Success);
-            token = CreateInvalidToken(key, TokenValidationStatus.MissingSignature, payload);
+            payload = CreateJws(key, json, TokenValidationStatus.NoError);
+            token = CreateInvalidToken(TokenValidationStatus.MissingSignature, payload);
             invalidTokens.Add(token);
 
             return invalidTokens;
         }
 
-        private static JwsDescriptor CreateJws(JObject descriptor, TokenValidationStatus status, string claim = null)
+        private static JwsDescriptor CreateJws(Jwk signingKey, Dictionary<string, object> descriptor, TokenValidationStatus status, string claim = null)
         {
-            var payload = new JObject();
+            var payload = new JwtPayload();
             foreach (var kvp in descriptor)
             {
                 switch (status)
@@ -357,18 +347,20 @@ namespace JsonWebToken.Tests
                 payload.Add(kvp.Key, kvp.Value);
             }
 
-            return new JwsDescriptor(new JwtObject(), ToJwtObject(payload));
+            var d = new JwsDescriptor(signingKey, signingKey.SignatureAlgorithm);
+            d.Payload = payload;
+            return d;
         }
 
-        private static TokenState CreateInvalidToken(TokenValidationStatus status, JwtDescriptor descriptor)
+        private static TokenState CreateInvalidToken(TokenValidationStatus status, JwsDescriptor descriptor, string claim = null)
         {
             switch (status)
             {
                 case TokenValidationStatus.SignatureKeyNotFound:
-                    descriptor.Header.Replace(new JwtProperty(HeaderParameters.KidUtf8, (string)descriptor.Header[HeaderParameters.KidUtf8].Value + "x"));
+                    descriptor.Header.Add("kid", "X");
                     break;
                 case TokenValidationStatus.MissingEncryptionAlgorithm:
-                    descriptor.Header.Replace(new JwtProperty(HeaderParameters.EncUtf8));
+                    descriptor.Header.Add("enc", (object)null);
                     break;
             }
 
@@ -399,90 +391,6 @@ namespace JsonWebToken.Tests
             }
 
             return new TokenState(jwt, status);
-        }
-
-        private static TokenState CreateInvalidToken(Jwk signingKey, TokenValidationStatus status, JwsDescriptor descriptor, string claim = null)
-        {
-            descriptor.SigningKey = signingKey;
-            descriptor.Algorithm = signingKey.SignatureAlgorithm;
-
-            return CreateInvalidToken(status, descriptor);
-        }
-
-        public static JwtObject ToJwtObject(JObject json)
-        {
-            var jwtObject = new JwtObject();
-            foreach (var property in json.Properties())
-            {
-                JwtProperty jwtProperty;
-                switch (property.Value.Type)
-                {
-                    case JTokenType.Object:
-                        jwtProperty = new JwtProperty(property.Name, ToJwtObject(property.Value.Value<JObject>()));
-                        break;
-                    case JTokenType.Array:
-                        jwtProperty = new JwtProperty(property.Name, ToJwtArray(property.Value.Value<JArray>()));
-                        break;
-                    case JTokenType.Integer:
-                        jwtProperty = new JwtProperty(property.Name, property.Value.Value<long>());
-                        break;
-                    case JTokenType.Float:
-                        jwtProperty = new JwtProperty(property.Name, property.Value.Value<double>());
-                        break;
-                    case JTokenType.String:
-                        jwtProperty = new JwtProperty(property.Name, property.Value.Value<string>());
-                        break;
-                    case JTokenType.Boolean:
-                        jwtProperty = new JwtProperty(property.Name, property.Value.Value<bool>());
-                        break;
-                    case JTokenType.Null:
-                        jwtProperty = new JwtProperty(property.Name);
-                        break;
-                    default:
-                        throw new NotSupportedException();
-                }
-
-                jwtObject.Add(jwtProperty);
-            }
-
-            return jwtObject;
-        }
-
-        private static JwtArray ToJwtArray(JArray array)
-        {
-            var list = new List<JwtValue>(array.Count);
-            for (int i = 0; i < array.Count; i++)
-            {
-                var value = array[i];
-                switch (value.Type)
-                {
-                    case JTokenType.Object:
-                        list.Add(new JwtValue(ToJwtObject((JObject)value)));
-                        break;
-                    case JTokenType.Array:
-                        list.Add(new JwtValue(ToJwtArray((JArray)value)));
-                        break;
-                    case JTokenType.Integer:
-                        list.Add(new JwtValue((long)value));
-                        break;
-                    case JTokenType.Float:
-                        list.Add(new JwtValue((double)value));
-                        break;
-                    case JTokenType.String:
-                        list.Add(new JwtValue((string)value));
-                        break;
-                    case JTokenType.Boolean:
-                        list.Add(new JwtValue((bool)value));
-                        break;
-                    case JTokenType.Null:
-                        list.Add(new JwtValue());
-                        break;
-                    default:
-                        throw new NotSupportedException();
-                }
-            }
-
-            return new JwtArray(list);
         }
 
         public void Dispose()

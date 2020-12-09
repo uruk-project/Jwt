@@ -2,9 +2,10 @@
 // Licensed under the MIT license. See LICENSE in the project root for license information.
 
 using System;
+using System.Diagnostics;
 using System.Security.Cryptography;
 
-namespace JsonWebToken.Internal
+namespace JsonWebToken.Cryptography
 {
     internal sealed class AesCbcEncryptor : AesEncryptor
     {
@@ -12,15 +13,8 @@ namespace JsonWebToken.Internal
 
         public AesCbcEncryptor(EncryptionAlgorithm encryptionAlgorithm)
         {
-            if (encryptionAlgorithm is null)
-            {
-                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.encryptionAlgorithm);
-            }
-
-            if (encryptionAlgorithm.Category != EncryptionType.AesHmac)
-            {
-                ThrowHelper.ThrowNotSupportedException_EncryptionAlgorithm(encryptionAlgorithm);
-            }
+            Debug.Assert(encryptionAlgorithm != null);
+            Debug.Assert(encryptionAlgorithm.Category == EncryptionType.AesHmac);
 
             _encryptionAlgorithm = encryptionAlgorithm;
         }

@@ -6,7 +6,6 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using JsonWebToken.Cryptography;
-using JsonWebToken.Internal;
 using JsonWebToken.Tests.Cryptography;
 using Xunit;
 
@@ -38,7 +37,7 @@ namespace JsonWebToken.Tests
         [Fact]
         public override void Canonicalize()
         {
-            var jwk = ECJwk.GenerateKey(EllipticalCurve.P256, true, SignatureAlgorithm.EcdsaSha256);
+            var jwk = ECJwk.GeneratePrivateKey(SignatureAlgorithm.ES256);
             var canonicalizedKey = (ECJwk)CanonicalizeKey(jwk);
 
             Assert.True(canonicalizedKey.D.IsEmpty);
@@ -65,58 +64,58 @@ namespace JsonWebToken.Tests
 
         public static IEnumerable<object[]> GetWrappingKeys()
         {
-            yield return new object[] { PrivateEcc256Key, EncryptionAlgorithm.Aes128CbcHmacSha256, KeyManagementAlgorithm.EcdhEsAes128KW };
-            yield return new object[] { PrivateEcc256Key, EncryptionAlgorithm.Aes192CbcHmacSha384, KeyManagementAlgorithm.EcdhEsAes192KW };
-            yield return new object[] { PrivateEcc256Key, EncryptionAlgorithm.Aes256CbcHmacSha512, KeyManagementAlgorithm.EcdhEsAes256KW };
-            yield return new object[] { PrivateEcc256Key, EncryptionAlgorithm.Aes256CbcHmacSha512, KeyManagementAlgorithm.EcdhEs };
+            yield return new object[] { PrivateEcc256Key, EncryptionAlgorithm.A128CbcHS256, KeyManagementAlgorithm.EcdhEsA128KW };
+            yield return new object[] { PrivateEcc256Key, EncryptionAlgorithm.A192CbcHS384, KeyManagementAlgorithm.EcdhEsA192KW };
+            yield return new object[] { PrivateEcc256Key, EncryptionAlgorithm.A256CbcHS512, KeyManagementAlgorithm.EcdhEsA256KW };
+            yield return new object[] { PrivateEcc256Key, EncryptionAlgorithm.A256CbcHS512, KeyManagementAlgorithm.EcdhEs };
 
-            yield return new object[] { PrivateEcc384Key, EncryptionAlgorithm.Aes128CbcHmacSha256, KeyManagementAlgorithm.EcdhEsAes128KW };
-            yield return new object[] { PrivateEcc384Key, EncryptionAlgorithm.Aes192CbcHmacSha384, KeyManagementAlgorithm.EcdhEsAes192KW };
-            yield return new object[] { PrivateEcc384Key, EncryptionAlgorithm.Aes256CbcHmacSha512, KeyManagementAlgorithm.EcdhEsAes256KW };
-            yield return new object[] { PrivateEcc384Key, EncryptionAlgorithm.Aes256CbcHmacSha512, KeyManagementAlgorithm.EcdhEs };
+            yield return new object[] { PrivateEcc384Key, EncryptionAlgorithm.A128CbcHS256, KeyManagementAlgorithm.EcdhEsA128KW };
+            yield return new object[] { PrivateEcc384Key, EncryptionAlgorithm.A192CbcHS384, KeyManagementAlgorithm.EcdhEsA192KW };
+            yield return new object[] { PrivateEcc384Key, EncryptionAlgorithm.A256CbcHS512, KeyManagementAlgorithm.EcdhEsA256KW };
+            yield return new object[] { PrivateEcc384Key, EncryptionAlgorithm.A256CbcHS512, KeyManagementAlgorithm.EcdhEs };
 
-            yield return new object[] { PrivateEcc521Key, EncryptionAlgorithm.Aes128CbcHmacSha256, KeyManagementAlgorithm.EcdhEsAes128KW };
-            yield return new object[] { PrivateEcc521Key, EncryptionAlgorithm.Aes192CbcHmacSha384, KeyManagementAlgorithm.EcdhEsAes192KW };
-            yield return new object[] { PrivateEcc521Key, EncryptionAlgorithm.Aes256CbcHmacSha512, KeyManagementAlgorithm.EcdhEsAes256KW };
-            yield return new object[] { PrivateEcc521Key, EncryptionAlgorithm.Aes256CbcHmacSha512, KeyManagementAlgorithm.EcdhEs };
+            yield return new object[] { PrivateEcc521Key, EncryptionAlgorithm.A128CbcHS256, KeyManagementAlgorithm.EcdhEsA128KW };
+            yield return new object[] { PrivateEcc521Key, EncryptionAlgorithm.A192CbcHS384, KeyManagementAlgorithm.EcdhEsA192KW };
+            yield return new object[] { PrivateEcc521Key, EncryptionAlgorithm.A256CbcHS512, KeyManagementAlgorithm.EcdhEsA256KW };
+            yield return new object[] { PrivateEcc521Key, EncryptionAlgorithm.A256CbcHS512, KeyManagementAlgorithm.EcdhEs };
         }
 
         public static IEnumerable<object[]> GetValidSignatureKeys()
         {
-            yield return new object[] { PublicEcc256Key, SignatureAlgorithm.EcdsaSha256 };
+            yield return new object[] { PublicEcc256Key, SignatureAlgorithm.ES256 };
 
-            yield return new object[] { PublicEcc384Key, SignatureAlgorithm.EcdsaSha384 };
+            yield return new object[] { PublicEcc384Key, SignatureAlgorithm.ES384 };
 
-            yield return new object[] { PublicEcc521Key, SignatureAlgorithm.EcdsaSha512 };
+            yield return new object[] { PublicEcc521Key, SignatureAlgorithm.ES512 };
             
-            yield return new object[] { PublicEcc256XKey, SignatureAlgorithm.EcdsaSha256X };
+            yield return new object[] { PublicEcc256XKey, SignatureAlgorithm.ES256X };
 
-            yield return new object[] { PrivateEcc256Key, SignatureAlgorithm.EcdsaSha256 };
+            yield return new object[] { PrivateEcc256Key, SignatureAlgorithm.ES256 };
 
-            yield return new object[] { PrivateEcc384Key, SignatureAlgorithm.EcdsaSha384 };
+            yield return new object[] { PrivateEcc384Key, SignatureAlgorithm.ES384 };
 
-            yield return new object[] { PrivateEcc521Key, SignatureAlgorithm.EcdsaSha512 };
+            yield return new object[] { PrivateEcc521Key, SignatureAlgorithm.ES512 };
             
-            yield return new object[] { PrivateEcc256XKey, SignatureAlgorithm.EcdsaSha256X };
+            yield return new object[] { PrivateEcc256XKey, SignatureAlgorithm.ES256X };
         }
 
         public static IEnumerable<object[]> GetInvalidKeys()
         {
-            yield return new object[] { PrivateEcc256Key, SignatureAlgorithm.EcdsaSha384 };
-            yield return new object[] { PrivateEcc256Key, SignatureAlgorithm.EcdsaSha512 };
-            yield return new object[] { PrivateEcc256Key, SignatureAlgorithm.EcdsaSha256X };
+            yield return new object[] { PrivateEcc256Key, SignatureAlgorithm.ES384 };
+            yield return new object[] { PrivateEcc256Key, SignatureAlgorithm.ES512 };
+            yield return new object[] { PrivateEcc256Key, SignatureAlgorithm.ES256X };
 
-            yield return new object[] { PrivateEcc384Key, SignatureAlgorithm.EcdsaSha256 };
-            yield return new object[] { PrivateEcc384Key, SignatureAlgorithm.EcdsaSha512 };
-            yield return new object[] { PrivateEcc384Key, SignatureAlgorithm.EcdsaSha256X };
+            yield return new object[] { PrivateEcc384Key, SignatureAlgorithm.ES256 };
+            yield return new object[] { PrivateEcc384Key, SignatureAlgorithm.ES512 };
+            yield return new object[] { PrivateEcc384Key, SignatureAlgorithm.ES256X };
 
-            yield return new object[] { PrivateEcc521Key, SignatureAlgorithm.EcdsaSha256 };
-            yield return new object[] { PrivateEcc521Key, SignatureAlgorithm.EcdsaSha384 };
-            yield return new object[] { PrivateEcc521Key, SignatureAlgorithm.EcdsaSha256X };
+            yield return new object[] { PrivateEcc521Key, SignatureAlgorithm.ES256 };
+            yield return new object[] { PrivateEcc521Key, SignatureAlgorithm.ES384 };
+            yield return new object[] { PrivateEcc521Key, SignatureAlgorithm.ES256X };
 
-            yield return new object[] { PrivateEcc256XKey, SignatureAlgorithm.EcdsaSha256 };
-            yield return new object[] { PrivateEcc256XKey, SignatureAlgorithm.EcdsaSha384 };
-            yield return new object[] { PrivateEcc256XKey, SignatureAlgorithm.EcdsaSha512 };
+            yield return new object[] { PrivateEcc256XKey, SignatureAlgorithm.ES256 };
+            yield return new object[] { PrivateEcc256XKey, SignatureAlgorithm.ES384 };
+            yield return new object[] { PrivateEcc256XKey, SignatureAlgorithm.ES512 };
         }
 
         [Theory]
@@ -132,8 +131,8 @@ namespace JsonWebToken.Tests
             Assert.NotNull(key);
             var jwk = Assert.IsType<ECJwk>(key);
 
-            Assert.Equal("1", jwk.Kid);
-            Assert.True(JwkUseNames.Enc.SequenceEqual(jwk.Use));
+            Assert.Equal("1", jwk.Kid.ToString());
+            Assert.True(JwkUseValues.Enc.Equals(jwk.Use));
 
             Assert.Equal(Encoding.UTF8.GetBytes(crvName), jwk.Crv.Name);
             Assert.Equal(jwk.X.ToArray(), Base64Url.Decode("MKBCTNIcKUSDii11ySs3526iDZ8AiTo7Tu6KPAqv7D4"));
@@ -155,17 +154,17 @@ namespace JsonWebToken.Tests
 
             Assert.Equal(Base64Url.Decode("dGhpcyBpcyBhIFNIQTEgdGVzdCE"), jwk.X5t);
             Assert.Equal(Base64Url.Decode("dGhpcyBpcyBhIFNIQTI1NiB0ZXN0ISAgICAgICAgICAgIA"), jwk.X5tS256);
-            Assert.Equal("sign", jwk.KeyOps[0]);
+            Assert.Equal(JwkKeyOpsValues.Sign, jwk.KeyOps[0]);
             Assert.Equal("https://example.com", jwk.X5u);
         }
 
         [Fact]
         public override void WriteTo()
         {
-            var key = ECJwk.GenerateKey(EllipticalCurve.P256, true, SignatureAlgorithm.EcdsaSha256);
-            key.Kid = "kid-ec";
-            key.KeyOps.Add("sign");
-            key.Use = JwkUseNames.Sig;
+            var key = ECJwk.GeneratePrivateKey(SignatureAlgorithm.ES256);
+            key.Kid = JsonEncodedText.Encode("kid-ec");
+            key.KeyOps.Add(JwkKeyOpsValues.Sign);
+            key.Use = JwkUseValues.Sig;
             key.X5t = Base64Url.Decode("dGhpcyBpcyBhIFNIQTEgdGVzdCE");
             key.X5tS256 = Base64Url.Decode("dGhpcyBpcyBhIFNIQTI1NiB0ZXN0ISAgICAgICAgICAgIA");
             key.X5u = "https://example.com";
@@ -352,7 +351,7 @@ MEgCQQC3P1n17ovVXiS3/wKa0WqFQ8ltJT5UMZuTUyxBw8FHe4nbLS8z17modFhI
             return parameters;
         }
 
-        private static ECJwk PrivateEcc256Key => new ECJwk
+        private static ECJwk PrivateEcc256Key => ECJwk.FromBase64Url
         (
             crv: EllipticalCurve.P256,
             x: "weNJy2HscCSM6AEDTDg04biOvhFhyyWvOHQfeF_PxMQ",
@@ -360,7 +359,7 @@ MEgCQQC3P1n17ovVXiS3/wKa0WqFQ8ltJT5UMZuTUyxBw8FHe4nbLS8z17modFhI
             d: "VEmDZpDXXK8p8N0Cndsxs924q6nS1RXFASRl6BfUqdw"
         );
 
-        private static ECJwk PrivateEcc256XKey => new ECJwk
+        private static ECJwk PrivateEcc256XKey => ECJwk.FromBase64Url
         (
             crv: EllipticalCurve.Secp256k1,
             x: "weNJy2HscCSM6AEDTDg04biOvhFhyyWvOHQfeF_PxMQ",
@@ -368,7 +367,7 @@ MEgCQQC3P1n17ovVXiS3/wKa0WqFQ8ltJT5UMZuTUyxBw8FHe4nbLS8z17modFhI
             d: "VEmDZpDXXK8p8N0Cndsxs924q6nS1RXFASRl6BfUqdw"
         );
 
-        private static ECJwk PublicEcc256Key => new ECJwk
+        private static ECJwk PublicEcc256Key => ECJwk.FromBase64Url
         (
             crv: EllipticalCurve.P256,
             x: "weNJy2HscCSM6AEDTDg04biOvhFhyyWvOHQfeF_PxMQ",
@@ -376,14 +375,14 @@ MEgCQQC3P1n17ovVXiS3/wKa0WqFQ8ltJT5UMZuTUyxBw8FHe4nbLS8z17modFhI
         );
         
 
-        private static ECJwk PublicEcc256XKey => new ECJwk
+        private static ECJwk PublicEcc256XKey => ECJwk.FromBase64Url
         (
             crv: EllipticalCurve.Secp256k1,
             x: "weNJy2HscCSM6AEDTDg04biOvhFhyyWvOHQfeF_PxMQ",
             y: "e8lnCO-AlStT-NJVX-crhB7QRYhiix03illJOVAOyck"
         );
 
-        private static ECJwk PublicEcc384Key => new ECJwk
+        private static ECJwk PublicEcc384Key => ECJwk.FromBase64Url
         (
             crv: EllipticalCurve.P384,
             d: "Wf9qS_1idTtZ13HKUMkNDFPacwsfduJxayYtLlDGYzp8la9YajkWTPQwZT0X-vjq",
@@ -391,7 +390,7 @@ MEgCQQC3P1n17ovVXiS3/wKa0WqFQ8ltJT5UMZuTUyxBw8FHe4nbLS8z17modFhI
             y: "3HPDrLpplnCJc3ksMBVD9rGFcAld3-c74CIk4ZNleOBnGeAkRZv4wJ4z_btwx_PL"
         );
 
-        private static ECJwk PrivateEcc384Key => new ECJwk
+        private static ECJwk PrivateEcc384Key => ECJwk.FromBase64Url
         (
             crv: EllipticalCurve.P384,
             d: "Wf9qS_1idTtZ13HKUMkNDFPacwsfduJxayYtLlDGYzp8la9YajkWTPQwZT0X-vjq",
@@ -399,7 +398,7 @@ MEgCQQC3P1n17ovVXiS3/wKa0WqFQ8ltJT5UMZuTUyxBw8FHe4nbLS8z17modFhI
             y: "3HPDrLpplnCJc3ksMBVD9rGFcAld3-c74CIk4ZNleOBnGeAkRZv4wJ4z_btwx_PL"
         );
 
-        private static ECJwk PrivateEcc521Key => new ECJwk
+        private static ECJwk PrivateEcc521Key => ECJwk.FromBase64Url
         (
             crv: EllipticalCurve.P521,
             d: "Adri8PbGJBWN5upp_67cKF8E0ADCF-w9WpI4vAnoE9iZsnRTZI9D20Ji9rzLyyEPp8KriI_HISTMh_RSmFFhTfBH",
@@ -407,7 +406,7 @@ MEgCQQC3P1n17ovVXiS3/wKa0WqFQ8ltJT5UMZuTUyxBw8FHe4nbLS8z17modFhI
             y: "AEESIwzgMrpPh9p_eq2EuIMUCCTPzaQK_DtXFwjOWsanjacwu1DZ3XSwbkiHvjQLrXDfdP7xZ-iAXQ1lGZqsud8y"
         );
 
-        private static ECJwk PublicEcc521Key => new ECJwk
+        private static ECJwk PublicEcc521Key => ECJwk.FromBase64Url
         (
             crv: EllipticalCurve.P521,
             x: "AEeo_Y06znu6MVjyvJW2_SX_JKK2DxbxF3QjAqkZhMTvwgLc3Z073vFwwiCHKcOwK2b5H8H4a7PDN6DGJ6YJjpN0",

@@ -27,22 +27,23 @@ namespace JsonWebToken.Performance
 
         private static readonly SymmetricJwk SymmetricKey = Tokens.SigningKey;
 
-        public static readonly JwtReader Reader = new JwtReader(Tokens.EncryptionKey);
         protected static readonly TokenValidationPolicy tokenValidationPolicy
             = new TokenValidationPolicyBuilder()
-                .RequireSignature(SymmetricKey)
+                .RequireSignatureByDefault(SymmetricKey)
                 .RequireAudience("636C69656E745F6964")
-                .RequireIssuer("https://idp.example.com/")
+                .DefaultIssuer("https://idp.example.com/")
                 .EnableLifetimeValidation()
+                .WithDecryptionKey(Tokens.EncryptionKey)
                 .Build();
 
         protected static readonly TokenValidationPolicy tokenValidationPolicyWithoutSignature
             = new TokenValidationPolicyBuilder()
-                .IgnoreSignature()
-                .AcceptUnsecureToken()
+                .IgnoreSignatureByDefault()
+                .AcceptUnsecureTokenByDefault()
                 .RequireAudience("636C69656E745F6964")
-                .RequireIssuer("https://idp.example.com/")
+                .DefaultIssuer("https://idp.example.com/")
                 .EnableLifetimeValidation()
+                .WithDecryptionKey(Tokens.EncryptionKey)
                 .Build();
 
         private static readonly JsonWebKey WilsonSharedKey = JsonWebKey.Create(SymmetricKey.ToString());
@@ -82,11 +83,11 @@ namespace JsonWebToken.Performance
             Microsoft.IdentityModel.Logging.IdentityModelEventSource.ShowPII = true;
         }
 
-        public abstract TokenValidationResult JsonWebToken(BenchmarkToken token);
+        public abstract Jwt JsonWebToken(BenchmarkToken token);
 
-        protected TokenValidationResult JwtCore(byte[] token, TokenValidationPolicy policy)
+        protected bool JwtCore(byte[] token, TokenValidationPolicy policy, out Jwt jwt)
         {
-            return Reader.TryReadToken(token, policy);
+            return Jwt.TryParse(token, policy, out jwt);
         }
 
         public abstract ClaimsPrincipal Wilson(BenchmarkToken token);
@@ -105,12 +106,12 @@ namespace JsonWebToken.Performance
 
         public abstract Dictionary<string, object> jose_jwt(BenchmarkToken token);
 
-        protected Dictionary<string, object> JoseDotNetCore(string token, JweEncryption enc, JweAlgorithm alg, byte[] key)
-        {
-            return Jose.JWT.Decode<Dictionary<string, object>>(token, key: key, enc: enc/*JweEncryption.A128CBC_HS256*/, alg: alg/*JweAlgorithm.A128KW*/);
-        }
+        //protected Dictionary<string, object> JoseDotNetCore(string token, JweEncryption enc, JweAlgorithm alg, byte[] key)
+        //{
+        //    return Jose.JWT.Decode<Dictionary<string, object>>(token, key: key, enc: enc/*JweEncryption.A128CBC_HS256*/, alg: alg/*JweAlgorithm.A128KW*/);
+        //}
 
-        protected Dictionary<string, object> JoseDotNetCore(string token, JwsAlgorithm alg, byte[] key)
+        protected Dictionary<string, object> JoseDotNetCore(string token, JwsAlgorithm alg, byte[]? key)
         {
             return Jose.JWT.Decode<Dictionary<string, object>>(token, key: key, alg: alg /*JwsAlgorithm.HS256*/);
         }

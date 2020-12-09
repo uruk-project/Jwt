@@ -16,8 +16,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JsonWebToken.Tests", "test\
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Benchmarks", "perf\Benchmarks\Benchmarks.csproj", "{EC78DAA1-2A7B-4315-8709-DD67D6F3530E}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JsonWebToken.OpenIdConnect", "src\OpenIdConnect\JsonWebToken.OpenIdConnect.csproj", "{07F87B0C-7A37-466F-A3DC-24E1AA4DC9A2}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JsonWebToken.SecurityEventTokens", "src\SecurityEventTokens\JsonWebToken.SecurityEventTokens.csproj", "{C796FD70-DA69-4F3C-872D-87842C30149A}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JsonWebToken.OAuth2", "src\OAuth2\JsonWebToken.OAuth2.csproj", "{D5994756-CD32-410D-9430-EA0EB7C2DEFA}"
@@ -37,8 +35,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "build", "build", "{E98F10A4
 		azure-pipelines.yml = azure-pipelines.yml
 	EndProjectSection
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JsonWebToken.OpenIDConnect.Tests", "test\JsonWebToken.OpenIDConnect.Tests\JsonWebToken.OpenIDConnect.Tests.csproj", "{D53856E4-8B17-46BA-842D-D2D2EC1CA148}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{F682D324-E173-48DF-819B-D3811CFAA68D}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BinaryJwtCreationSample", "samples\BinaryJwtCreationSample\BinaryJwtCreationSample.csproj", "{4070CB56-07A5-42EC-9BCE-B3C3D4BEF2F5}"
@@ -52,8 +48,6 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JweValidationSample", "samples\JweValidationSample\JweValidationSample.csproj", "{F660E803-A245-4B90-BE22-D0744445E255}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JwsValidationSample", "samples\JwsValidationSample\JwsValidationSample.csproj", "{FA3AB9C1-2756-42E7-9A42-26033DC98A3A}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CreatePerf", "perf\CreatePerf\CreatePerf.csproj", "{CD49103F-1C15-4E03-8A39-2941FFA92DC5}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ValidatePerf", "perf\ValidatePerf\ValidatePerf.csproj", "{089A5394-191A-4FA9-8626-4F9BC2914777}"
 EndProject
@@ -73,6 +67,44 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MultiIssuersValidationSampl
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JwkSample", "samples\JwkSample\JwkSample.csproj", "{B5761A6B-EAE9-4F41-B3A4-8DD15F0B1ADE}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SecEventCreationSample", "samples\SecEventCreationSample\SecEventCreationSample.csproj", "{E0B23647-4AFE-4346-8DC9-65FE6B9E7D01}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sandbox", "perf\Sandbox\Sandbox.csproj", "{8670CD4F-CA00-44BB-9867-A327891AB832}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docs", "docs", "{45F5CD67-CF18-4474-88A1-EDA948AC88FF}"
+	ProjectSection(SolutionItems) = preProject
+		docs\Create_JWE_AES.md = docs\Create_JWE_AES.md
+		docs\Create_JWE_Binary.md = docs\Create_JWE_Binary.md
+		docs\Create_JWE_Direct.md = docs\Create_JWE_Direct.md
+		docs\Create_JWE_ECDH.md = docs\Create_JWE_ECDH.md
+		docs\Create_JWE_PBES2.md = docs\Create_JWE_PBES2.md
+		docs\Create_JWE_Plain.md = docs\Create_JWE_Plain.md
+		docs\Create_JWE_RSA.md = docs\Create_JWE_RSA.md
+		docs\Create_JWS_ECDSA.md = docs\Create_JWS_ECDSA.md
+		docs\Create_JWS_HS.md = docs\Create_JWS_HS.md
+		docs\Create_JWS_RSA.md = docs\Create_JWS_RSA.md
+		docs\Performance_considerations.md = docs\Performance_considerations.md
+		docs\Security_considerations.md = docs\Security_considerations.md
+		docs\Validate_JWE.md = docs\Validate_JWE.md
+		docs\validate_jwe_allocated.png = docs\validate_jwe_allocated.png
+		docs\validate_jwe_ops.png = docs\validate_jwe_ops.png
+		docs\validate_jwec_allocated.png = docs\validate_jwec_allocated.png
+		docs\validate_jwec_ops.png = docs\validate_jwec_ops.png
+		docs\validate_jws_allocated.png = docs\validate_jws_allocated.png
+		docs\Validate_JWS_EC.md = docs\Validate_JWS_EC.md
+		docs\Validate_JWS_HMAC.md = docs\Validate_JWS_HMAC.md
+		docs\validate_jws_ops.png = docs\validate_jws_ops.png
+		docs\Validate_JWS_RSA.md = docs\Validate_JWS_RSA.md
+		docs\validate_jwsi_allocated.png = docs\validate_jwsi_allocated.png
+		docs\validate_jwsi_ops.png = docs\validate_jwsi_ops.png
+		docs\write_jwe_allocated.png = docs\write_jwe_allocated.png
+		docs\write_jwe_ops.png = docs\write_jwe_ops.png
+		docs\write_jwec_allocated.png = docs\write_jwec_allocated.png
+		docs\write_jwec_ops.png = docs\write_jwec_ops.png
+		docs\write_jws_allocated.png = docs\write_jws_allocated.png
+		docs\write_jws_ops.png = docs\write_jws_ops.png
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -91,10 +123,6 @@ Global
 		{EC78DAA1-2A7B-4315-8709-DD67D6F3530E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{EC78DAA1-2A7B-4315-8709-DD67D6F3530E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{EC78DAA1-2A7B-4315-8709-DD67D6F3530E}.Release|Any CPU.Build.0 = Release|Any CPU
-		{07F87B0C-7A37-466F-A3DC-24E1AA4DC9A2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{07F87B0C-7A37-466F-A3DC-24E1AA4DC9A2}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{07F87B0C-7A37-466F-A3DC-24E1AA4DC9A2}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{07F87B0C-7A37-466F-A3DC-24E1AA4DC9A2}.Release|Any CPU.Build.0 = Release|Any CPU
 		{C796FD70-DA69-4F3C-872D-87842C30149A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{C796FD70-DA69-4F3C-872D-87842C30149A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C796FD70-DA69-4F3C-872D-87842C30149A}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -107,10 +135,6 @@ Global
 		{3183725E-25D2-4596-A29D-4578C4E1DD5C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3183725E-25D2-4596-A29D-4578C4E1DD5C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3183725E-25D2-4596-A29D-4578C4E1DD5C}.Release|Any CPU.Build.0 = Release|Any CPU
-		{D53856E4-8B17-46BA-842D-D2D2EC1CA148}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{D53856E4-8B17-46BA-842D-D2D2EC1CA148}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{D53856E4-8B17-46BA-842D-D2D2EC1CA148}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{D53856E4-8B17-46BA-842D-D2D2EC1CA148}.Release|Any CPU.Build.0 = Release|Any CPU
 		{4070CB56-07A5-42EC-9BCE-B3C3D4BEF2F5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{4070CB56-07A5-42EC-9BCE-B3C3D4BEF2F5}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4070CB56-07A5-42EC-9BCE-B3C3D4BEF2F5}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -135,10 +159,6 @@ Global
 		{FA3AB9C1-2756-42E7-9A42-26033DC98A3A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FA3AB9C1-2756-42E7-9A42-26033DC98A3A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FA3AB9C1-2756-42E7-9A42-26033DC98A3A}.Release|Any CPU.Build.0 = Release|Any CPU
-		{CD49103F-1C15-4E03-8A39-2941FFA92DC5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{CD49103F-1C15-4E03-8A39-2941FFA92DC5}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{CD49103F-1C15-4E03-8A39-2941FFA92DC5}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{CD49103F-1C15-4E03-8A39-2941FFA92DC5}.Release|Any CPU.Build.0 = Release|Any CPU
 		{089A5394-191A-4FA9-8626-4F9BC2914777}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{089A5394-191A-4FA9-8626-4F9BC2914777}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{089A5394-191A-4FA9-8626-4F9BC2914777}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -171,6 +191,14 @@ Global
 		{B5761A6B-EAE9-4F41-B3A4-8DD15F0B1ADE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B5761A6B-EAE9-4F41-B3A4-8DD15F0B1ADE}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B5761A6B-EAE9-4F41-B3A4-8DD15F0B1ADE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E0B23647-4AFE-4346-8DC9-65FE6B9E7D01}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E0B23647-4AFE-4346-8DC9-65FE6B9E7D01}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E0B23647-4AFE-4346-8DC9-65FE6B9E7D01}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E0B23647-4AFE-4346-8DC9-65FE6B9E7D01}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8670CD4F-CA00-44BB-9867-A327891AB832}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8670CD4F-CA00-44BB-9867-A327891AB832}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8670CD4F-CA00-44BB-9867-A327891AB832}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8670CD4F-CA00-44BB-9867-A327891AB832}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -179,18 +207,15 @@ Global
 		{1ABCE19E-5F8A-4068-945F-79FBCE9655B4} = {BD2706C5-6C57-484D-89C8-A0CF5F8E3D19}
 		{18A12F8C-3C59-4E9F-ACF2-36C675D7BEE3} = {8905D2E3-4499-4A86-BF3E-F098F228DD59}
 		{EC78DAA1-2A7B-4315-8709-DD67D6F3530E} = {40741FC5-7061-45D8-B484-2EE2D647258F}
-		{07F87B0C-7A37-466F-A3DC-24E1AA4DC9A2} = {BD2706C5-6C57-484D-89C8-A0CF5F8E3D19}
 		{C796FD70-DA69-4F3C-872D-87842C30149A} = {BD2706C5-6C57-484D-89C8-A0CF5F8E3D19}
 		{D5994756-CD32-410D-9430-EA0EB7C2DEFA} = {BD2706C5-6C57-484D-89C8-A0CF5F8E3D19}
 		{3183725E-25D2-4596-A29D-4578C4E1DD5C} = {BD2706C5-6C57-484D-89C8-A0CF5F8E3D19}
-		{D53856E4-8B17-46BA-842D-D2D2EC1CA148} = {8905D2E3-4499-4A86-BF3E-F098F228DD59}
 		{4070CB56-07A5-42EC-9BCE-B3C3D4BEF2F5} = {F682D324-E173-48DF-819B-D3811CFAA68D}
 		{ECDD84C4-CF15-4DFF-A075-F386671825E5} = {F682D324-E173-48DF-819B-D3811CFAA68D}
 		{14A2FA5A-2FD6-43F1-B3FB-1C8A896512D1} = {F682D324-E173-48DF-819B-D3811CFAA68D}
 		{4BCA9700-F42C-4A2C-A698-1439F9C8F911} = {F682D324-E173-48DF-819B-D3811CFAA68D}
 		{F660E803-A245-4B90-BE22-D0744445E255} = {F682D324-E173-48DF-819B-D3811CFAA68D}
 		{FA3AB9C1-2756-42E7-9A42-26033DC98A3A} = {F682D324-E173-48DF-819B-D3811CFAA68D}
-		{CD49103F-1C15-4E03-8A39-2941FFA92DC5} = {40741FC5-7061-45D8-B484-2EE2D647258F}
 		{089A5394-191A-4FA9-8626-4F9BC2914777} = {40741FC5-7061-45D8-B484-2EE2D647258F}
 		{1E5A3220-C5F6-40F8-9F8F-4F63710F4954} = {F682D324-E173-48DF-819B-D3811CFAA68D}
 		{DBF42FBC-F2EC-437F-ABBA-E5CC4414A362} = {8905D2E3-4499-4A86-BF3E-F098F228DD59}
@@ -199,6 +224,8 @@ Global
 		{3D743A21-CCCE-41B1-B9E9-CEBF0A3D7942} = {9B57A379-AA34-40CB-BEB1-F9EA38792A3B}
 		{36269BC7-CFC5-42F4-A63B-A7F6614B9820} = {F682D324-E173-48DF-819B-D3811CFAA68D}
 		{B5761A6B-EAE9-4F41-B3A4-8DD15F0B1ADE} = {F682D324-E173-48DF-819B-D3811CFAA68D}
+		{E0B23647-4AFE-4346-8DC9-65FE6B9E7D01} = {F682D324-E173-48DF-819B-D3811CFAA68D}
+		{8670CD4F-CA00-44BB-9867-A327891AB832} = {40741FC5-7061-45D8-B484-2EE2D647258F}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {2F681326-7ED4-45F6-BD1D-1119EA388F42}

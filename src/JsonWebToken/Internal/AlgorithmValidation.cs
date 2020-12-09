@@ -2,8 +2,9 @@
 // Licensed under the MIT license. See LICENSE in the project root for license information.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 
-namespace JsonWebToken.Internal
+namespace JsonWebToken
 {
     internal sealed class AlgorithmValidation : IValidator
     {
@@ -14,24 +15,27 @@ namespace JsonWebToken.Internal
             _algorithm = Utf8.GetBytes(algorithm ?? throw new ArgumentNullException(nameof(algorithm)));
         }
 
-        public TokenValidationResult TryValidate(Jwt jwt)
+        public bool TryValidate(JwtHeaderDocument header, JwtPayloadDocument payload, [NotNullWhen(false)] out TokenValidationError? error)
         {
-            if (jwt is null)
+            if (header is null)
             {
-                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.jwt);
+                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.header);
             }
 
-            if (!jwt.Header.TryGetValue(HeaderParameters.AlgUtf8, out var property))
+            if (header.Alg.IsEmpty)
             {
-                return TokenValidationResult.MissingHeader(HeaderParameters.AlgUtf8);
+                error = TokenValidationError.MissingHeader(JwtHeaderParameterNames.Alg.ToString());
+                return false;
             }
 
-            if (!_algorithm.AsSpan().SequenceEqual(new ReadOnlySpan<byte>((byte[]?)property.Value)))
+            if (!header.Alg.ValueEquals(_algorithm))
             {
-                return TokenValidationResult.InvalidHeader(HeaderParameters.AlgUtf8);
+                error = TokenValidationError.InvalidHeader(JwtHeaderParameterNames.Alg.ToString());
+                return false;
             }
 
-            return TokenValidationResult.Success(jwt);
+            error = null;
+            return true;
         }
     }
 }

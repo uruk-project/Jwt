@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Security.Cryptography;
-using JsonWebToken.Internal;
 using Xunit;
+using JsonWebToken.Cryptography;
 
 namespace JsonWebToken.Tests
 {
@@ -30,15 +30,15 @@ namespace JsonWebToken.Tests
         public static IEnumerable<object[]> GetRsaWrappingAlgorithms()
         {
             foreach (var enc in new[] {
-                EncryptionAlgorithm.Aes128CbcHmacSha256,
-                EncryptionAlgorithm.Aes192CbcHmacSha384,
-                EncryptionAlgorithm.Aes256CbcHmacSha512,
-                EncryptionAlgorithm.Aes128Gcm,
-                EncryptionAlgorithm.Aes192Gcm,
-                EncryptionAlgorithm.Aes256Gcm
+                EncryptionAlgorithm.A128CbcHS256,
+                EncryptionAlgorithm.A192CbcHS384,
+                EncryptionAlgorithm.A256CbcHS512,
+                EncryptionAlgorithm.A128Gcm,
+                EncryptionAlgorithm.A192Gcm,
+                EncryptionAlgorithm.A256Gcm
             })
             {
-                yield return new object[] { enc, KeyManagementAlgorithm.RsaPkcs1 };
+                yield return new object[] { enc, KeyManagementAlgorithm.Rsa1_5 };
                 yield return new object[] { enc, KeyManagementAlgorithm.RsaOaep };
 #if !NETFRAMEWORK
                 yield return new object[] { enc, KeyManagementAlgorithm.RsaOaep256 };
@@ -59,10 +59,10 @@ namespace JsonWebToken.Tests
         [Fact]
         public void WrapKey_Failure()
         {
-            var keyEncryptionKey = RsaJwk.GenerateKey(2048, true);
-            var wrapper = new RsaKeyWrapper(keyEncryptionKey, EncryptionAlgorithm.Aes256CbcHmacSha512, KeyManagementAlgorithm.RsaOaep);
+            var keyEncryptionKey = RsaJwk.GeneratePrivateKey(2048);
+            var wrapper = new RsaKeyWrapper(keyEncryptionKey, EncryptionAlgorithm.A256CbcHS512, KeyManagementAlgorithm.RsaOaep);
             var destination = new byte[0];
-            var header = new JwtObject();
+            var header = new JwtHeader();
 
             Assert.Throws<CryptographicException>(() => wrapper.WrapKey(null, header, destination));
             wrapper.Dispose();

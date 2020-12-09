@@ -6,7 +6,7 @@ using System.Buffers;
 using System.Buffers.Binary;
 using System.Diagnostics;
 
-namespace JsonWebToken.Internal
+namespace JsonWebToken.Cryptography
 {
     /// <summary>
     /// Provides authenticated encryption and decryption for AES CBC HMAC algorithm.
@@ -31,7 +31,7 @@ namespace JsonWebToken.Internal
 
             _encryptionAlgorithm = encryptionAlgorithm;
             _keyLength = encryptionAlgorithm.RequiredKeySizeInBytes >> 1;
-            _encryptor = encryptor!;
+            _encryptor = encryptor;
         }
 
         /// <summary>
@@ -39,33 +39,25 @@ namespace JsonWebToken.Internal
         /// </summary>
         /// <param name="encryptionAlgorithm"></param>
         public AesCbcHmacEncryptor(EncryptionAlgorithm encryptionAlgorithm)
-            :this(encryptionAlgorithm, new AesCbcEncryptor(encryptionAlgorithm))
+            : this(encryptionAlgorithm, new AesCbcEncryptor(encryptionAlgorithm))
         {
         }
 
         /// <inheritdoc />
         public override int GetCiphertextSize(int plaintextSize)
-        {
-            return (plaintextSize + 16) & ~15;
-        }
+            => (plaintextSize + 16) & ~15;
 
         /// <inheritdoc />
         public override int GetNonceSize()
-        {
-            return 16;
-        }
+            => 16;
 
         /// <inheritdoc />
         public override int GetBase64NonceSize()
-        {
-            return 22;
-        }
+            => 22;
 
         /// <inheritdoc />
         public override int GetTagSize()
-        {
-            return _encryptionAlgorithm.SignatureAlgorithm.RequiredKeySizeInBits >> 2;
-        }
+            => _encryptionAlgorithm.SignatureAlgorithm.RequiredKeySizeInBits >> 2;
 
         /// <inheritdoc />
         public override void Encrypt(

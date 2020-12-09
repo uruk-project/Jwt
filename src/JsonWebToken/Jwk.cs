@@ -6,20 +6,17 @@ using System.Buffers;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Security.Cryptography.X509Certificates;
 using System.Text.Json;
+using gfoidl.Base64;
 using JsonWebToken.Cryptography;
-using JsonWebToken.Internal;
 
 namespace JsonWebToken
 {
-    /// <summary>
-    /// Represents a JSON Web Key as defined in http://tools.ietf.org/html/rfc7517.
-    /// </summary>
-    [DebuggerDisplay("{DebuggerDisplay(),nq}")]
-    public abstract class Jwk : IEquatable<Jwk>, IDisposable
+    /// <summary>Represents a JSON Web Key as defined in http://tools.ietf.org/html/rfc7517.</summary>
+    [DebuggerDisplay("{" + nameof(GetDebuggerDisplay) + "(),nq}")]
+    public abstract class Jwk : IDisposable
     {
 #if SUPPORT_ELLIPTIC_CURVE
         private const uint EC = 17221u;
@@ -35,37 +32,29 @@ namespace JsonWebToken
         private const uint x5u = 7681400u;
         private const ulong key_ops = 32493245967197547u;
 
-        /// <summary>
-        /// An empty <see cref="Jwk"/>.
-        /// </summary>
-        public static readonly Jwk Empty = new NullJwk();
-
-        private static readonly EmptyAlgorithm EmptyAlg = new EmptyAlgorithm();
+        /// <summary>An empty <see cref="Jwk"/>.</summary>
+        public static readonly Jwk None = new NullJwk();
 
         private CryptographicStore<Signer>? _signers;
+        private CryptographicStore<SignatureVerifier>? _signatureVerifiers;
         private CryptographicStore<KeyWrapper>? _keyWrappers;
         private CryptographicStore<KeyUnwrapper>? _keyUnwrappers;
 
-        private IAlgorithm _algorithm;
         private bool? _isSigningKey;
-        private SignatureAlgorithm? _signatureAlgorithm;
         private bool? _isEncryptionKey;
+        private JsonEncodedText _alg;
+        private SignatureAlgorithm? _signatureAlgorithm;
         private KeyManagementAlgorithm? _keyManagementAlgorithm;
-        private byte[]? _use;
-        private IList<string>? _keyOps;
+        private JsonEncodedText _use;
+        private IList<JsonEncodedText>? _keyOps;
         private List<byte[]>? _x5c;
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="Jwk"/> class.
-        /// </summary>
+        /// <summary>Initializes a new instance of the <see cref="Jwk"/> class.</summary>
         protected Jwk()
         {
-            _algorithm = EmptyAlg;
         }
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="Jwk"/> class.
-        /// </summary>
+        /// <summary>Initializes a new instance of the <see cref="Jwk"/> class.</summary>
         /// <param name="alg"></param>
         protected Jwk(SignatureAlgorithm alg)
         {
@@ -74,13 +63,11 @@ namespace JsonWebToken
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.algorithm);
             }
 
-            _algorithm = alg;
+            _alg = alg.Name;
             _signatureAlgorithm = alg;
         }
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="Jwk"/> class.
-        /// </summary>
+        /// <summary>Initializes a new instance of the <see cref="Jwk"/> class.</summary>
         /// <param name="alg"></param>
         protected Jwk(KeyManagementAlgorithm alg)
         {
@@ -89,58 +76,47 @@ namespace JsonWebToken
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.algorithm);
             }
 
-            _algorithm = alg;
+            _alg = alg.Name;
             _keyManagementAlgorithm = alg;
         }
 
-        /// <summary>
-        /// Gets or sets the 'alg' (KeyType).
-        /// </summary>
-        public ReadOnlySpan<byte> Alg { get => _algorithm.Utf8Name; }
+        /// <summary>Gets or sets the 'alg' (KeyType).</summary>
+        public JsonEncodedText Alg => _alg;
 
-        /// <summary>
-        /// Gets the 'key_ops' (Key Operations).
-        /// </summary>
-        public IList<string> KeyOps
+        /// <summary>Gets the 'key_ops' (Key Operations).</summary>
+        public IList<JsonEncodedText> KeyOps
         {
             get
             {
                 if (_keyOps == null)
                 {
-                    _keyOps = new List<string>();
+                    _keyOps = new List<JsonEncodedText>();
                 }
 
                 return _keyOps;
             }
         }
-        /// <summary>
-        /// Gets or sets the 'kid' (Key ID).
-        /// </summary>
-        public string? Kid { get; set; }
 
-        /// <summary>
-        /// Gets or sets the 'kty' (Key Type).
-        /// </summary>
-        public abstract ReadOnlySpan<byte> Kty { get; }
+        /// <summary>Gets or sets the 'kid' (Key ID).</summary>
+        public JsonEncodedText Kid { get; set; }
 
-        /// <summary>
-        /// Gets or sets the 'use' (Public Key Use).
-        /// </summary>
-        public ReadOnlySpan<byte> Use
+        /// <summary>Gets or sets the 'kty' (Key Type).</summary>
+        public abstract JsonEncodedText Kty { get; }
+
+        /// <summary>Gets or sets the 'use' (Public Key Use).</summary>
+        public JsonEncodedText Use
         {
             get => _use;
             set
             {
-                _use = value.ToArray();
-                _isSigningKey = value == null || JwkUseNames.Sig.SequenceEqual(value);
-                _isEncryptionKey = value == null || JwkUseNames.Enc.SequenceEqual(value);
+                _use = value;
+                _isSigningKey = value.EncodedUtf8Bytes.IsEmpty || JwkUseValues.Sig.Equals(value);
+                _isEncryptionKey = value.EncodedUtf8Bytes.IsEmpty || JwkUseValues.Enc.Equals(value);
             }
         }
 
-        /// <summary>
-        /// Gets the 'x5c' collection (X.509 Certificate Chain).
-        /// </summary>
-        public List<byte[]>? X5c
+        /// <summary>Gets the 'x5c' collection (X.509 Certificate Chain).</summary>
+        public List<byte[]> X5c
         {
             get
             {
@@ -153,29 +129,19 @@ namespace JsonWebToken
             }
         }
 
-        /// <summary>
-        /// Gets or sets the 'x5t' (X.509 Certificate SHA-1 thumbprint).
-        /// </summary>
+        /// <summary>Gets or sets the 'x5t' (X.509 Certificate SHA-1 thumbprint).</summary>
         public byte[]? X5t { get; set; }
 
-        /// <summary>
-        /// Gets or sets the 'x5t#S256' (X.509 Certificate SHA-256 thumbprint).
-        /// </summary>
+        /// <summary>Gets or sets the 'x5t#S256' (X.509 Certificate SHA-256 thumbprint).</summary>
         public byte[]? X5tS256 { get; set; }
 
-        /// <summary>
-        /// Gets or sets the 'x5u' (X.509 URL).
-        /// </summary>
+        /// <summary>Gets or sets the 'x5u' (X.509 URL).</summary>
         public string? X5u { get; set; }
 
-        /// <summary>
-        /// Gets the key size of <see cref="Jwk"/>.
-        /// </summary>
+        /// <summary>Gets the key size of <see cref="Jwk"/>.</summary>
         public abstract int KeySizeInBits { get; }
 
-        /// <summary>
-        /// Gets the X.509 certificate chain.
-        /// </summary>
+        /// <summary>Gets the X.509 certificate chain.</summary>
         public IList<Jwk>? X509CertificateChain
         {
             get
@@ -205,7 +171,7 @@ namespace JsonWebToken
                 if (!_isSigningKey.HasValue)
                 {
                     var use = Use;
-                    _isSigningKey = use.IsEmpty || JwkUseNames.Sig.SequenceEqual(use);
+                    _isSigningKey = use.EncodedUtf8Bytes.IsEmpty || JwkUseValues.Sig.Equals(use);
                 }
 
                 return _isSigningKey.Value;
@@ -219,9 +185,9 @@ namespace JsonWebToken
                 if (_signatureAlgorithm is null)
                 {
                     var alg = Alg;
-                    if (!alg.IsEmpty)
+                    if (!alg.EncodedUtf8Bytes.IsEmpty)
                     {
-                        SignatureAlgorithm.TryParse(alg, out _signatureAlgorithm);
+                        SignatureAlgorithm.TryParse(alg.EncodedUtf8Bytes, out _signatureAlgorithm);
                     }
                 }
 
@@ -236,7 +202,7 @@ namespace JsonWebToken
                 if (!_isEncryptionKey.HasValue)
                 {
                     var use = Use;
-                    _isEncryptionKey = use.IsEmpty || JwkUseNames.Enc.SequenceEqual(use);
+                    _isEncryptionKey = use.EncodedUtf8Bytes.IsEmpty || JwkUseValues.Enc.Equals(use);
                 }
 
                 return _isEncryptionKey.Value;
@@ -250,9 +216,9 @@ namespace JsonWebToken
                 if (_keyManagementAlgorithm is null)
                 {
                     var alg = Alg;
-                    if (!alg.IsEmpty)
+                    if (!alg.EncodedUtf8Bytes.IsEmpty)
                     {
-                        KeyManagementAlgorithm.TryParse(alg, out _keyManagementAlgorithm);
+                        KeyManagementAlgorithm.TryParse(alg.EncodedUtf8Bytes, out _keyManagementAlgorithm);
                     }
                 }
 
@@ -260,234 +226,131 @@ namespace JsonWebToken
             }
         }
 
-        /// <summary>
-        /// Determines if the <see cref="Jwk"/> supports the <paramref name="algorithm"/>.
-        /// </summary>
+        /// <summary>Determines if the <see cref="Jwk"/> supports the <paramref name="algorithm"/>.</summary>
         /// <param name="algorithm">The <see cref="SignatureAlgorithm"/> to verify.</param>
         /// <returns><c>true</c> if the key support the algorithm; otherwise <c>false</c></returns>
         public abstract bool SupportSignature(SignatureAlgorithm algorithm);
 
         internal static Jwk FromJsonReader(ref Utf8JsonReader reader)
         {
+            Utf8JsonReader restore = reader;
             if (reader.Read() && reader.TokenType is JsonTokenType.PropertyName)
             {
-                var nameSpan = reader.ValueSpan /* reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan */;
-                if (nameSpan.SequenceEqual(JwkParameterNames.KtyUtf8)
-                    && reader.Read() && reader.TokenType is JsonTokenType.String)
+                if (reader.ValueTextEquals(JwkParameterNames.Kty.EncodedUtf8Bytes))
                 {
-                    var valueSpan = reader.ValueSpan /* reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan */;
-                    switch (valueSpan.Length)
+                    if (reader.Read() && reader.TokenType is JsonTokenType.String)
                     {
-#if SUPPORT_ELLIPTIC_CURVE
-                        /* EC */
-                        case 2:
-                            if (IntegerMarshal.ReadUInt16(valueSpan) == EC)
-                            {
-                                return ECJwk.FromJsonReaderFast(ref reader);
-                            }
-                            break;
-#endif
-                        case 3:
-                            switch (IntegerMarshal.ReadUInt24(valueSpan))
-                            {
-                                /* RSA */
-                                case RSA:
-                                    return RsaJwk.FromJsonReaderFast(ref reader);
-                                /* oct */
-                                case oct:
-                                    return new SymmetricJwk(ref reader);
-                            }
-                            break;
+                        return ReadJwkFromJsonReader(ref reader, reader.ValueSpan);
                     }
-
-                    ThrowHelper.ThrowNotSupportedException_Jwk(valueSpan);
                 }
-            }
-
-            var jwk = new JwtObject();
-            do
-            {
-                var name = reader.ValueSpan /* reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan */;
-                reader.Read();
-                switch (reader.TokenType)
+                else
                 {
-                    case JsonTokenType.String:
-                        if (name.Length == 3)
+                    do
+                    {
+                        reader.Read();
+                        if (IsTokenTypePrimitive(reader.TokenType))
                         {
-                            // Read the 4 bytes, but use a bitmask to ignore the last byte
-                            uint propertyName = IntegerMarshal.ReadUInt24(name);
-                            switch (propertyName)
-                            {
-                                case alg:
-                                    jwk.Add(new JwtProperty(WellKnownProperty.Alg, reader.ValueSpan.ToArray()));
-                                    break;
-                                case use:
-                                    jwk.Add(new JwtProperty(name, reader.ValueSpan.ToArray()));
-                                    continue;
-                                case x5t:
-                                    jwk.Add(new JwtProperty(name, Base64Url.Decode(reader.ValueSpan /* reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan .ToArray()*/)));
-                                    continue;
-                                case kid:
-                                    jwk.Add(new JwtProperty(WellKnownProperty.Kid, reader.GetString()!));
-                                    continue;
-                            }
-                        }
-                        else if (name.Length == 8 && IntegerMarshal.ReadUInt64(name) == x5t_S256)
-                        {
-                            jwk.Add(new JwtProperty(name, Base64Url.Decode(reader.ValueSpan /* reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan .ToArray()*/)));
-                            continue;
-                        }
-
-                        jwk.Add(new JwtProperty(name, reader.GetString()));
-                        break;
-                    case JsonTokenType.StartObject:
-                        var jwtObject = JsonParser.ReadJsonObject(ref reader);
-                        jwk.Add(new JwtProperty(name, jwtObject));
-                        break;
-                    case JsonTokenType.True:
-                        jwk.Add(new JwtProperty(name, true));
-                        break;
-                    case JsonTokenType.False:
-                        jwk.Add(new JwtProperty(name, false));
-                        break;
-                    case JsonTokenType.Null:
-                        jwk.Add(new JwtProperty(name));
-                        break;
-                    case JsonTokenType.Number:
-                        if (reader.TryGetInt64(out long longValue))
-                        {
-                            jwk.Add(new JwtProperty(name, longValue));
+                            reader.Read();
                         }
                         else
                         {
-                            jwk.Add(new JwtProperty(name, reader.GetDouble()));
+                            reader.Skip();
                         }
-                        break;
-                    case JsonTokenType.StartArray:
-                        if (name.Length == 3 && IntegerMarshal.ReadUInt24(name) == x5c)
+
+                        if (reader.TokenType == JsonTokenType.PropertyName && reader.ValueTextEquals(JwkParameterNames.Kty.EncodedUtf8Bytes))
                         {
-                            jwk.Add(new JwtProperty(name, ReadBase64StringJsonArray(ref reader)));
-                            break;
+                            if (reader.Read() && reader.TokenType is JsonTokenType.String)
+                            {
+                                var ktySpan = reader.ValueSpan;
+                                reader = restore;
+                                return ReadJwkFromJsonReader(ref reader, ktySpan);
+                            }
                         }
-
-                        var array = JsonParser.ReadJsonArray(ref reader);
-                        jwk.Add(new JwtProperty(name, array));
-                        break;
-                    default:
-                        ThrowHelper.ThrowFormatException_MalformedJson();
-                        break;
-                }
-            }
-            while (reader.Read() && reader.TokenType is JsonTokenType.PropertyName);
-
-            if (!(reader.TokenType is JsonTokenType.EndObject))
-            {
-                ThrowHelper.ThrowArgumentException_MalformedKey();
-            }
-
-            return FromJwtObject(jwk);
-        }
-
-        private static JwtArray ReadBase64StringJsonArray(ref Utf8JsonReader reader)
-        {
-            var array = new JwtArray(new List<JwtValue>(2));
-            while (reader.Read() && reader.TokenType is JsonTokenType.String)
-            {
-                var value = reader.GetString()!;
-                array.Add(new JwtValue(Convert.FromBase64String(value)));
-            }
-
-            if (!(reader.TokenType is JsonTokenType.EndArray))
-            {
-                ThrowHelper.ThrowFormatException_MalformedJson();
-            }
-
-            return array;
-        }
-
-        private static Jwk FromJwtObject(JwtObject jwk)
-        {
-            if (jwk.TryGetValue(JwkParameterNames.KtyUtf8, out var property) && !(property.Value is null))
-            {
-                var kty = (string)property.Value;
-                if (string.Equals(kty, "oct", StringComparison.Ordinal))
-                {
-                    return new SymmetricJwk(jwk);
-                }
-#if SUPPORT_ELLIPTIC_CURVE
-                else if (string.Equals(kty, "EC", StringComparison.Ordinal))
-                {
-                    return ECJwk.Populate(jwk);
-                }
-#endif
-                else if (string.Equals(kty, "RSA", StringComparison.Ordinal))
-                {
-                    return RsaJwk.Populate(jwk);
+                    } while (reader.TokenType == JsonTokenType.PropertyName);
                 }
             }
 
             ThrowHelper.ThrowArgumentException_MalformedKey();
-            return Jwk.Empty;
+            return null;
         }
 
-        /// <summary>
-        /// Determines if the <see cref="Jwk"/> supports the <paramref name="algorithm"/>.
-        /// </summary>
+        private static bool IsTokenTypePrimitive(JsonTokenType tokenType)
+            => (tokenType - JsonTokenType.String) <= (JsonTokenType.Null - JsonTokenType.String);
+
+        private static Jwk ReadJwkFromJsonReader(ref Utf8JsonReader reader, ReadOnlySpan<byte> valueSpan)
+        {
+            switch (valueSpan.Length)
+            {
+#if SUPPORT_ELLIPTIC_CURVE
+                /* EC */
+                case 2:
+                    if (IntegerMarshal.ReadUInt16(valueSpan) == EC)
+                    {
+                        return ECJwk.FromJsonReaderFast(ref reader);
+                    }
+                    break;
+#endif
+                case 3:
+                    switch (IntegerMarshal.ReadUInt24(valueSpan))
+                    {
+                        /* RSA */
+                        case RSA:
+                            return RsaJwk.FromJsonReaderFast(ref reader);
+                        /* oct */
+                        case oct:
+                            return new SymmetricJwk(ref reader);
+                    }
+                    break;
+            }
+
+            ThrowHelper.ThrowNotSupportedException_Jwk(valueSpan);
+            return None;
+        }
+
+        /// <summary>Determines if the <see cref="Jwk"/> supports the <paramref name="algorithm"/>.</summary>
         /// <param name="algorithm">The <see cref="KeyManagementAlgorithm"/> to verify.</param>
         /// <returns><c>true</c> if the key support the algorithm; otherwise <c>false</c></returns>
         public abstract bool SupportKeyManagement(KeyManagementAlgorithm algorithm);
 
-        /// <summary>
-        /// Determines if the <see cref="Jwk"/> supports the <paramref name="algorithm"/>.
-        /// </summary>
+        /// <summary>Determines if the <see cref="Jwk"/> supports the <paramref name="algorithm"/>.</summary>
         /// <param name="algorithm">The <see cref="EncryptionAlgorithm"/> to verify.</param>
         /// <returns><c>true</c> if the key support the algorithm; otherwise <c>false</c></returns>
         public abstract bool SupportEncryption(EncryptionAlgorithm algorithm);
 
-        /// <summary>
-        /// Returns a string that represents the <see cref="Jwk"/> in JSON.
-        /// </summary>
+        /// <summary>Returns a string that represents the <see cref="Jwk"/> in JSON.</summary>
         public override string ToString()
         {
             using var bufferWriter = new PooledByteBufferWriter();
             using (Utf8JsonWriter writer = new Utf8JsonWriter(bufferWriter, new JsonWriterOptions { Indented = true }))
             {
-                writer.WriteStartObject();
                 WriteTo(writer);
-                writer.WriteEndObject();
             }
 
             var input = bufferWriter.WrittenSpan;
             return Utf8.GetString(input);
         }
 
-        /// <summary>
-        /// Serializes the <see cref="Jwk"/> into its JSON representation.
-        /// </summary>
+        /// <summary>Serializes the <see cref="Jwk"/> into its JSON representation.</summary>
         /// <param name="bufferWriter"></param>
         public void Serialize(IBufferWriter<byte> bufferWriter)
         {
             using var writer = new Utf8JsonWriter(bufferWriter, Constants.NoJsonValidation);
-            writer.WriteStartObject();
             WriteTo(writer);
-            writer.WriteEndObject();
             writer.Flush();
         }
 
-        /// <summary>
-        /// Provides the binary representation of the key.
-        /// </summary>
+        /// <summary>Provides the binary representation of the key.</summary>
         public abstract ReadOnlySpan<byte> AsSpan();
 
-        /// <summary>
-        /// Creates a fresh new <see cref="Signer"/> with the current <see cref="Jwk"/> as key.
-        /// </summary>
+        /// <summary>Creates a fresh new <see cref="Signer"/> with the current <see cref="Jwk"/> as key.</summary>
         /// <param name="algorithm">The <see cref="SignatureAlgorithm"/> used for the signatures.</param>
         protected abstract Signer CreateSigner(SignatureAlgorithm algorithm);
 
-        /// <summary>
-        /// Tries to provide a <see cref="Signer"/> with the current <see cref="Jwk"/> as key.
-        /// </summary>
+        /// <summary>Creates a fresh new <see cref="SignatureVerifier"/> with the current <see cref="Jwk"/> as key.</summary>
+        /// <param name="algorithm">The <see cref="SignatureAlgorithm"/> used for the signatures.</param>
+        protected abstract SignatureVerifier CreateSignatureVerifier(SignatureAlgorithm algorithm);
+
+        /// <summary>Tries to provide a <see cref="Signer"/> with the current <see cref="Jwk"/> as key.</summary>
         /// <param name="algorithm">The <see cref="SignatureAlgorithm"/> used for the signatures.</param>
         /// <param name="signer">The created <see cref="Signer"/>.</param>
         /// <returns><c>true</c> if the <paramref name="signer"/> is available for the requested <paramref name="algorithm"/>; <c>false</c> otherwise.</returns>
@@ -495,13 +358,14 @@ namespace JsonWebToken
         {
             if (!(algorithm is null))
             {
+                int algorithmId = (int)algorithm.Id;
                 var signers = _signers;
                 if (signers is null)
                 {
                     signers = new CryptographicStore<Signer>();
                     _signers = signers;
                 }
-                else if (signers.TryGetValue(algorithm.Id, out signer))
+                else if (signers.TryGetValue(algorithmId, out signer))
                 {
                     goto Found;
                 }
@@ -509,13 +373,13 @@ namespace JsonWebToken
                 if (SupportSignature(algorithm))
                 {
                     signer = CreateSigner(algorithm);
-                    if (signers.TryAdd(algorithm.Id, signer))
+                    if (signers.TryAdd(algorithmId, signer))
                     {
                         goto Found;
                     }
 
                     signer.Dispose();
-                    if (signers.TryGetValue(algorithm.Id, out signer))
+                    if (signers.TryGetValue(algorithmId, out signer))
                     {
                         goto Found;
                     }
@@ -531,9 +395,52 @@ namespace JsonWebToken
             return true;
         }
 
-        /// <summary>
-        /// Tries to provide a <see cref="KeyWrapper"/> with the current <see cref="Jwk"/> as key.
-        /// </summary>
+        /// <summary>Tries to provide a <see cref="SignatureVerifier"/> with the current <see cref="Jwk"/> as key.</summary>
+        /// <param name="algorithm">The <see cref="SignatureAlgorithm"/> used for the signatures.</param>
+        /// <param name="signatureVerifier">The created <see cref="SignatureVerifier"/>.</param>
+        /// <returns><c>true</c> if the <paramref name="signatureVerifier"/> is available for the requested <paramref name="algorithm"/>; <c>false</c> otherwise.</returns>
+        public bool TryGetSignatureVerifier(SignatureAlgorithm? algorithm, [NotNullWhen(true)] out SignatureVerifier? signatureVerifier)
+        {
+            if (!(algorithm is null))
+            {
+                int algorithmId = (int)algorithm.Id;
+                var signatureVerifiers = _signatureVerifiers;
+                if (signatureVerifiers is null)
+                {
+                    signatureVerifiers = new CryptographicStore<SignatureVerifier>();
+                    _signatureVerifiers = signatureVerifiers;
+                }
+                else if (signatureVerifiers.TryGetValue(algorithmId, out signatureVerifier))
+                {
+                    goto Found;
+                }
+
+                if (SupportSignature(algorithm))
+                {
+                    signatureVerifier = CreateSignatureVerifier(algorithm);
+                    if (signatureVerifiers.TryAdd(algorithmId, signatureVerifier))
+                    {
+                        goto Found;
+                    }
+
+                    signatureVerifier.Dispose();
+                    if (signatureVerifiers.TryGetValue(algorithmId, out signatureVerifier))
+                    {
+                        goto Found;
+                    }
+
+                    ThrowHelper.ThrowInvalidOperationException_ConcurrentOperationsNotSupported();
+                }
+            }
+
+            signatureVerifier = null;
+            return false;
+
+        Found:
+            return true;
+        }
+
+        /// <summary>Tries to provide a <see cref="KeyWrapper"/> with the current <see cref="Jwk"/> as key.</summary>
         /// <param name="encryptionAlgorithm">The <see cref="EncryptionAlgorithm"/> used for key wrapping.</param>
         /// <param name="algorithm">The <see cref="KeyManagementAlgorithm"/> used for key wrapping.</param>
         /// <param name="keyWrapper">The provided <see cref="KeyWrapper"/>. <c>null</c> if return <c>false</c></param>
@@ -581,9 +488,7 @@ namespace JsonWebToken
             return true;
         }
 
-        /// <summary>
-        /// Tries to provide a <see cref="KeyUnwrapper"/> with the current <see cref="Jwk"/> as key.
-        /// </summary>
+        /// <summary>Tries to provide a <see cref="KeyUnwrapper"/> with the current <see cref="Jwk"/> as key.</summary>
         /// <param name="encryptionAlgorithm">The <see cref="EncryptionAlgorithm"/> used for key wrapping.</param>
         /// <param name="algorithm">The <see cref="KeyManagementAlgorithm"/> used for key wrapping.</param>
         /// <param name="keyUnwrapper">The provided <see cref="KeyUnwrapper"/>. <c>null</c> if return <c>false</c></param>
@@ -631,67 +536,83 @@ namespace JsonWebToken
             return true;
         }
 
-        /// <summary>
-        /// Creates a fresh new <see cref="KeyWrapper"/> with the current <see cref="Jwk"/> as key.
-        /// </summary>
+        /// <summary>Creates a fresh new <see cref="KeyWrapper"/> with the current <see cref="Jwk"/> as key.</summary>
         /// <param name="encryptionAlgorithm">The <see cref="EncryptionAlgorithm"/> used for key wrapping.</param>
         /// <param name="algorithm">The <see cref="KeyManagementAlgorithm"/> used for key wrapping.</param>
         protected abstract KeyWrapper CreateKeyWrapper(EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm algorithm);
 
-        /// <summary>
-        /// Creates a fresh new <see cref="KeyUnwrapper"/> with the current <see cref="Jwk"/> as key.
-        /// </summary>
+        /// <summary>Creates a fresh new <see cref="KeyUnwrapper"/> with the current <see cref="Jwk"/> as key.</summary>
         /// <param name="encryptionAlgorithm">The <see cref="EncryptionAlgorithm"/> used for key wrapping.</param>
         /// <param name="algorithm">The <see cref="KeyManagementAlgorithm"/> used for key unwrapping.</param>
         protected abstract KeyUnwrapper CreateKeyUnwrapper(EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm algorithm);
 
-        /// <summary>
-        /// Returns a new <see cref="Jwk"/> in its normal form, as defined by https://tools.ietf.org/html/rfc7638#section-3.2
-        /// </summary>
+        /// <summary>Returns a new <see cref="Jwk"/> in its normal form, as defined by https://tools.ietf.org/html/rfc7638#section-3.2</summary>
         /// <returns></returns>
         public byte[] Canonicalize()
         {
-            using var bufferWriter = new PooledByteBufferWriter();
-            Canonicalize(bufferWriter);
-            return bufferWriter.WrittenSpan.ToArray();
+            int size = GetCanonicalizeSize();
+            byte[]? arrayToReturn = null;
+            try
+            {
+                Span<byte> buffer = size > Constants.MaxStackallocBytes
+                                    ? stackalloc byte[size]
+                                    : (arrayToReturn = ArrayPool<byte>.Shared.Rent(size));
+                Canonicalize(buffer);
+                return buffer.Slice(0, size).ToArray();
+            }
+            finally
+            {
+                if (arrayToReturn != null)
+                {
+                    ArrayPool<byte>.Shared.Return(arrayToReturn);
+                }
+            }
         }
 
-        /// <summary>
-        /// Returns a new <see cref="Jwk"/> in its normal form, as defined by https://tools.ietf.org/html/rfc7638#section-3.2
-        /// </summary>
+        /// <summary>Compute the normal form, as defined by https://tools.ietf.org/html/rfc7638#section-3.2, and writes it to the <paramref name="buffer"/>.</summary>
         /// <returns></returns>
-        protected abstract void Canonicalize(IBufferWriter<byte> bufferWriter);
+        protected internal abstract void Canonicalize(Span<byte> buffer);
 
-        /// <summary>
-        /// Compute a hash as defined by https://tools.ietf.org/html/rfc7638.
-        /// </summary>
+        /// <summary>Returns the required size for representing a canonicalized key.</summary>
+        /// <returns></returns>
+        protected internal abstract int GetCanonicalizeSize();
+
+        /// <summary>Compute a hash as defined by https://tools.ietf.org/html/rfc7638.</summary>
         /// <returns></returns>
         public byte[] ComputeThumbprint()
         {
-            Span<byte> hash = stackalloc byte[32];
-            using var bufferWriter = new PooledByteBufferWriter();
-            Canonicalize(bufferWriter);
-            Sha256.Shared.ComputeHash(bufferWriter.WrittenSpan, hash);
-            return Base64Url.Encode(hash);
+            var thumbprint = new byte[43];
+            ComputeThumbprint(thumbprint);
+            return thumbprint;
         }
 
-        /// <summary>
-        /// Compute a hash as defined by https://tools.ietf.org/html/rfc7638.
-        /// </summary>
+        /// <summary>Compute a hash as defined by https://tools.ietf.org/html/rfc7638.</summary>
         /// <returns></returns>
         public void ComputeThumbprint(Span<byte> destination)
         {
             Debug.Assert(destination.Length == 43); // 43 => Base64Url.GetArraySizeRequiredToEncode(32)
             Span<byte> hash = stackalloc byte[32];
-            using var bufferWriter = new PooledByteBufferWriter();
-            Canonicalize(bufferWriter);
-            Sha256.Shared.ComputeHash(bufferWriter.WrittenSpan, hash);
-            Base64Url.Encode(hash, destination);
+            int size = GetCanonicalizeSize();
+            byte[]? arrayToReturn = null;
+            try
+            {
+                Span<byte> buffer = size > Constants.MaxStackallocBytes
+                                    ? stackalloc byte[size]
+                                    : (arrayToReturn = ArrayPool<byte>.Shared.Rent(size));
+                Canonicalize(buffer);
+                Sha256.Shared.ComputeHash(buffer.Slice(0, size), hash);
+                Base64Url.Encode(hash, destination);
+            }
+            finally
+            {
+                if (arrayToReturn != null)
+                {
+                    ArrayPool<byte>.Shared.Return(arrayToReturn);
+                }
+            }
         }
 
-        /// <summary>
-        /// Returns a new instance of <see cref="AsymmetricJwk"/>.
-        /// </summary>
+        /// <summary>Returns a new instance of <see cref="AsymmetricJwk"/>.</summary>
         /// <param name="certificate">A <see cref="X509Certificate2"/> that contains JSON Web Key parameters.</param>
         /// <param name="withPrivateKey">Determines if the private key must be extracted from the certificate.</param>
         public static AsymmetricJwk FromX509Certificate(X509Certificate2 certificate, bool withPrivateKey)
@@ -708,7 +629,7 @@ namespace JsonWebToken
                 if (!(rsa is null))
                 {
                     var rsaParameters = rsa.ExportParameters(withPrivateKey);
-                    key = new RsaJwk(rsaParameters);
+                    key = RsaJwk.FromParameters(rsaParameters, false);
                 }
 #if SUPPORT_ELLIPTIC_CURVE
                 else
@@ -717,7 +638,7 @@ namespace JsonWebToken
                     if (!(ecdsa is null))
                     {
                         var ecParameters = ecdsa.ExportParameters(withPrivateKey);
-                        key = new ECJwk(ecParameters);
+                        key = ECJwk.FromParameters(ecParameters, false);
                     }
                 }
 #endif
@@ -728,7 +649,7 @@ namespace JsonWebToken
                 if (!(rsa is null))
                 {
                     var rsaParameters = rsa.ExportParameters(withPrivateKey);
-                    key = new RsaJwk(rsaParameters);
+                    key = RsaJwk.FromParameters(rsaParameters, false);
                 }
 #if SUPPORT_ELLIPTIC_CURVE
                 else
@@ -737,7 +658,7 @@ namespace JsonWebToken
                     if (!(ecdsa is null))
                     {
                         var ecParameters = ecdsa.ExportParameters(withPrivateKey);
-                        key = new ECJwk(ecParameters);
+                        key = ECJwk.FromParameters(ecParameters, false);
                     }
                 }
 #endif
@@ -751,13 +672,11 @@ namespace JsonWebToken
             key.X5t = certificate.GetCertHash();
             Span<byte> thumbprint = stackalloc byte[43];
             key.ComputeThumbprint(thumbprint);
-            key.Kid = Utf8.GetString(thumbprint);
+            key.Kid = JsonEncodedText.Encode(thumbprint, Constants.JsonEncoder);
             return key;
         }
 
-        /// <summary>
-        /// Returns a new instance of <see cref="Jwk"/>.
-        /// </summary>
+        /// <summary>Returns a new instance of <see cref="Jwk"/>.</summary>
         /// <param name="json">A string that contains JSON Web Key parameters in JSON format.</param>
         /// <returns><see cref="Jwk"/></returns>
         public static Jwk FromJson(string json)
@@ -770,14 +689,15 @@ namespace JsonWebToken
                             ? stackalloc byte[length]
                             : (jsonToReturn = ArrayPool<byte>.Shared.Rent(length));
                 length = Utf8.GetBytes(json, jsonSpan);
-                var reader = new Utf8JsonReader(jsonSpan.Slice(0, length), true, default);
+                jsonSpan = jsonSpan.Slice(0, length);
+                var reader = new Utf8JsonReader(jsonSpan, true, default);
                 if (reader.Read() && reader.TokenType == JsonTokenType.StartObject)
                 {
                     return FromJsonReader(ref reader);
                 }
 
                 ThrowHelper.ThrowArgumentException_MalformedKey();
-                return Empty;
+                return None;
             }
             finally
             {
@@ -788,9 +708,7 @@ namespace JsonWebToken
             }
         }
 
-        /// <summary>
-        /// Returns a new instance of <see cref="RsaJwk"/>.
-        /// </summary>
+        /// <summary>Returns a new instance of <see cref="RsaJwk"/>.</summary>
         /// <param name="pem">A PEM-encoded key in PKCS1 or PKCS8 format.</param>
         /// <remarks>
         /// Support unencrypted PKCS#1 public RSA key, unencrypted PKCS#1 private RSA key, unencrypted PKCS#1 private EC key, 
@@ -799,69 +717,7 @@ namespace JsonWebToken
         /// Password-protected key is not supported.
         /// </remarks>
         public static AsymmetricJwk FromPem(string pem)
-        {
-            return PemParser.Read(pem);
-        }
-
-        internal void Populate(ReadOnlySpan<byte> name, string value)
-        {
-            if (name.SequenceEqual(JwkParameterNames.KidUtf8))
-            {
-                Kid = value;
-            }
-            else if (name.SequenceEqual(JwkParameterNames.X5uUtf8))
-            {
-                X5u = value;
-            }
-        }
-
-        internal void Populate(ReadOnlySpan<byte> name, JwtArray value)
-        {
-            if (name.SequenceEqual(JwkParameterNames.X5cUtf8))
-            {
-                _x5c = new List<byte[]>(value.Count);
-                for (int i = 0; i < value.Count; i++)
-                {
-                    var bytes = (byte[]?)value[i].Value;
-                    if (!(bytes is null))
-                    {
-                        _x5c.Add(bytes);
-                    }
-                }
-            }
-            else if (name.SequenceEqual(JwkParameterNames.KeyOpsUtf8))
-            {
-                _keyOps = new List<string>(value.Count);
-                for (int i = 0; i < value.Count; i++)
-                {
-                    var ops = (string?)value[i].Value;
-                    if (!(ops is null))
-                    {
-                        _keyOps.Add(ops);
-                    }
-                }
-            }
-        }
-
-        internal void Populate(ReadOnlySpan<byte> name, byte[] value)
-        {
-            if (name.SequenceEqual(JwkParameterNames.AlgUtf8))
-            {
-                _algorithm = new UnknownAlgorithm(value);
-            }
-            else if (name.SequenceEqual(JwkParameterNames.UseUtf8))
-            {
-                Use = value;
-            }
-            else if (name.SequenceEqual(JwkParameterNames.X5tS256Utf8))
-            {
-                X5tS256 = value;
-            }
-            else if (name.SequenceEqual(JwkParameterNames.X5tUtf8))
-            {
-                X5t = value;
-            }
-        }
+            => PemParser.Read(pem);
 
         internal static void PopulateEight(ref Utf8JsonReader reader, ref byte pPropertyName, Jwk key)
         {
@@ -883,13 +739,12 @@ namespace JsonWebToken
         {
             if (propertyLength == 7 && IntegerMarshal.ReadUInt56(ref propertyNameRef) == key_ops)
             {
-                key._keyOps = new List<string>();
+                key._keyOps = new List<JsonEncodedText>();
                 while (reader.Read() && reader.TokenType != JsonTokenType.EndArray)
                 {
-                    var value = reader.GetString();
-                    if (value != null)
+                    if (reader.TokenType != JsonTokenType.StartArray)
                     {
-                        key._keyOps.Add(value);
+                        key._keyOps.Add(JsonEncodedText.Encode(reader.ValueSpan, Constants.JsonEncoder));
                     }
                 }
             }
@@ -913,9 +768,7 @@ namespace JsonWebToken
         }
 
         internal static void PopulateObject(ref Utf8JsonReader reader)
-        {
-            JsonParser.ConsumeJsonObject(ref reader);
-        }
+            => JsonParser.ConsumeJsonObject(ref reader);
 
         internal static void PopulateThree(ref Utf8JsonReader reader, ref byte propertyNameRef, Jwk key)
         {
@@ -925,23 +778,23 @@ namespace JsonWebToken
                 case alg:
                     if (SignatureAlgorithm.TryParse(ref reader, out var signatureAlgorithm))
                     {
-                        key._algorithm = signatureAlgorithm;
+                        key._alg = signatureAlgorithm.Name;
                     }
                     else if (KeyManagementAlgorithm.TryParse(ref reader, out var keyManagementAlgorithm))
                     {
-                        key._algorithm = keyManagementAlgorithm;
+                        key._alg = keyManagementAlgorithm.Name;
                     }
                     else
                     {
-                        key._algorithm = new UnknownAlgorithm(reader.ValueSpan.ToArray());
+                        key._alg = JsonEncodedText.Encode(reader.ValueSpan, Constants.JsonEncoder);
                     }
 
                     break;
                 case kid:
-                    key.Kid = reader.GetString();
+                    key.Kid = JsonEncodedText.Encode(reader.ValueSpan, Constants.JsonEncoder);
                     break;
                 case use:
-                    key.Use = reader.ValueSpan;
+                    key.Use = JsonEncodedText.Encode(reader.ValueSpan, Constants.JsonEncoder);
                     break;
                 case x5t:
                     key.X5t = Base64Url.Decode(reader.ValueSpan);
@@ -955,31 +808,30 @@ namespace JsonWebToken
             }
         }
 
-        /// <summary>
-        /// Writes the current <see cref="Jwk"/> into the <paramref name="writer"/>.
-        /// </summary>
+        /// <summary>Writes the current <see cref="Jwk"/> into the <paramref name="writer"/>.</summary>
         /// <param name="writer"></param>
         public virtual void WriteTo(Utf8JsonWriter writer)
         {
-            writer.WriteString(JwkParameterNames.KtyUtf8, Kty);
-            if (Kid != null)
+            // Write the 'kty' first as it easier to recognize the JWK
+            writer.WriteString(JwkParameterNames.Kty, Kty);
+            if (!Kid.EncodedUtf8Bytes.IsEmpty)
             {
-                writer.WriteString(JwkParameterNames.KidUtf8, Kid);
+                writer.WriteString(JwkParameterNames.Kid, Kid);
             }
 
-            if (_use != null)
+            if (!_use.EncodedUtf8Bytes.IsEmpty)
             {
-                writer.WriteString(JwkParameterNames.UseUtf8, _use);
+                writer.WriteString(JwkParameterNames.Use, _use);
             }
 
-            if (Alg != null)
+            if (!_alg.EncodedUtf8Bytes.IsEmpty)
             {
-                writer.WriteString(JwkParameterNames.AlgUtf8, Alg);
+                writer.WriteString(JwkParameterNames.Alg, Alg);
             }
 
             if (_keyOps?.Count > 0)
             {
-                writer.WriteStartArray(JwkParameterNames.KeyOpsUtf8);
+                writer.WriteStartArray(JwkParameterNames.KeyOps);
                 for (int i = 0; i < _keyOps.Count; i++)
                 {
                     writer.WriteStringValue(_keyOps[i]);
@@ -992,56 +844,40 @@ namespace JsonWebToken
             {
                 Span<byte> buffer = stackalloc byte[Base64Url.GetArraySizeRequiredToEncode(X5t.Length)];
                 Base64Url.Encode(X5t, buffer);
-                writer.WriteString(JwkParameterNames.X5tUtf8, buffer);
+                writer.WriteString(JwkParameterNames.X5t, buffer);
             }
 
             if (X5tS256 != null)
             {
                 Span<byte> buffer = stackalloc byte[Base64Url.GetArraySizeRequiredToEncode(X5tS256.Length)];
                 int bytesWritten = Base64Url.Encode(X5tS256, buffer);
-                writer.WriteString(JwkParameterNames.X5tS256Utf8, buffer.Slice(0, bytesWritten));
+                writer.WriteString(JwkParameterNames.X5tS256, buffer.Slice(0, bytesWritten));
             }
 
             if (X5u != null)
             {
-                writer.WriteString(JwkParameterNames.X5uUtf8, X5u);
+                writer.WriteString(JwkParameterNames.X5u, X5u);
             }
 
             if (_x5c != null && _x5c.Count > 0)
             {
-                writer.WriteStartArray(JwkParameterNames.X5cUtf8);
+                writer.WriteStartArray(JwkParameterNames.X5c);
                 for (int i = 0; i < _x5c.Count; i++)
                 {
-                    writer.WriteStringValue(Convert.ToBase64String(_x5c[i]));
+                    writer.WriteStringValue(Base64.Default.Encode(_x5c[i]));
                 }
 
                 writer.WriteEndArray();
             }
         }
 
-        private string DebuggerDisplay()
-        {
-            using var bufferWriter = new PooledByteBufferWriter();
-            using (var writer = new Utf8JsonWriter(bufferWriter, new JsonWriterOptions { Indented = true }))
-            {
-                writer.WriteStartObject();
-                WriteTo(writer);
-                writer.WriteEndObject();
-            }
-
-            var input = bufferWriter.WrittenSpan;
-            return Utf8.GetString(input);
-        }
-
-        /// <summary>
-        /// Compute the 'kid' header parameter based on the JWK thumbprint.
-        /// </summary>
+        /// <summary>Compute the 'kid' header parameter based on the JWK thumbprint.</summary>
         /// <param name="key"></param>
         protected static void ComputeKid(Jwk key)
         {
             Span<byte> thumbprint = stackalloc byte[43];
             key.ComputeThumbprint(thumbprint);
-            key.Kid = Utf8.GetString(thumbprint);
+            key.Kid = JsonEncodedText.Encode(thumbprint, Constants.JsonEncoder);
         }
 
         internal bool CanUseForSignature(SignatureAlgorithm? signatureAlgorithm)
@@ -1050,6 +886,17 @@ namespace JsonWebToken
             {
                 var algorithm = SignatureAlgorithm;
                 return algorithm is null || algorithm == signatureAlgorithm;
+            }
+
+            return false;
+        }
+
+        internal bool CanUseForSignature(JwtElement signatureAlgorithm)
+        {
+            if (IsSigningKey)
+            {
+                var algorithm = SignatureAlgorithm;
+                return algorithm is null || signatureAlgorithm.ValueEquals(algorithm.Utf8Name);
             }
 
             return false;
@@ -1066,12 +913,21 @@ namespace JsonWebToken
             return false;
         }
 
-        /// <inheritsdoc />
-        public abstract bool Equals(Jwk? other);
+        internal bool CanUseForKeyWrapping(JwtElement keyManagementAlgorithm)
+        {
+            if (IsEncryptionKey)
+            {
+                var algorithm = KeyManagementAlgorithm;
+                return algorithm is null || keyManagementAlgorithm.ValueEquals(algorithm.Utf8Name);
+            }
+
+            return false;
+        }
 
         /// <inheritsdoc />
         public virtual void Dispose()
         {
+            GC.SuppressFinalize(this);
             if (_signers != null)
             {
                 _signers.Dispose();
@@ -1089,7 +945,7 @@ namespace JsonWebToken
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static void WriteOptionalBase64UrlProperty(Utf8JsonWriter writer, Span<byte> buffer, byte[]? value, ReadOnlySpan<byte> propertyName)
+        internal static void WriteOptionalBase64UrlProperty(Utf8JsonWriter writer, Span<byte> buffer, byte[]? value, JsonEncodedText propertyName)
         {
             if (!(value is null))
             {
@@ -1098,51 +954,41 @@ namespace JsonWebToken
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static void WriteBase64UrlProperty(Utf8JsonWriter writer, Span<byte> buffer, byte[] value, ReadOnlySpan<byte> propertyName)
+        internal static void WriteBase64UrlProperty(Utf8JsonWriter writer, Span<byte> buffer, byte[] value, JsonEncodedText propertyName)
         {
             int bytesWritten = Base64Url.Encode(value, buffer);
             writer.WriteString(propertyName, buffer.Slice(0, bytesWritten));
         }
 
+        private string GetDebuggerDisplay()
+            => ToString();
+
         internal sealed class NullJwk : Jwk
         {
-            public NullJwk()
-            {
-                _algorithm = new EmptyAlgorithm();
-            }
+            public override JsonEncodedText Kty
+                => default;
 
-            public override ReadOnlySpan<byte> Kty => ReadOnlySpan<byte>.Empty;
-
-            public override int KeySizeInBits => 0;
+            public override int KeySizeInBits
+                => 0;
 
             public override ReadOnlySpan<byte> AsSpan()
-            {
-                return ReadOnlySpan<byte>.Empty;
-            }
+                => ReadOnlySpan<byte>.Empty;
 
-            protected override void Canonicalize(IBufferWriter<byte> bufferWriter)
+            protected internal override void Canonicalize(Span<byte> bufferWriter)
             {
             }
 
-            public override bool Equals(Jwk? other)
-            {
-                return ReferenceEquals(this, other);
-            }
+            protected internal override int GetCanonicalizeSize()
+                => 0;
 
             public override bool SupportSignature(SignatureAlgorithm algorithm)
-            {
-                return algorithm == SignatureAlgorithm.None;
-            }
+                => algorithm == SignatureAlgorithm.None;
 
             public override bool SupportKeyManagement(KeyManagementAlgorithm algorithm)
-            {
-                return false;
-            }
+                => false;
 
             public override bool SupportEncryption(EncryptionAlgorithm algorithm)
-            {
-                return false;
-            }
+                => false;
 
             protected override KeyWrapper CreateKeyWrapper(EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm algorithm)
             {
@@ -1157,30 +1003,16 @@ namespace JsonWebToken
             }
 
             protected override Signer CreateSigner(SignatureAlgorithm algorithm)
+                => Signer.None;
+
+            protected override SignatureVerifier CreateSignatureVerifier(SignatureAlgorithm algorithm)
+               => SignatureVerifier.None;
+
+            public override void WriteTo(Utf8JsonWriter writer)
             {
-                return Signer.None;
+                writer.WriteStartObject();
+                writer.WriteEndObject();
             }
-        }
-
-        private sealed class UnknownAlgorithm : IAlgorithm
-        {
-            private readonly byte[] _alg;
-
-            public UnknownAlgorithm(byte[] alg)
-            {
-                _alg = alg ?? throw new ArgumentNullException(nameof(alg));
-            }
-
-            public ReadOnlySpan<byte> Utf8Name => _alg;
-
-            public string Name => Utf8.GetString(_alg);
-        }
-
-        private sealed class EmptyAlgorithm : IAlgorithm
-        {
-            public ReadOnlySpan<byte> Utf8Name => default;
-
-            public string Name => string.Empty;
         }
     }
 }

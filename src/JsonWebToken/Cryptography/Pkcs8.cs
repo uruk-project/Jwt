@@ -82,7 +82,7 @@ namespace JsonWebToken.Cryptography
                 ThrowHelper.ThrowInvalidOperationException_InvalidPem();
             }
 
-            return new RsaJwk(
+            return RsaJwk.FromByteArray(
                 n: AsnReader.TrimLeadingZeroes(n),
                 e: AsnReader.TrimLeadingZeroes(e, align: false));
         }
@@ -126,7 +126,7 @@ namespace JsonWebToken.Cryptography
                 ThrowHelper.ThrowInvalidOperationException_InvalidPem();
             }
 
-            return new RsaJwk(
+            return RsaJwk.FromByteArray(
                 n: AsnReader.TrimLeadingZeroes(n),
                 e: AsnReader.TrimLeadingZeroes(e, align: false),
                 d: AsnReader.TrimLeadingZeroes(d),
@@ -172,19 +172,19 @@ namespace JsonWebToken.Cryptography
 
             if (IsP256(curveOid))
             {
-                return new ECJwk(EllipticalCurve.P256,
+                return ECJwk.FromByteArray(EllipticalCurve.P256,
                     x: x,
                     y: y);
             }
             else if (IsP384(curveOid))
             {
-                return new ECJwk(EllipticalCurve.P384,
+                return ECJwk.FromByteArray(EllipticalCurve.P384,
                     x: x,
                     y: y);
             }
             else if (IsP521(curveOid))
             {
-                return new ECJwk(EllipticalCurve.P521,
+                return ECJwk.FromByteArray(EllipticalCurve.P521,
                     x: x,
                     y: y);
             }
@@ -243,21 +243,21 @@ namespace JsonWebToken.Cryptography
 
             if (IsP256(curveOid))
             {
-                return new ECJwk(EllipticalCurve.P256,
+                return ECJwk.FromByteArray(EllipticalCurve.P256,
                     d: privateKey,
                     x: x,
                     y: y);
             }
             else if (IsP384(curveOid))
             {
-                return new ECJwk(EllipticalCurve.P384,
+                return ECJwk.FromByteArray(EllipticalCurve.P384,
                     d: privateKey,
                     x: x,
                     y: y);
             }
             else if (IsP521(curveOid))
             {
-                return new ECJwk(EllipticalCurve.P521,
+                return ECJwk.FromByteArray(EllipticalCurve.P521,
                     d: privateKey,
                     x: x,
                     y: y);

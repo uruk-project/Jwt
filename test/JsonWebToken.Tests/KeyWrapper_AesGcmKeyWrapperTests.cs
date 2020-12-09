@@ -1,8 +1,8 @@
 ﻿#if SUPPORT_AESGCM
 using System;
 using System.Collections.Generic;
-using JsonWebToken.Internal;
 using Xunit;
+using JsonWebToken.Cryptography;
 
 namespace JsonWebToken.Tests
 {
@@ -15,16 +15,16 @@ namespace JsonWebToken.Tests
             var cek = WrapKey(wrapper, keyToWrap, out var header);
 
             Assert.Equal(2, header.Count);
-            Assert.True(header.ContainsKey("iv"));
-            Assert.True(header.ContainsKey("tag"));
+            Assert.True(header.ContainsKey(JwtHeaderParameterNames.IV));
+            Assert.True(header.ContainsKey(JwtHeaderParameterNames.Tag));
             return cek;
         }
 
         public static IEnumerable<object[]> GetAesWrappingAlgorithms()
         {
-            yield return new object[] { EncryptionAlgorithm.Aes128Gcm, KeyManagementAlgorithm.Aes128GcmKW };
-            yield return new object[] { EncryptionAlgorithm.Aes192Gcm, KeyManagementAlgorithm.Aes192GcmKW };
-            yield return new object[] { EncryptionAlgorithm.Aes256Gcm, KeyManagementAlgorithm.Aes256GcmKW };
+            yield return new object[] { EncryptionAlgorithm.A128Gcm, KeyManagementAlgorithm.A128GcmKW };
+            yield return new object[] { EncryptionAlgorithm.A192Gcm, KeyManagementAlgorithm.A192GcmKW };
+            yield return new object[] { EncryptionAlgorithm.A256Gcm, KeyManagementAlgorithm.A256GcmKW };
         }
 
         [Theory]
@@ -49,9 +49,9 @@ namespace JsonWebToken.Tests
         {
             var keyEncryptionKey = SymmetricJwk.GenerateKey(256);
             var contentEncryptionKey = SymmetricJwk.GenerateKey(256);
-            var wrapper = new AesGcmKeyWrapper(keyEncryptionKey, EncryptionAlgorithm.Aes256Gcm, KeyManagementAlgorithm.Aes256GcmKW);
-            var destination = new byte[0];
-            var header = new JwtObject();
+            var wrapper = new AesGcmKeyWrapper(keyEncryptionKey, EncryptionAlgorithm.A256Gcm, KeyManagementAlgorithm.A256GcmKW);
+            var destination = Array.Empty<byte>();
+            var header = new JwtHeader();
             Assert.Throws<ArgumentException>(() => wrapper.WrapKey(contentEncryptionKey, header, destination));
 
             Assert.Equal(0, header.Count);

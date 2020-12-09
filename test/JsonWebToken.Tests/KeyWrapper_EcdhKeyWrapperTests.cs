@@ -1,7 +1,7 @@
 ﻿#if NETCOREAPP
 using System;
 using System.Collections.Generic;
-using JsonWebToken.Internal;
+using JsonWebToken.Cryptography;
 using Xunit;
 
 namespace JsonWebToken.Tests
@@ -15,7 +15,7 @@ namespace JsonWebToken.Tests
             var cek = WrapKey(wrapper, keyToWrap, out var header);
 
             Assert.Equal(1, header.Count);
-            Assert.True(header.ContainsKey("epk"));
+            Assert.True(header.ContainsKey(JwtHeaderParameterNames.Epk));
 
             return cek;
         }
@@ -32,21 +32,9 @@ namespace JsonWebToken.Tests
 
         public static IEnumerable<object[]> GetEcdhWrappingAlgorithms()
         {
-            //foreach (var enc in new[] {
-            //    EncryptionAlgorithm.Aes128CbcHmacSha256,
-            //    EncryptionAlgorithm.Aes192CbcHmacSha384,
-            //    EncryptionAlgorithm.Aes256CbcHmacSha512
-            //})
-            //{
-            //    yield return new object[] { enc, KeyManagementAlgorithm.EcdhEs };
-            //    yield return new object[] { enc, KeyManagementAlgorithm.EcdhEsAes128KW };
-            //    yield return new object[] { enc, KeyManagementAlgorithm.EcdhEsAes192KW };
-            //    yield return new object[] { enc, KeyManagementAlgorithm.EcdhEsAes256KW };
-            //}
-
-            yield return new object[] { EncryptionAlgorithm.Aes128Gcm, KeyManagementAlgorithm.EcdhEsAes128KW };
-            yield return new object[] { EncryptionAlgorithm.Aes192Gcm, KeyManagementAlgorithm.EcdhEsAes192KW };
-            yield return new object[] { EncryptionAlgorithm.Aes256Gcm, KeyManagementAlgorithm.EcdhEsAes256KW };
+            yield return new object[] { EncryptionAlgorithm.A128Gcm, KeyManagementAlgorithm.EcdhEsA128KW };
+            yield return new object[] { EncryptionAlgorithm.A192Gcm, KeyManagementAlgorithm.EcdhEsA192KW };
+            yield return new object[] { EncryptionAlgorithm.A256Gcm, KeyManagementAlgorithm.EcdhEsA256KW };
         }
 
         [Theory]
@@ -55,22 +43,6 @@ namespace JsonWebToken.Tests
         {
             Jwk cek = TryWrapKey_Success(null, enc, alg);
             Assert.NotNull(cek);
-        }
-
-        [Fact]
-        public void WrapKey_Failure()
-        {
-            var keyEncryptionKey = ECJwk.GenerateKey(EllipticalCurve.P256, true);
-            var wrapper = new EcdhKeyWrapper(keyEncryptionKey, EncryptionAlgorithm.Aes256CbcHmacSha512, KeyManagementAlgorithm.EcdhEs);
-            var destination = new byte[0];
-            var header = new JwtObject();
-            Jwk cek = null;
-            Assert.Throws<ArgumentNullException>(() => wrapper.WrapKey(null, null, destination));
-            wrapper.Dispose();
-            Assert.Throws<ObjectDisposedException>(() => wrapper.WrapKey(null, header, destination));
-
-            Assert.Equal(0, header.Count);
-            Assert.Null(cek);
         }
     }
 }

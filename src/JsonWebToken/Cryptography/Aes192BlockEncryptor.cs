@@ -8,15 +8,15 @@ using System.Runtime.InteropServices;
 using System.Runtime.Intrinsics;
 using System.Runtime.Intrinsics.X86;
 
-namespace JsonWebToken.Internal
+namespace JsonWebToken.Cryptography
 {
     internal sealed class Aes192BlockEncryptor : AesBlockEncryptor
     {
-        private readonly AesEncryption192Keys _keys;
+        private readonly Aes192EncryptionKeys _keys;
 
         public Aes192BlockEncryptor(ReadOnlySpan<byte> key)
         {
-            _keys = new AesEncryption192Keys(key);
+            _keys = new Aes192EncryptionKeys(key);
         }
 
         /// <inheritsdoc />

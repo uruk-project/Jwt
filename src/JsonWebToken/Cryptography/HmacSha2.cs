@@ -3,8 +3,9 @@
 
 using System;
 using System.Buffers;
+using System.Diagnostics;
 
-namespace JsonWebToken
+namespace JsonWebToken.Cryptography
 {
     /// <summary>
     /// Computes a Hash-based Message Authentication Code (HMAC) using a SHA2 hash function.
@@ -48,14 +49,11 @@ namespace JsonWebToken
         /// <param name="key"></param>
         public HmacSha2(Sha2 sha2, ReadOnlySpan<byte> key)
         {
-            if (sha2 is null)
-            {
-                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.sha);
-            }
+            Debug.Assert(sha2 != null);
 
             Sha2 = sha2;
             int blockSize = sha2.BlockSize;
-            _keys = new byte[blockSize * 2];
+            _keys = ArrayPool<byte>.Shared.Rent(blockSize * 2);
             _innerPadKey = new ReadOnlyMemory<byte>(_keys, 0, blockSize);
             _outerPadKey = new ReadOnlyMemory<byte>(_keys, blockSize, blockSize);
             if (key.Length > blockSize)
@@ -112,6 +110,7 @@ namespace JsonWebToken
         public void Dispose()
         {
             Clear();
+            ArrayPool<byte>.Shared.Return(_keys);
         }
     }
 }

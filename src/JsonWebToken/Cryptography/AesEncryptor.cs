@@ -5,12 +5,12 @@ using System;
 #if SUPPORT_SIMD
 #endif
 
-namespace JsonWebToken
+namespace JsonWebToken.Cryptography
 {
     /// <summary>
     /// Provides encryption.
     /// </summary>
-    public abstract class AesEncryptor
+    internal abstract class AesEncryptor
     {
         /// <summary>
         /// The size of the AES block.

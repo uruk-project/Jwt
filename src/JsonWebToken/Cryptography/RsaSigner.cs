@@ -2,10 +2,10 @@
 // Licensed under the MIT license. See LICENSE in the project root for license information.
 
 using System;
+using System.Diagnostics;
 using System.Security.Cryptography;
-using JsonWebToken.Internal;
 
-namespace JsonWebToken
+namespace JsonWebToken.Cryptography
 {
     internal sealed class RsaSigner : Signer
     {
@@ -15,21 +15,13 @@ namespace JsonWebToken
         private readonly int _hashSizeInBytes;
         private readonly RSASignaturePadding _signaturePadding;
         private readonly int _base64HashSizeInBytes;
-        private readonly bool _canOnlyVerify;
         private bool _disposed;
 
         public RsaSigner(RsaJwk key, SignatureAlgorithm algorithm)
             : base(algorithm)
         {
-            if (key is null)
-            {
-                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.key);
-            }
-
-            if (!key.SupportSignature(algorithm))
-            {
-                ThrowHelper.ThrowNotSupportedException_SignatureAlgorithm(algorithm, key);
-            }
+            Debug.Assert(key != null);
+            Debug.Assert(key.SupportSignature(algorithm));
 
             if (key.HasPrivateKey)
             {
@@ -37,31 +29,11 @@ namespace JsonWebToken
                 {
                     ThrowHelper.ThrowArgumentOutOfRangeException_SigningKeyTooSmall(key, 2048);
                 }
-
-                _canOnlyVerify = false;
-            }
-            else
-            {
-                if (key.KeySizeInBits < 1024)
-                {
-                    ThrowHelper.ThrowArgumentOutOfRangeException_SigningKeyTooSmall(key, 1024);
-                }
-
-                _canOnlyVerify = true;
             }
 
             _hashAlgorithm = algorithm.HashAlgorithm;
             _sha = algorithm.Sha;
-            _signaturePadding = algorithm.Id switch
-            {
-                Algorithms.RsaSha256 => RSASignaturePadding.Pkcs1,
-                Algorithms.RsaSha384 => RSASignaturePadding.Pkcs1,
-                Algorithms.RsaSha512 => RSASignaturePadding.Pkcs1,
-                Algorithms.RsaSsaPssSha256 => RSASignaturePadding.Pss,
-                Algorithms.RsaSsaPssSha384 => RSASignaturePadding.Pss,
-                Algorithms.RsaSsaPssSha512 => RSASignaturePadding.Pss,
-                _ => throw ThrowHelper.CreateNotSupportedException_Algorithm(algorithm)
-            };
+            _signaturePadding = RsaHelper.GetPadding(algorithm);
 
             _hashSizeInBytes = key.KeySizeInBits >> 3;
             _base64HashSizeInBytes = Base64Url.GetArraySizeRequiredToEncode(_hashSizeInBytes);
@@ -74,19 +46,10 @@ namespace JsonWebToken
 
         public override bool TrySign(ReadOnlySpan<byte> data, Span<byte> destination, out int bytesWritten)
         {
+            Debug.Assert(!_disposed);
             if (data.IsEmpty)
             {
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.data);
-            }
-
-            if (_disposed)
-            {
-                ThrowHelper.ThrowObjectDisposedException(GetType());
-            }
-
-            if (_canOnlyVerify)
-            {
-                ThrowHelper.ThrowInvalidOperationException_RequirePrivateKey();
             }
 
             var rsa = _rsaPool.Get();
@@ -111,43 +74,6 @@ namespace JsonWebToken
             }
         }
 
-        public override bool Verify(ReadOnlySpan<byte> data, ReadOnlySpan<byte> signature)
-        {
-            if (data.IsEmpty)
-            {
-                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.data);
-            }
-
-            if (signature.IsEmpty)
-            {
-                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.signature);
-            }
-
-            if (_disposed)
-            {
-                ThrowHelper.ThrowObjectDisposedException(GetType());
-            }
-
-            var rsa = _rsaPool.Get();
-            try
-            {
-#if SUPPORT_SPAN_CRYPTO
-                return rsa.VerifyData(data, signature, _hashAlgorithm, _signaturePadding);
-#else
-                return rsa.VerifyData(data.ToArray(), signature.ToArray(), _hashAlgorithm, _signaturePadding);
-#endif
-            }
-            finally
-            {
-                _rsaPool.Return(rsa);
-            }
-        }
-
-        public override bool VerifyHalf(ReadOnlySpan<byte> data, ReadOnlySpan<byte> signature)
-        {
-            throw new NotImplementedException();
-        }
-
         protected override void Dispose(bool disposing)
         {
             if (!_disposed)
@@ -158,27 +84,6 @@ namespace JsonWebToken
                 }
 
                 _disposed = true;
-            }
-        }
-
-        private sealed class RsaObjectPoolPolicy : PooledObjectFactory<RSA>
-        {
-            private readonly RSAParameters _parameters;
-
-            public RsaObjectPoolPolicy(RSAParameters parameters)
-            {
-                _parameters = parameters;
-            }
-
-            public override RSA Create()
-            {
-#if SUPPORT_SPAN_CRYPTO
-                return RSA.Create(_parameters);
-#else
-                var rsa = new RSACng();
-                rsa.ImportParameters(_parameters);
-                return rsa;
-#endif
             }
         }
     }

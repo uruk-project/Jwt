@@ -25,9 +25,11 @@ namespace JsonWebToken.Performance
 
         [Benchmark(Baseline = true)]
         [ArgumentsSource(nameof(GetTokenValues))]
-        public override TokenValidationResult JsonWebToken(BenchmarkToken token)
+        public override Jwt JsonWebToken(BenchmarkToken token)
         {
-            return JwtCore(token.InvalidTokenBinary, tokenValidationPolicy);
+            JwtCore(token.InvalidTokenBinary, tokenValidationPolicy, out var jwt);
+            jwt.Dispose();
+            return jwt;
         }
 
         [Benchmark]
@@ -90,7 +92,7 @@ namespace JsonWebToken.Performance
         {
             for (int i = 0; i < 10; i++)
             {
-                yield return "JWS " + (i == 0 ? "" : i.ToString()) + "6 claims";
+                yield return "JWS " + i + "6 claims";
             }
         }
     }

@@ -6,7 +6,7 @@ using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
-namespace JsonWebToken.Internal
+namespace JsonWebToken.Cryptography
 {
     /// <summary>
     /// Provides AES key unwrapping services.
@@ -21,24 +21,25 @@ namespace JsonWebToken.Internal
         private readonly AesBlockDecryptor _decryptor;
         private bool _disposed;
 
-        public AesKeyUnwrapper(SymmetricJwk key, EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm algorithm)
-            : base(key, encryptionAlgorithm, algorithm)
+        public AesKeyUnwrapper(ReadOnlySpan<byte> key, EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm algorithm)
+            : base(encryptionAlgorithm, algorithm)
         {
+            Debug.Assert(SymmetricJwk.SupportedKeyManagement(key.Length << 3, algorithm));
             Debug.Assert(algorithm.Category == AlgorithmCategory.Aes);
 #if SUPPORT_SIMD
             if (System.Runtime.Intrinsics.X86.Aes.IsSupported && EncryptionAlgorithm.EnabledAesInstructionSet)
             {
-                if (algorithm == KeyManagementAlgorithm.Aes128KW)
+                if (algorithm == KeyManagementAlgorithm.A128KW)
                 {
-                    _decryptor = new Aes128BlockDecryptor(key.K);
+                    _decryptor = new Aes128BlockDecryptor(key);
                 }
-                else if (algorithm == KeyManagementAlgorithm.Aes256KW)
+                else if (algorithm == KeyManagementAlgorithm.A256KW)
                 {
-                    _decryptor = new Aes256BlockDecryptor(key.K);
+                    _decryptor = new Aes256BlockDecryptor(key);
                 }
-                else if (algorithm == KeyManagementAlgorithm.Aes192KW)
+                else if (algorithm == KeyManagementAlgorithm.A192KW)
                 {
-                    _decryptor = new Aes192BlockDecryptor(key.K);
+                    _decryptor = new Aes192BlockDecryptor(key);
                 }
                 else
                 {
@@ -48,10 +49,10 @@ namespace JsonWebToken.Internal
             }
             else
             {
-                _decryptor = new DefaultAesBlockDecryptor(key.K);
+                _decryptor = new DefaultAesBlockDecryptor(key);
             }
 #else
-            _decryptor = new DefaultAesBlockDecryptor(key.K);
+            _decryptor = new DefaultAesBlockDecryptor(key);
 #endif
         }
 
@@ -68,7 +69,7 @@ namespace JsonWebToken.Internal
             }
         }
 
-        public override bool TryUnwrapKey(ReadOnlySpan<byte> key, Span<byte> destination, JwtHeader header, out int bytesWritten)
+        public override bool TryUnwrapKey(ReadOnlySpan<byte> key, Span<byte> destination, JwtHeaderDocument header, out int bytesWritten)
         {
             if (key.IsEmpty)
             {
@@ -80,11 +81,6 @@ namespace JsonWebToken.Internal
                 ThrowHelper.ThrowArgumentException_KeySizeMustBeMultipleOf64(key);
             }
 
-            if (_disposed)
-            {
-                ThrowHelper.ThrowObjectDisposedException(GetType());
-            }
-
             ref byte input = ref MemoryMarshal.GetReference(key);
             ulong a = Unsafe.ReadUnaligned<ulong>(ref input);
             // The number of input blocks
@@ -92,6 +88,7 @@ namespace JsonWebToken.Internal
 
             // The set of input blocks
             Span<byte> r = stackalloc byte[n];
+            r.Clear();
             ref byte rRef = ref MemoryMarshal.GetReference(r);
             Unsafe.CopyBlockUnaligned(ref rRef, ref Unsafe.AddByteOffset(ref input, (IntPtr)8), (uint)n);
             a = TryUnwrapKey(a, n, ref rRef);
@@ -117,7 +114,7 @@ namespace JsonWebToken.Internal
             ref byte blockRef = ref MemoryMarshal.GetReference(block);
             Span<byte> t = stackalloc byte[8];
             ref byte tRef = ref MemoryMarshal.GetReference(t);
-            Unsafe.WriteUnaligned(ref tRef, 0);
+            Unsafe.WriteUnaligned(ref tRef, 0L);
             int n3 = n >> 3;
             ref byte blockEndRef = ref Unsafe.AddByteOffset(ref blockRef, (IntPtr)8);
             ref byte tRef7 = ref Unsafe.AddByteOffset(ref tRef, (IntPtr)7);

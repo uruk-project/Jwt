@@ -18,14 +18,16 @@ namespace JsonWebToken.Performance
             JsonWebToken(token);
             Wilson(token);
             WilsonJwt(token);
-            jose_jwt(token);
+            //jose_jwt(token); // jose_jwt seems to not works 
         }
 
         [Benchmark(Baseline = true)]
         [ArgumentsSource(nameof(GetTokenValues))]
-        public override TokenValidationResult JsonWebToken(BenchmarkToken token)
+        public override Jwt JsonWebToken(BenchmarkToken token)
         {
-            return JwtCore(token.TokenBinary, tokenValidationPolicy);
+            JwtCore(token.TokenBinary, tokenValidationPolicy, out var jwt);
+            jwt.Dispose();
+            return jwt;
         }
 
         [Benchmark]
@@ -46,7 +48,8 @@ namespace JsonWebToken.Performance
         [ArgumentsSource(nameof(GetTokenValues))]
         public override Dictionary<string, object> jose_jwt(BenchmarkToken token)
         {
-            return JoseDotNetCore(token.TokenString, Jose.JweEncryption.A128CBC_HS256, Jose.JweAlgorithm.A128KW, encryptionKey);
+            return new Dictionary<string, object>();
+            //return JoseDotNetCore(token.TokenString, Jose.JweEncryption.A128CBC_HS256, Jose.JweAlgorithm.A128KW, encryptionKey);
         }
 
         public override IDictionary<string, object> Jwt_Net(BenchmarkToken token)
@@ -58,7 +61,7 @@ namespace JsonWebToken.Performance
         {
             for (int i = 0; i < 10; i++)
             {
-                yield return "JWE " + (i == 0 ? "" : i.ToString()) + "6 claims";
+                yield return "JWE " + i + "6 claims";
             }
         }
     }

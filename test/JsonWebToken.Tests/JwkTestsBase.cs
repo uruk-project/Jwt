@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using JsonWebToken.Internal;
+using System.Text.Json;
+using JsonWebToken.Cryptography;
 using Xunit;
 
 namespace JsonWebToken.Tests
@@ -50,8 +51,8 @@ namespace JsonWebToken.Tests
 
         public Jwk CanonicalizeKey(Jwk key)
         {
-            key.Kid = "kid";
-            key.Use = JwkUseNames.Sig.ToArray();
+            key.Kid = JsonEncodedText.Encode( "kid");
+            key.Use = JwkUseValues.Sig;
             key.X5c.Add(new byte[0]);
             key.X5t = Encoding.UTF8.GetBytes("x5t");
             key.X5tS256 = Encoding.UTF8.GetBytes("x5t#256");
@@ -60,9 +61,9 @@ namespace JsonWebToken.Tests
             var canonicalizedKey = Jwk.FromJson(Encoding.UTF8.GetString(json));
             Assert.NotNull(canonicalizedKey);
 
-            Assert.True(canonicalizedKey.Alg.IsEmpty);
-            Assert.Null(canonicalizedKey.Kid);
-            Assert.True(canonicalizedKey.Use.IsEmpty);
+            Assert.True(canonicalizedKey.Alg.EncodedUtf8Bytes.IsEmpty);
+            Assert.True(canonicalizedKey.Kid.EncodedUtf8Bytes.IsEmpty);
+            Assert.True(canonicalizedKey.Use.EncodedUtf8Bytes.IsEmpty);
             Assert.Empty(canonicalizedKey.X5c);
             Assert.Null(canonicalizedKey.X5t);
             Assert.Null(canonicalizedKey.X5tS256);

@@ -11,7 +11,7 @@ namespace JsonWebToken.Tests
             _keys = keys;
         }
 
-        private static readonly SymmetricJwk _signingKey = SymmetricJwk.GenerateKey(256, SignatureAlgorithm.HmacSha256);
+        private static readonly SymmetricJwk _signingKey = SymmetricJwk.GenerateKey(SignatureAlgorithm.HS256);
         private readonly KeyFixture _keys;
 
         [Theory]
@@ -19,32 +19,31 @@ namespace JsonWebToken.Tests
         public void Compatible(EncryptionAlgorithm enc, KeyManagementAlgorithm alg)
         {
             var writer = new JwtWriter();
-            foreach (var encryptionKey in SelectEncryptionKey(enc.Name, alg.Name))
+            foreach (var encryptionKey in SelectEncryptionKey(enc.Name.ToString(), alg.Name.ToString()))
             {
-                var descriptor = new JweDescriptor
+                var descriptor = new JweDescriptor(encryptionKey, alg, enc)
                 {
-                    EncryptionKey = encryptionKey,
-                    EncryptionAlgorithm = enc,
-                    Algorithm = alg,
-                    Payload = new JwsDescriptor
+                    Payload = new JwsDescriptor(_signingKey, SignatureAlgorithm.HS256)
                     {
-                        SigningKey = _signingKey,
-                        Algorithm = SignatureAlgorithm.HmacSha256,
-                        Subject = "Alice"
+                        Payload = new JwtPayload
+                        {
+                            { "sub", "Alice" }
+                        }
                     }
                 };
 
                 var token = writer.WriteToken(descriptor);
 
-                var reader = new JwtReader(_keys.Jwks);
-
                 var policy = new TokenValidationPolicyBuilder()
-                    .RequireSignature(_signingKey)
-                        .Build();
+                    .RequireSignatureByDefault(_signingKey)
+                    .WithDecryptionKeys(_keys.Jwks)
+                    .Build();
 
-                var result = reader.TryReadToken(token, policy);
-                Assert.Equal(TokenValidationStatus.Success, result.Status);
-                Assert.Equal("Alice", result.Token.Subject);
+                var result = Jwt.TryParse(token, policy, out var jwt);
+                Assert.True(result);
+                Assert.True(jwt.Payload.TryGetClaim("sub", out var sub));
+                Assert.Equal("Alice", sub.GetString());
+                jwt.Dispose();
             }
         }
 
@@ -133,7 +132,7 @@ namespace JsonWebToken.Tests
             //            yield return KeyManagementAlgorithm.Aes128KW;
             //            yield return KeyManagementAlgorithm.Aes192KW;
             //            yield return KeyManagementAlgorithm.Aes256KW;
-            yield return KeyManagementAlgorithm.Direct;
+            yield return KeyManagementAlgorithm.Dir;
 
             //#if NETCOREAPP3_0
             //            yield return KeyManagementAlgorithm.Aes128GcmKW;
@@ -155,14 +154,14 @@ namespace JsonWebToken.Tests
 
         private static IEnumerable<EncryptionAlgorithm> GetEncryptionAlgorithms()
         {
-            yield return EncryptionAlgorithm.Aes128CbcHmacSha256;
-//            yield return EncryptionAlgorithm.Aes192CbcHmacSha384;
-//            yield return EncryptionAlgorithm.Aes256CbcHmacSha512;
-//#if NETCOREAPP3_0
-//            yield return EncryptionAlgorithm.Aes128Gcm;
-//            yield return EncryptionAlgorithm.Aes192Gcm;
-//            yield return EncryptionAlgorithm.Aes256Gcm;
-//#endif
+            yield return EncryptionAlgorithm.A128CbcHS256;
+            //            yield return EncryptionAlgorithm.Aes192CbcHmacSha384;
+            //            yield return EncryptionAlgorithm.Aes256CbcHmacSha512;
+            //#if NETCOREAPP3_0
+            //            yield return EncryptionAlgorithm.Aes128Gcm;
+            //            yield return EncryptionAlgorithm.Aes192Gcm;
+            //            yield return EncryptionAlgorithm.Aes256Gcm;
+            //#endif
         }
     }
 }

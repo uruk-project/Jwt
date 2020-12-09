@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 
-namespace JsonWebToken.Internal
+namespace JsonWebToken.Cryptography
 {
     /// <summary>
     /// Represent a store of cryptographics elements. 
@@ -14,9 +14,9 @@ namespace JsonWebToken.Internal
     /// </summary>
     /// <remarks>Inspired from https://github.com/dotnet/coreclr/pull/8216. </remarks>
     /// <typeparam name="TValue"></typeparam>
-    public sealed class CryptographicStore<TValue> : IDisposable where TValue : class, IDisposable
+    internal sealed class CryptographicStore<TValue> : IDisposable where TValue : class, IDisposable
     {
-        private Map<TValue> _map = EmptyMap<TValue>.Empty;
+        private IMap<TValue> _map = EmptyMap<TValue>.Empty;
 
         /// <summary>
         /// Gets the count of elements.
@@ -38,7 +38,7 @@ namespace JsonWebToken.Internal
         /// <param name="key"></param>
         /// <param name="value"></param>
         /// <returns></returns>
-        public bool TryGetValue(int key, [NotNullWhen(true)] out TValue? value) 
+        public bool TryGetValue(int key, [NotNullWhen(true)] out TValue? value)
             => _map.TryGetValue(key, out value);
 
         /// <inheritsdoc />
@@ -47,17 +47,17 @@ namespace JsonWebToken.Internal
             _map.Dispose();
         }
 
-        private interface Map<TMapValue> : IDisposable where TMapValue : class, IDisposable
+        private interface IMap<TMapValue> : IDisposable where TMapValue : class, IDisposable
         {
             public int Count { get; }
 
-            public bool TryAdd(int key, TMapValue value, out Map<TMapValue> map);
+            public bool TryAdd(int key, TMapValue value, out IMap<TMapValue> map);
 
             public bool TryGetValue(int key, [NotNullWhen(true)] out TMapValue? value);
         }
 
         // Instance without any key/value pairs. Used as a singleton.
-        private sealed class EmptyMap<TMapValue> : Map<TMapValue> where TMapValue : class, IDisposable
+        private sealed class EmptyMap<TMapValue> : IMap<TMapValue> where TMapValue : class, IDisposable
         {
             public static readonly EmptyMap<TMapValue> Empty = new EmptyMap<TMapValue>();
 
@@ -67,7 +67,7 @@ namespace JsonWebToken.Internal
             {
             }
 
-            public bool TryAdd(int key, TMapValue value, out Map<TMapValue> map)
+            public bool TryAdd(int key, TMapValue value, out IMap<TMapValue> map)
             {
                 // Create a new one-element map to store the key/value pair
                 map = new OneElementMap<TMapValue>(key, value);
@@ -82,7 +82,7 @@ namespace JsonWebToken.Internal
             }
         }
 
-        private sealed class OneElementMap<TMapValue> : Map<TMapValue> where TMapValue : class, IDisposable
+        private sealed class OneElementMap<TMapValue> : IMap<TMapValue> where TMapValue : class, IDisposable
         {
             private readonly int _key1;
             private readonly TMapValue _value1;
@@ -100,7 +100,7 @@ namespace JsonWebToken.Internal
                 _value1.Dispose();
             }
 
-            public bool TryAdd(int key, TMapValue value, out Map<TMapValue> map)
+            public bool TryAdd(int key, TMapValue value, out IMap<TMapValue> map)
             {
                 if (key == _key1)
                 {
@@ -129,7 +129,7 @@ namespace JsonWebToken.Internal
             }
         }
 
-        private sealed class TwoElementMap<TMapValue> : Map<TMapValue> where TMapValue : class, IDisposable
+        private sealed class TwoElementMap<TMapValue> : IMap<TMapValue> where TMapValue : class, IDisposable
         {
             private readonly int _key1;
             private readonly TMapValue _value1;
@@ -152,7 +152,7 @@ namespace JsonWebToken.Internal
                 _value2.Dispose();
             }
 
-            public bool TryAdd(int key, TMapValue value, out Map<TMapValue> map)
+            public bool TryAdd(int key, TMapValue value, out IMap<TMapValue> map)
             {
                 if (key == _key1 || key == _key2)
                 {
@@ -189,7 +189,7 @@ namespace JsonWebToken.Internal
             }
         }
 
-        private sealed class ThreeElementMap<TMapValue> : Map<TMapValue> where TMapValue : class, IDisposable
+        private sealed class ThreeElementMap<TMapValue> : IMap<TMapValue> where TMapValue : class, IDisposable
         {
             private readonly int _key1;
             private readonly TMapValue _value1;
@@ -217,7 +217,7 @@ namespace JsonWebToken.Internal
                 _value3.Dispose();
             }
 
-            public bool TryAdd(int key, TMapValue value, out Map<TMapValue> map)
+            public bool TryAdd(int key, TMapValue value, out IMap<TMapValue> map)
             {
                 if (key == _key1 || key == _key2 || key == _key3)
                 {
@@ -264,7 +264,7 @@ namespace JsonWebToken.Internal
             }
         }
 
-        private sealed class MultiElementMap<TMapValue> : Map<TMapValue> where TMapValue : class, IDisposable
+        private sealed class MultiElementMap<TMapValue> : IMap<TMapValue> where TMapValue : class, IDisposable
         {
             private const int MaxMultiElements = 16;
             private readonly KeyValuePair<int, TMapValue>[] _keyValues;
@@ -283,7 +283,7 @@ namespace JsonWebToken.Internal
                 _keyValues[index] = new KeyValuePair<int, TMapValue>(key, value);
             }
 
-            public bool TryAdd(int key, TMapValue value, out Map<TMapValue> map)
+            public bool TryAdd(int key, TMapValue value, out IMap<TMapValue> map)
             {
                 for (int i = 0; i < _keyValues.Length; i++)
                 {
@@ -343,7 +343,7 @@ namespace JsonWebToken.Internal
             }
         }
 
-        private sealed class ManyElementMap<TMapValue> : Map<TMapValue> where TMapValue : class, IDisposable
+        private sealed class ManyElementMap<TMapValue> : IMap<TMapValue> where TMapValue : class, IDisposable
         {
             private readonly Dictionary<int, TMapValue> _dictionary;
 
@@ -354,7 +354,7 @@ namespace JsonWebToken.Internal
                 _dictionary = new Dictionary<int, TMapValue>(capacity);
             }
 
-            public bool TryAdd(int key, TMapValue value, out Map<TMapValue> map)
+            public bool TryAdd(int key, TMapValue value, out IMap<TMapValue> map)
             {
                 map = this;
 #if NETCOREAPP

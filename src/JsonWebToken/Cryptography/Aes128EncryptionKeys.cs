@@ -8,7 +8,7 @@ using System.Runtime.InteropServices;
 using System.Runtime.Intrinsics;
 using System.Runtime.Intrinsics.X86;
 
-namespace JsonWebToken.Internal
+namespace JsonWebToken.Cryptography
 {
     internal readonly struct Aes128EncryptionKeys
     {
@@ -30,7 +30,7 @@ namespace JsonWebToken.Internal
         {
             if (key.Length < 16)
             {
-                ThrowHelper.ThrowArgumentOutOfRangeException_EncryptionKeyTooSmall(EncryptionAlgorithm.Aes128CbcHmacSha256, 128, key.Length * 8);
+                ThrowHelper.ThrowArgumentOutOfRangeException_EncryptionKeyTooSmall(EncryptionAlgorithm.A128CbcHS256, 128, key.Length * 8);
             }
 
             Key0 = Unsafe.ReadUnaligned<Vector128<byte>>(ref MemoryMarshal.GetReference(key));

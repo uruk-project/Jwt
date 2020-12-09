@@ -5,7 +5,7 @@ namespace JsonWebToken.Tests
 {
     public class JweRsaTokenTests
     {
-        private readonly RsaJwk _privateRsa2048Key = new RsaJwk
+        private readonly RsaJwk _privateRsa2048Key = RsaJwk.FromBase64Url
         (
            n: "0vx7agoebGcQSuuPiLJXZptN9nndrQmbXEps2aiAFbWhM78LhWx4cbbfAAtVT86zwu1RK7aPFFxuhDR1L6tSoc_BJECPebWKRXjBZCiFV4n3oknjhMstn64tZ_2W-5JsGY4Hc5n9yBXArwl93lqt7_RN5w6Cf0h4QyQ5v-65YGjQR0_FDW2QvzqY368QQMicAtaSqzs8KJZgnYb9c7d0zgdAZHzu6qMQvRL5hajrn1n91CbOpbISD08qNLyrdkt-bFTWhAI4vMQFh6WeZu0fM4lFd2NcRwr3XPksINHaQ-G_xBniIqbw0Ls1jF44-csFCur-kEgU8awapJzKnqDKgw",
            e: "AQAB",
@@ -17,13 +17,13 @@ namespace JsonWebToken.Tests
            qi: "GyM_p6JrXySiz1toFgKbWV-JdI3jQ4ypu9rbMWx3rQJBfmt0FoYzgUIZEVFEcOqwemRN81zoDAaa-Bk0KWNGDjJHZDdDmFhW3AN7lI-puxk_mHZGJ11rxyR8O55XLSe3SPmRfKwZI6yU24ZxvQKFYItdldUKGzO6Ia6zTKhAVRU"
         );
 
-        private readonly RsaJwk _publicRsa2048Key = new RsaJwk
+        private readonly RsaJwk _publicRsa2048Key = RsaJwk.FromBase64Url
         (
             n: "0vx7agoebGcQSuuPiLJXZptN9nndrQmbXEps2aiAFbWhM78LhWx4cbbfAAtVT86zwu1RK7aPFFxuhDR1L6tSoc_BJECPebWKRXjBZCiFV4n3oknjhMstn64tZ_2W-5JsGY4Hc5n9yBXArwl93lqt7_RN5w6Cf0h4QyQ5v-65YGjQR0_FDW2QvzqY368QQMicAtaSqzs8KJZgnYb9c7d0zgdAZHzu6qMQvRL5hajrn1n91CbOpbISD08qNLyrdkt-bFTWhAI4vMQFh6WeZu0fM4lFd2NcRwr3XPksINHaQ-G_xBniIqbw0Ls1jF44-csFCur-kEgU8awapJzKnqDKgw",
             e: "AQAB"
         );
 
-        private readonly SymmetricJwk _signingKey = SymmetricJwk.GenerateKey(256, SignatureAlgorithm.HmacSha256);
+        private readonly SymmetricJwk _signingKey = SymmetricJwk.GenerateKey(SignatureAlgorithm.HS256);
 
         [Theory]
         [MemberData(nameof(GetSupportedAlgorithm))]
@@ -31,45 +31,45 @@ namespace JsonWebToken.Tests
         {
             var writer = new JwtWriter();
 
-            var descriptor = new JweDescriptor
+            var descriptor = new JweDescriptor(_publicRsa2048Key, alg, enc)
             {
-                EncryptionKey = _publicRsa2048Key,
-                EncryptionAlgorithm = (EncryptionAlgorithm)enc,
-                Algorithm = (KeyManagementAlgorithm)alg,
-                Payload = new JwsDescriptor
+                Payload = new JwsDescriptor(_signingKey, SignatureAlgorithm.HS256)
                 {
-                    SigningKey = _signingKey,
-                    Algorithm = SignatureAlgorithm.HmacSha256,
-                    Subject = "Alice"
+                    Payload = new JwtPayload
+                    {
+                        { "sub", "Alice" }
+                    }
                 }
             };
 
             var token = writer.WriteToken(descriptor);
 
-            var reader = new JwtReader(_privateRsa2048Key);
             var policy = new TokenValidationPolicyBuilder()
-                .RequireSignature(_signingKey)
-                    .Build();
+                .RequireSignatureByDefault(_signingKey)
+                .WithDecryptionKey(_privateRsa2048Key)
+                .Build();
 
-            var result = reader.TryReadToken(token, policy);
-            Assert.Equal(TokenValidationStatus.Success, result.Status);
-            Assert.Equal("Alice", result.Token.Subject);
+            var result = Jwt.TryParse(token, policy, out var jwt);
+            Assert.True(result);
+            Assert.True(jwt.Payload.TryGetClaim("sub", out var sub));
+            Assert.Equal("Alice", sub.GetString());
+            jwt.Dispose();
         }
 
         public static IEnumerable<object[]> GetSupportedAlgorithm()
         {
-            yield return new object[] { EncryptionAlgorithm.Aes128CbcHmacSha256, KeyManagementAlgorithm.RsaPkcs1 };
-            yield return new object[] { EncryptionAlgorithm.Aes192CbcHmacSha384, KeyManagementAlgorithm.RsaPkcs1 };
-            yield return new object[] { EncryptionAlgorithm.Aes256CbcHmacSha512, KeyManagementAlgorithm.RsaPkcs1 };
-            yield return new object[] { EncryptionAlgorithm.Aes128CbcHmacSha256, KeyManagementAlgorithm.RsaOaep };
-            yield return new object[] { EncryptionAlgorithm.Aes192CbcHmacSha384, KeyManagementAlgorithm.RsaOaep };
-            yield return new object[] { EncryptionAlgorithm.Aes256CbcHmacSha512, KeyManagementAlgorithm.RsaOaep };
+            yield return new object[] { EncryptionAlgorithm.A128CbcHS256, KeyManagementAlgorithm.Rsa1_5 };
+            yield return new object[] { EncryptionAlgorithm.A192CbcHS384, KeyManagementAlgorithm.Rsa1_5 };
+            yield return new object[] { EncryptionAlgorithm.A256CbcHS512, KeyManagementAlgorithm.Rsa1_5 };
+            yield return new object[] { EncryptionAlgorithm.A128CbcHS256, KeyManagementAlgorithm.RsaOaep };
+            yield return new object[] { EncryptionAlgorithm.A192CbcHS384, KeyManagementAlgorithm.RsaOaep };
+            yield return new object[] { EncryptionAlgorithm.A256CbcHS512, KeyManagementAlgorithm.RsaOaep };
 #if !NETFRAMEWORK
-            yield return new object[] { EncryptionAlgorithm.Aes128CbcHmacSha256, KeyManagementAlgorithm.RsaOaep256 };
-            yield return new object[] { EncryptionAlgorithm.Aes192CbcHmacSha384, KeyManagementAlgorithm.RsaOaep256 };
-            yield return new object[] { EncryptionAlgorithm.Aes256CbcHmacSha512, KeyManagementAlgorithm.RsaOaep256 };
-            yield return new object[] { EncryptionAlgorithm.Aes256CbcHmacSha512, KeyManagementAlgorithm.RsaOaep384 };
-            yield return new object[] { EncryptionAlgorithm.Aes256CbcHmacSha512, KeyManagementAlgorithm.RsaOaep512 };
+            yield return new object[] { EncryptionAlgorithm.A128CbcHS256, KeyManagementAlgorithm.RsaOaep256 };
+            yield return new object[] { EncryptionAlgorithm.A192CbcHS384, KeyManagementAlgorithm.RsaOaep256 };
+            yield return new object[] { EncryptionAlgorithm.A256CbcHS512, KeyManagementAlgorithm.RsaOaep256 };
+            yield return new object[] { EncryptionAlgorithm.A256CbcHS512, KeyManagementAlgorithm.RsaOaep384 };
+            yield return new object[] { EncryptionAlgorithm.A256CbcHS512, KeyManagementAlgorithm.RsaOaep512 };
 #endif
         }
     }

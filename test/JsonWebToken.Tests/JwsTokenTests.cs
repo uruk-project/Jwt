@@ -1,14 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
+using JsonWebToken.Cryptography;
 using Xunit;
 
 namespace JsonWebToken.Tests
 {
     public class JwsTokenTests
     {
-        private readonly SymmetricJwk _symmetric128Key = new SymmetricJwk("LxOcGxlu169Vxa1A7HyelQ");
+        private readonly SymmetricJwk _symmetric128Key = SymmetricJwk.FromBase64Url("LxOcGxlu169Vxa1A7HyelQ");
 
-        private readonly RsaJwk _privateRsa2048Key = new RsaJwk
+        private readonly RsaJwk _privateRsa2048Key = RsaJwk.FromBase64Url
         (
             n: "0vx7agoebGcQSuuPiLJXZptN9nndrQmbXEps2aiAFbWhM78LhWx4cbbfAAtVT86zwu1RK7aPFFxuhDR1L6tSoc_BJECPebWKRXjBZCiFV4n3oknjhMstn64tZ_2W-5JsGY4Hc5n9yBXArwl93lqt7_RN5w6Cf0h4QyQ5v-65YGjQR0_FDW2QvzqY368QQMicAtaSqzs8KJZgnYb9c7d0zgdAZHzu6qMQvRL5hajrn1n91CbOpbISD08qNLyrdkt-bFTWhAI4vMQFh6WeZu0fM4lFd2NcRwr3XPksINHaQ-G_xBniIqbw0Ls1jF44-csFCur-kEgU8awapJzKnqDKgw",
             e: "AQAB",
@@ -20,13 +21,13 @@ namespace JsonWebToken.Tests
             qi: "GyM_p6JrXySiz1toFgKbWV-JdI3jQ4ypu9rbMWx3rQJBfmt0FoYzgUIZEVFEcOqwemRN81zoDAaa-Bk0KWNGDjJHZDdDmFhW3AN7lI-puxk_mHZGJ11rxyR8O55XLSe3SPmRfKwZI6yU24ZxvQKFYItdldUKGzO6Ia6zTKhAVRU"
         );
 
-        private readonly RsaJwk _publicRsa2048Key = new RsaJwk
+        private readonly RsaJwk _publicRsa2048Key = RsaJwk.FromBase64Url
         (
             n: "0vx7agoebGcQSuuPiLJXZptN9nndrQmbXEps2aiAFbWhM78LhWx4cbbfAAtVT86zwu1RK7aPFFxuhDR1L6tSoc_BJECPebWKRXjBZCiFV4n3oknjhMstn64tZ_2W-5JsGY4Hc5n9yBXArwl93lqt7_RN5w6Cf0h4QyQ5v-65YGjQR0_FDW2QvzqY368QQMicAtaSqzs8KJZgnYb9c7d0zgdAZHzu6qMQvRL5hajrn1n91CbOpbISD08qNLyrdkt-bFTWhAI4vMQFh6WeZu0fM4lFd2NcRwr3XPksINHaQ-G_xBniIqbw0Ls1jF44-csFCur-kEgU8awapJzKnqDKgw",
             e: "AQAB"
         );
 #if !NET461
-        private readonly ECJwk _privateEcc256Key = new ECJwk
+        private readonly ECJwk _privateEcc256Key = ECJwk.FromBase64Url
         (
             crv: EllipticalCurve.P256,
             x: "weNJy2HscCSM6AEDTDg04biOvhFhyyWvOHQfeF_PxMQ",
@@ -34,14 +35,14 @@ namespace JsonWebToken.Tests
             d: "VEmDZpDXXK8p8N0Cndsxs924q6nS1RXFASRl6BfUqdw"
         );
 
-        private readonly ECJwk _publicEcc256Key = new ECJwk
+        private readonly ECJwk _publicEcc256Key = ECJwk.FromBase64Url
         (
             crv: EllipticalCurve.P256,
             x: "weNJy2HscCSM6AEDTDg04biOvhFhyyWvOHQfeF_PxMQ",
             y: "e8lnCO-AlStT-NJVX-crhB7QRYhiix03illJOVAOyck"
         );
 
-        private readonly ECJwk _publicEcc384Key = new ECJwk
+        private readonly ECJwk _publicEcc384Key = ECJwk.FromBase64Url
         (
             crv: EllipticalCurve.P384,
             d: "Wf9qS_1idTtZ13HKUMkNDFPacwsfduJxayYtLlDGYzp8la9YajkWTPQwZT0X-vjq",
@@ -49,7 +50,7 @@ namespace JsonWebToken.Tests
             y: "3HPDrLpplnCJc3ksMBVD9rGFcAld3-c74CIk4ZNleOBnGeAkRZv4wJ4z_btwx_PL"
         );
 
-        private readonly ECJwk _privateEcc384Key = new ECJwk
+        private readonly ECJwk _privateEcc384Key = ECJwk.FromBase64Url
         (
             crv: EllipticalCurve.P384,
             d: "Wf9qS_1idTtZ13HKUMkNDFPacwsfduJxayYtLlDGYzp8la9YajkWTPQwZT0X-vjq",
@@ -57,7 +58,7 @@ namespace JsonWebToken.Tests
             y: "3HPDrLpplnCJc3ksMBVD9rGFcAld3-c74CIk4ZNleOBnGeAkRZv4wJ4z_btwx_PL"
         );
 
-        private readonly ECJwk _privateEcc512Key = new ECJwk
+        private readonly ECJwk _privateEcc512Key = ECJwk.FromBase64Url
         (
             crv: EllipticalCurve.P521,
             d: "Adri8PbGJBWN5upp_67cKF8E0ADCF-w9WpI4vAnoE9iZsnRTZI9D20Ji9rzLyyEPp8KriI_HISTMh_RSmFFhTfBH",
@@ -65,7 +66,7 @@ namespace JsonWebToken.Tests
             y: "AEESIwzgMrpPh9p_eq2EuIMUCCTPzaQK_DtXFwjOWsanjacwu1DZ3XSwbkiHvjQLrXDfdP7xZ-iAXQ1lGZqsud8y"
         );
 
-        private readonly ECJwk _publicEcc512Key = new ECJwk
+        private readonly ECJwk _publicEcc512Key = ECJwk.FromBase64Url
         (
             crv: EllipticalCurve.P521,
             x: "AEeo_Y06znu6MVjyvJW2_SX_JKK2DxbxF3QjAqkZhMTvwgLc3Z073vFwwiCHKcOwK2b5H8H4a7PDN6DGJ6YJjpN0",
@@ -79,40 +80,42 @@ namespace JsonWebToken.Tests
         {
             var (signingKey, validationKey) = SelectKeys(alg);
             var writer = new JwtWriter();
-            var descriptor = new JwsDescriptor
+            var descriptor = new JwsDescriptor(signingKey, (SignatureAlgorithm)alg)
             {
-                SigningKey = signingKey,
-                Algorithm = (SignatureAlgorithm)alg,
-                Subject = "Alice"
+                Payload = new JwtPayload
+                {
+                    {"sub", "Alice"}
+                }
             };
 
             var token = writer.WriteToken(descriptor);
 
-            var reader = new JwtReader();
             var policy = new TokenValidationPolicyBuilder()
-                .RequireSignature(validationKey, (SignatureAlgorithm)alg)
+                .RequireSignatureByDefault(validationKey, (SignatureAlgorithm)alg)
                 .Build();
 
-            var result = reader.TryReadToken(token, policy);
-            Assert.Equal(TokenValidationStatus.Success, result.Status);
-            Assert.Equal("Alice", result.Token.Subject);
+            var result = Jwt.TryParse(token, policy, out var jwt);
+            Assert.True(result);
+            Assert.True(jwt.Payload.TryGetClaim("sub", out var sub));
+            Assert.Equal("Alice", sub.GetString());
+            jwt.Dispose();
         }
 
         public static IEnumerable<object[]> GetSupportedAlgorithm()
         {
-            yield return new object[] { (string)SignatureAlgorithm.HmacSha256 };
-            yield return new object[] { (string)SignatureAlgorithm.HmacSha384 };
-            yield return new object[] { (string)SignatureAlgorithm.HmacSha512 };
-            yield return new object[] { (string)SignatureAlgorithm.RsaSha256 };
-            yield return new object[] { (string)SignatureAlgorithm.RsaSha384 };
-            yield return new object[] { (string)SignatureAlgorithm.RsaSha512 };
-            yield return new object[] { (string)SignatureAlgorithm.RsaSsaPssSha256 };
-            yield return new object[] { (string)SignatureAlgorithm.RsaSsaPssSha384 };
-            yield return new object[] { (string)SignatureAlgorithm.RsaSsaPssSha512 };
+            yield return new object[] { (string)SignatureAlgorithm.HS256 };
+            yield return new object[] { (string)SignatureAlgorithm.HS384 };
+            yield return new object[] { (string)SignatureAlgorithm.HS512 };
+            yield return new object[] { (string)SignatureAlgorithm.RS256 };
+            yield return new object[] { (string)SignatureAlgorithm.RS384 };
+            yield return new object[] { (string)SignatureAlgorithm.RS512 };
+            yield return new object[] { (string)SignatureAlgorithm.PS256 };
+            yield return new object[] { (string)SignatureAlgorithm.PS384 };
+            yield return new object[] { (string)SignatureAlgorithm.PS512 };
 #if !NET461
-            yield return new object[] { (string)SignatureAlgorithm.EcdsaSha256 };
-            yield return new object[] { (string)SignatureAlgorithm.EcdsaSha384 };
-            yield return new object[] { (string)SignatureAlgorithm.EcdsaSha512 };
+            yield return new object[] { (string)SignatureAlgorithm.ES256 };
+            yield return new object[] { (string)SignatureAlgorithm.ES384 };
+            yield return new object[] { (string)SignatureAlgorithm.ES512 };
 #endif
         }
 

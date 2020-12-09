@@ -1,24 +1,25 @@
-﻿using Xunit;
+﻿using JsonWebToken.Cryptography;
+using Xunit;
 
 namespace JsonWebToken.Tests
 {
     public class JwsDescriptorTests
     {
         [Fact]
-        public void Encode()
+        public void EncodeEmpty()
         {
-            var descriptor = new JwsDescriptor();
+            var descriptor = new JwsDescriptor(Jwk.None, SignatureAlgorithm.None);
             using (var bufferWriter = new PooledByteBufferWriter())
             {
-                var context = new EncodingContext(bufferWriter, new JsonHeaderCache(), 60, true);
+                var context = new EncodingContext(bufferWriter, new LruJwtHeaderCache(), 60, true);
                 descriptor.Encode(context);
 
-                var reader = new JwtReader();
-                var result = reader.TryReadToken(bufferWriter.WrittenSpan, TokenValidationPolicy.NoValidation);
-                Assert.True(result.Succedeed);
-                Assert.NotNull(result.Token);
-                Assert.True(result.Token.ExpirationTime.HasValue);
-                Assert.True(result.Token.IssuedAt.HasValue);
+                var result = Jwt.TryParse(bufferWriter.WrittenSpan, TokenValidationPolicy.NoValidation, out var jwt);
+                Assert.True(result);
+                Assert.NotNull(jwt);
+                Assert.True(jwt.Payload.ContainsClaim("exp"));
+                Assert.True(jwt.Payload.ContainsClaim("iat"));
+                jwt.Dispose();
             }
         }
     }

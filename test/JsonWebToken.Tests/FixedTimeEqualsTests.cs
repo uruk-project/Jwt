@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Buffers;
 using System.Security.Cryptography;
+using JsonWebToken.Cryptography;
 using Xunit;
+using CryptographicOperations = JsonWebToken.Cryptography.CryptographicOperations;
 
 namespace JsonWebToken.Tests
 {

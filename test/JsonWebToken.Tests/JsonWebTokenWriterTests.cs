@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,7 +18,7 @@ namespace JsonWebToken.Tests
             _tokens = tokens;
         }
 
-        private readonly RsaJwk RsaKey = new RsaJwk
+        private readonly RsaJwk RsaKey = RsaJwk.FromBase64Url
         (
             n: "sXchDaQebHnPiGvyDOAT4saGEUetSyo9MKLOoWFsueri23bOdgWp4Dy1WlUzewbgBHod5pcM9H95GQRV3JDXboIRROSBigeC5yjU1hGzHHyXss8UDprecbAYxknTcQkhslANGRUZmdTOQ5qTRsLAt6BTYuyvVRdhS8exSZEy_c4gs_7svlJJQ4H9_NxsiIoLwAEk7-Q3UXERGYw_75IDrGA84-lA_-Ct4eTlXHBIY2EaV7t7LjJaynVJCpkv4LKjTTAumiGUIuQhrNhZLuF_RJLqHpM2kgWFLU7-VTdL1VbC2tejvcI2BlMkEpk1BzBZI0KQB0GaDWFLN-aEAw3vRw",
             e: "AQAB",
@@ -27,7 +28,7 @@ namespace JsonWebToken.Tests
             dp: "w0kZbV63cVRvVX6yk3C8cMxo2qCM4Y8nsq1lmMSYhG4EcL6FWbX5h9yuvngs4iLEFk6eALoUS4vIWEwcL4txw9LsWH_zKI-hwoReoP77cOdSL4AVcraHawlkpyd2TWjE5evgbhWtOxnZee3cXJBkAi64Ik6jZxbvk-RR3pEhnCs",
             dq: "o_8V14SezckO6CNLKs_btPdFiO9_kC1DsuUTd2LAfIIVeMZ7jn1Gus_Ff7B7IVx3p5KuBGOVF8L-qifLb6nQnLysgHDh132NDioZkhH7mI7hPG-PYE_odApKdnqECHWw0J-F0JWnUd6D2B_1TvF9mXA2Qx-iGYn8OVV1Bsmp6qU",
             qi: "eNho5yRBEBxhGBtQRww9QirZsB66TrfFReG_CcteI1aCneT0ELGhYlRlCtUkTRclIfuEPmNsNDPbLoLqqCVznFbvdB7x-Tl-m0l_eFTj2KiqwGqE9PZB9nNTwMVvH3VRRSLWACvPnSiwP8N5Usy-WRXS-V7TbpxIhvepTfE0NNo",
-            alg: KeyManagementAlgorithm.RsaPkcs1
+            alg: KeyManagementAlgorithm.Rsa1_5
         );
 
         [Theory]
@@ -38,11 +39,13 @@ namespace JsonWebToken.Tests
             JwtWriter writer = new JwtWriter();
             var value = writer.WriteToken(descriptor);
 
-            var reader = new JwtReader(_keys.Jwks);
-            var result = reader.TryReadToken(value, TokenValidationPolicy.NoValidation);
-            Assert.Equal(TokenValidationStatus.Success, result.Status);
+            var policy = new TokenValidationPolicyBuilder()
+                .WithDecryptionKeys(_keys.Jwks)
+                .IgnoreSignatureByDefault()
+                .Build();
 
-            var jwt = result.Token;
+            var result = Jwt.TryParse(value, policy, out var jwt);
+            Assert.True(result);
 
             if (!(descriptor is JwsDescriptor jwsPayload))
             {
@@ -55,12 +58,14 @@ namespace JsonWebToken.Tests
             }
 
             Assert.NotNull(jwsPayload);
-
-            Assert.Equal(jwsPayload.IssuedAt, jwt.IssuedAt);
-            Assert.Equal(jwsPayload.ExpirationTime, jwt.ExpirationTime);
-            Assert.Equal(jwsPayload.Issuer, jwt.Issuer);
-            Assert.Equal(jwsPayload.Audiences?.FirstOrDefault(), jwt.Audiences?.FirstOrDefault());
-            Assert.Equal(jwsPayload.JwtId, jwt.Id);
+            if (jwsPayload.Payload.Count > 0)
+            {
+                Assert.True(jwt.Payload.TryGetClaim("iat", out var iat));
+                Assert.True(jwt.Payload.TryGetClaim("exp", out var exp));
+                Assert.True(jwt.Payload.TryGetClaim("iss", out var iss));
+                Assert.True(jwt.Payload.TryGetClaim("aud", out var aud));
+                Assert.True(jwt.Payload.TryGetClaim("jti", out var jti));
+            }
         }
 
         [Fact]
@@ -68,19 +73,19 @@ namespace JsonWebToken.Tests
         {
             var plaintext = "Live long and prosper.";
 
-            var descriptor = new PlaintextJweDescriptor(plaintext);
-            descriptor.EncryptionKey = RsaKey;
-            descriptor.EncryptionAlgorithm = EncryptionAlgorithm.Aes128CbcHmacSha256;
-            descriptor.Algorithm = KeyManagementAlgorithm.RsaPkcs1;
+            var descriptor = new PlaintextJweDescriptor(RsaKey, KeyManagementAlgorithm.Rsa1_5, EncryptionAlgorithm.A128CbcHS256);
+            descriptor.Payload = plaintext;
 
             JwtWriter writer = new JwtWriter();
             var value = writer.WriteToken(descriptor);
 
-            var reader = new JwtReader(RsaKey);
-            var result = reader.TryReadToken(value, TokenValidationPolicy.NoValidation);
-            Assert.Equal(TokenValidationStatus.Success, result.Status);
+            var policy = new TokenValidationPolicyBuilder()
+                .WithDecryptionKey(RsaKey)
+                .IgnoreSignatureByDefault()
+                .Build();
 
-            var jwt = result.Token;
+            var result = Jwt.TryParse(value, policy, out var jwt);
+            Assert.True(result);
 
             Assert.Equal(plaintext, jwt.Plaintext);
         }
@@ -90,19 +95,19 @@ namespace JsonWebToken.Tests
         {
             var plaintext = "Live long and prosper!€";
 
-            var descriptor = new PlaintextJweDescriptor(plaintext);
-            descriptor.EncryptionKey = RsaKey;
-            descriptor.EncryptionAlgorithm = EncryptionAlgorithm.Aes128CbcHmacSha256;
-            descriptor.Algorithm = KeyManagementAlgorithm.RsaPkcs1;
+            var descriptor = new PlaintextJweDescriptor(RsaKey, KeyManagementAlgorithm.Rsa1_5, EncryptionAlgorithm.A128CbcHS256);
+            descriptor.Payload = plaintext;
 
             JwtWriter writer = new JwtWriter();
             var value = writer.WriteToken(descriptor);
 
-            var reader = new JwtReader(RsaKey);
-            var result = reader.TryReadToken(value, TokenValidationPolicy.NoValidation);
-            Assert.Equal(TokenValidationStatus.Success, result.Status);
+            var policy = new TokenValidationPolicyBuilder()
+                .WithDecryptionKey(RsaKey)
+                .IgnoreSignatureByDefault()
+                .Build();
 
-            var jwt = result.Token;
+            var result = Jwt.TryParse(value, policy, out var jwt);
+            Assert.True(result);
 
             Assert.Equal(plaintext, jwt.Plaintext);
         }
@@ -112,7 +117,7 @@ namespace JsonWebToken.Tests
         {
             var data = new byte[256];
             FillData(data);
-            var key = new RsaJwk
+            var key = RsaJwk.FromBase64Url
             (
                  n: "sXchDaQebHnPiGvyDOAT4saGEUetSyo9MKLOoWFsueri23bOdgWp4Dy1WlUzewbgBHod5pcM9H95GQRV3JDXboIRROSBigeC5yjU1hGzHHyXss8UDprecbAYxknTcQkhslANGRUZmdTOQ5qTRsLAt6BTYuyvVRdhS8exSZEy_c4gs_7svlJJQ4H9_NxsiIoLwAEk7-Q3UXERGYw_75IDrGA84-lA_-Ct4eTlXHBIY2EaV7t7LjJaynVJCpkv4LKjTTAumiGUIuQhrNhZLuF_RJLqHpM2kgWFLU7-VTdL1VbC2tejvcI2BlMkEpk1BzBZI0KQB0GaDWFLN-aEAw3vRw",
                  e: "AQAB",
@@ -122,33 +127,32 @@ namespace JsonWebToken.Tests
                  dp: "w0kZbV63cVRvVX6yk3C8cMxo2qCM4Y8nsq1lmMSYhG4EcL6FWbX5h9yuvngs4iLEFk6eALoUS4vIWEwcL4txw9LsWH_zKI-hwoReoP77cOdSL4AVcraHawlkpyd2TWjE5evgbhWtOxnZee3cXJBkAi64Ik6jZxbvk-RR3pEhnCs",
                  dq: "o_8V14SezckO6CNLKs_btPdFiO9_kC1DsuUTd2LAfIIVeMZ7jn1Gus_Ff7B7IVx3p5KuBGOVF8L-qifLb6nQnLysgHDh132NDioZkhH7mI7hPG-PYE_odApKdnqECHWw0J-F0JWnUd6D2B_1TvF9mXA2Qx-iGYn8OVV1Bsmp6qU",
                  qi: "eNho5yRBEBxhGBtQRww9QirZsB66TrfFReG_CcteI1aCneT0ELGhYlRlCtUkTRclIfuEPmNsNDPbLoLqqCVznFbvdB7x-Tl-m0l_eFTj2KiqwGqE9PZB9nNTwMVvH3VRRSLWACvPnSiwP8N5Usy-WRXS-V7TbpxIhvepTfE0NNo",
-                 alg: KeyManagementAlgorithm.RsaPkcs1
+                 alg: KeyManagementAlgorithm.Rsa1_5
             );
 
-            var descriptor = new BinaryJweDescriptor(data);
-            descriptor.EncryptionKey = key;
-            descriptor.EncryptionAlgorithm = EncryptionAlgorithm.Aes128CbcHmacSha256;
-            descriptor.Algorithm = KeyManagementAlgorithm.RsaPkcs1;
+            var descriptor = new BinaryJweDescriptor(key, KeyManagementAlgorithm.Rsa1_5, EncryptionAlgorithm.A128CbcHS256);
+            descriptor.Payload = data;
 
             JwtWriter writer = new JwtWriter();
             var value = writer.WriteToken(descriptor);
             Assert.NotNull(value);
 
-            var reader = new JwtReader(key);
-            var result = reader.TryReadToken(value, TokenValidationPolicy.NoValidation);
-            Assert.Equal(TokenValidationStatus.Success, result.Status);
+            var policy = new TokenValidationPolicyBuilder()
+                .WithDecryptionKey(key)
+                .IgnoreSignatureByDefault()
+                .Build();
 
-            var jwt = result.Token;
-            Assert.Equal(data, jwt.Binary);
+            var result = Jwt.TryParse(value, policy, out var jwt);
+            Assert.True(result);
+
+            Assert.True(jwt.RawValue.Span.SequenceEqual(data));
         }
 
         private static void FillData(byte[] data)
         {
 #if NETSTANDARD2_0 || NETCOREAPP2_0 || NETFRAMEWORK
-            using (var rng = RandomNumberGenerator.Create())
-            {
-                rng.GetNonZeroBytes(data);
-            }
+            using var rng = RandomNumberGenerator.Create();
+            rng.GetNonZeroBytes(data);
 #else
             RandomNumberGenerator.Fill(data);
 #endif
@@ -159,20 +163,19 @@ namespace JsonWebToken.Tests
         {
             var plaintext = "Live long and prosper.".PadRight(992 * 100, 'X');
 
-            var descriptor = new PlaintextJweDescriptor(plaintext);
-            descriptor.EncryptionKey = RsaKey;
-            descriptor.EncryptionAlgorithm = EncryptionAlgorithm.Aes128CbcHmacSha256;
-            descriptor.Algorithm = KeyManagementAlgorithm.RsaPkcs1;
-            descriptor.CompressionAlgorithm = CompressionAlgorithm.Deflate;
+            var descriptor = new PlaintextJweDescriptor(RsaKey, KeyManagementAlgorithm.Rsa1_5, EncryptionAlgorithm.A128CbcHS256, CompressionAlgorithm.Def);
+            descriptor.Payload = plaintext;
 
             JwtWriter writer = new JwtWriter();
             var value = writer.WriteToken(descriptor);
 
-            var reader = new JwtReader(RsaKey);
-            var result = reader.TryReadToken(value, TokenValidationPolicy.NoValidation);
-            Assert.Equal(TokenValidationStatus.Success, result.Status);
+            var policy = new TokenValidationPolicyBuilder()
+                .WithDecryptionKey(RsaKey)
+                .IgnoreSignatureByDefault()
+                .Build();
 
-            var jwt = result.Token;
+            var result = Jwt.TryParse(value, policy, out var jwt);
+            Assert.True(result);
 
             Assert.Equal(plaintext, jwt.Plaintext);
         }

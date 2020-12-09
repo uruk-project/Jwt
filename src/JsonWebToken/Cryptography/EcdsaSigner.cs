@@ -3,9 +3,10 @@
 
 #if SUPPORT_ELLIPTIC_CURVE_SIGNATURE
 using System;
+using System.Diagnostics;
 using System.Security.Cryptography;
 
-namespace JsonWebToken.Internal
+namespace JsonWebToken.Cryptography
 {
     internal sealed class EcdsaSigner : Signer
     {
@@ -13,23 +14,14 @@ namespace JsonWebToken.Internal
         private readonly int _hashSize;
         private readonly Sha2 _sha;
         private readonly int _base64HashSize;
-        private readonly bool _canOnlyVerify;
         private bool _disposed;
 
         public EcdsaSigner(ECJwk key, SignatureAlgorithm algorithm)
             : base(algorithm)
         {
-            if (key is null)
-            {
-                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.key);
-            }
+            Debug.Assert(key != null);
+            Debug.Assert(key.KeySizeInBits == algorithm.RequiredKeySizeInBits);
 
-            if (key.KeySizeInBits != algorithm.RequiredKeySizeInBits)
-            {
-                ThrowHelper.ThrowArgumentOutOfRangeException_InvalidSigningKeySize(key, algorithm.RequiredKeySizeInBits);
-            }
-
-            _canOnlyVerify = !key.HasPrivateKey;
             _sha = algorithm.Sha;
             _hashSize = key.Crv.HashSize;
             _base64HashSize = Base64Url.GetArraySizeRequiredToEncode(_hashSize);
@@ -45,19 +37,10 @@ namespace JsonWebToken.Internal
         /// <inheritsdoc />
         public override bool TrySign(ReadOnlySpan<byte> data, Span<byte> destination, out int bytesWritten)
         {
+            Debug.Assert(!_disposed);
             if (data.IsEmpty)
             {
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.data);
-            }
-
-            if (_disposed)
-            {
-                ThrowHelper.ThrowObjectDisposedException(GetType());
-            }
-
-            if (_canOnlyVerify)
-            {
-                ThrowHelper.ThrowInvalidOperationException_RequirePrivateKey();
             }
 
             var ecdsa = _ecdsaPool.Get();
@@ -76,41 +59,6 @@ namespace JsonWebToken.Internal
         }
 
         /// <inheritsdoc />
-        public override bool Verify(ReadOnlySpan<byte> data, ReadOnlySpan<byte> signature)
-        {
-            if (data.IsEmpty)
-            {
-                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.data);
-            }
-
-            if (signature.IsEmpty)
-            {
-                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.signature);
-            }
-
-            if (_disposed)
-            {
-                ThrowHelper.ThrowObjectDisposedException(GetType());
-            }
-
-            var ecdsa = _ecdsaPool.Get();
-#if SUPPORT_SPAN_CRYPTO
-            Span<byte> hash = stackalloc byte[_sha.HashSize];
-            _sha.ComputeHash(data, hash);
-            return ecdsa.VerifyHash(hash, signature);
-#else
-            byte[] hash = new byte[_sha.HashSize];
-            _sha.ComputeHash(data, hash);
-            return ecdsa.VerifyHash(hash, signature.ToArray());
-#endif
-        }
-
-        public override bool VerifyHalf(ReadOnlySpan<byte> data, ReadOnlySpan<byte> signature)
-        {
-            throw new NotImplementedException();
-        }
-
-        /// <inheritsdoc />
         protected override void Dispose(bool disposing)
         {
             if (!_disposed)
@@ -124,24 +72,6 @@ namespace JsonWebToken.Internal
             }
         }
 
-        private sealed class ECDsaObjectPoolPolicy : PooledObjectFactory<ECDsa>
-        {
-            private readonly ECJwk _key;
-            private readonly SignatureAlgorithm _algorithm;
-            private readonly bool _usePrivateKey;
-
-            public ECDsaObjectPoolPolicy(ECJwk key, SignatureAlgorithm algorithm)
-            {
-                _key = key;
-                _algorithm = algorithm;
-                _usePrivateKey = key.HasPrivateKey;
-            }
-
-            public override ECDsa Create()
-            {
-                return _key.CreateECDsa(_algorithm, _usePrivateKey);
-            }
-        }
-    }
+    }   
 }
 #endif

@@ -1,16 +1,16 @@
-﻿using JsonWebToken.Internal;
-using Xunit;
+﻿using Xunit;
+using JsonWebToken.Cryptography;
 
 namespace JsonWebToken.Tests.Cryptography
 {
 #if SUPPORT_SIMD
     public class Aes128NiTests : Aes128Tests
     {
-        protected override AesDecryptor CreateDecryptor()
-            => System.Runtime.Intrinsics.X86.Aes.IsSupported ? (AesDecryptor)new Aes128CbcDecryptor() : new AesCbcDecryptor(EncryptionAlgorithm.Aes128CbcHmacSha256);
+        private protected override AesDecryptor CreateDecryptor()
+            => System.Runtime.Intrinsics.X86.Aes.IsSupported ? (AesDecryptor)new Aes128CbcDecryptor() : new AesCbcDecryptor(EncryptionAlgorithm.A128CbcHS256);
 
-        protected override AesEncryptor CreateEncryptor()
-            => System.Runtime.Intrinsics.X86.Aes.IsSupported ? (AesEncryptor)new Aes128CbcEncryptor() : new AesCbcEncryptor(EncryptionAlgorithm.Aes128CbcHmacSha256);
+        private protected override AesEncryptor CreateEncryptor()
+            => System.Runtime.Intrinsics.X86.Aes.IsSupported ? (AesEncryptor)new Aes128CbcEncryptor() : new AesCbcEncryptor(EncryptionAlgorithm.A128CbcHS256);
     }
 #endif
 
@@ -196,10 +196,10 @@ namespace JsonWebToken.Tests.Cryptography
             VerifyEmptySpan("00000000000000000000000000000000".HexToByteArray(), "00000000000000000000000000000000".HexToByteArray());
         }
 
-        protected override AesDecryptor CreateDecryptor()
-            => new AesCbcDecryptor(EncryptionAlgorithm.Aes128CbcHmacSha256);
+        private protected override AesDecryptor CreateDecryptor()
+            => new AesCbcDecryptor(EncryptionAlgorithm.A128CbcHS256);
 
-        protected override AesEncryptor CreateEncryptor()
-            => new AesCbcEncryptor(EncryptionAlgorithm.Aes128CbcHmacSha256);
+        private protected override AesEncryptor CreateEncryptor()
+            => new AesCbcEncryptor(EncryptionAlgorithm.A128CbcHS256);
     }
 }

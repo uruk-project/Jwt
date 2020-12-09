@@ -9,7 +9,7 @@ using System.Runtime.Intrinsics;
 using System.Runtime.Intrinsics.X86;
 #endif
 
-namespace JsonWebToken
+namespace JsonWebToken.Cryptography
 {
     internal static class HmacHelper
     {
@@ -21,6 +21,8 @@ namespace JsonWebToken
 #endif  
         public static void InitializeIOKeys(ReadOnlySpan<byte> key, Span<byte> keys, int blockSize)
         {
+            // keys may not be initialize at zero
+            keys.Clear();
 #if SUPPORT_SIMD
             if (Avx2.IsSupported && (key.Length & 31) == 0)
             {

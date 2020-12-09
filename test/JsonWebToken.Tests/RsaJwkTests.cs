@@ -4,7 +4,7 @@ using System.Numerics;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
-using JsonWebToken.Internal;
+using JsonWebToken.Cryptography;
 using JsonWebToken.Tests.Cryptography;
 using Xunit;
 
@@ -36,7 +36,7 @@ namespace JsonWebToken.Tests
             Assert.Equal("F8F61435DBCB5D59DCF32250C3B89091294D9806F6D3664EFAB7C2CAB01CD4BA", decryptedData.ByteArrayToHex());
 
 #if !NETFRAMEWORK
-            CryptographicOperations.ZeroMemory(decryptedData);
+            JsonWebToken.Cryptography.CryptographicOperations.ZeroMemory(decryptedData);
             var decrypted = rsa.TryDecrypt(encryptedData, decryptedData, RSAEncryptionPadding.Pkcs1, out int bytesWritten);
 
             Assert.Equal("F8F61435DBCB5D59DCF32250C3B89091294D9806F6D3664EFAB7C2CAB01CD4BA", decryptedData.ByteArrayToHex());
@@ -63,7 +63,7 @@ namespace JsonWebToken.Tests
         [Fact]
         public override void Canonicalize()
         {
-            var jwk = RsaJwk.GenerateKey(2048, true, SignatureAlgorithm.RsaSha256);
+            var jwk = RsaJwk.GeneratePrivateKey(2048, SignatureAlgorithm.RS256);
             var canonicalizedKey = (RsaJwk)CanonicalizeKey(jwk);
             Assert.False(canonicalizedKey.E.IsEmpty);
             Assert.False(canonicalizedKey.N.IsEmpty);
@@ -103,8 +103,8 @@ namespace JsonWebToken.Tests
             Assert.NotNull(key);
             var jwk = Assert.IsType<RsaJwk>(key);
 
-            Assert.Equal("juliet@capulet.lit", jwk.Kid);
-            Assert.True(JwkUseNames.Enc.SequenceEqual(jwk.Use));
+            Assert.Equal("juliet@capulet.lit", jwk.Kid.ToString());
+            Assert.True(JwkUseValues.Enc.Equals(jwk.Use));
 
             Assert.Equal(jwk.N.ToArray(), Base64Url.Decode("t6Q8PWSi1dkJj9hTP8hNYFlvadM7DflW9mWepOJhJ66w7nyoK1gPNqFMSQRyO125Gp-TEkodhWr0iujjHVx7BcV0llS4w5ACGgPrcAd6ZcSR0-Iqom-QFcNP8Sjg086MwoqQU_LYywlAGZ21WSdS_PERyGFiNnj3QQlO8Yns5jCtLCRwLHL0Pb1fEv45AuRIuUfVcPySBWYnDyGxvjYGDSM-AqWS9zIQ2ZilgT-GqUmipg0XOC0Cc20rgLe2ymLHjpHciCKVAbY5-L32-lSeZO-Os6U15_aXrk9Gw8cPUaX1_I8sLGuSiVdt3C_Fn2PZ3Z8i744FPFGGcG1qs2Wz-Q"));
             Assert.Equal(jwk.E.ToArray(), Base64Url.Decode("AQAB"));
@@ -132,7 +132,7 @@ namespace JsonWebToken.Tests
 
             Assert.Equal(Base64Url.Decode("dGhpcyBpcyBhIFNIQTEgdGVzdCE"), jwk.X5t);
             Assert.Equal(Base64Url.Decode("dGhpcyBpcyBhIFNIQTI1NiB0ZXN0ISAgICAgICAgICAgIA"), jwk.X5tS256);
-            Assert.Equal("sign", jwk.KeyOps[0]);
+            Assert.Equal(JwkKeyOpsValues.Sign, jwk.KeyOps[0]);
             Assert.Equal("https://example.com", jwk.X5u);
         }
 
@@ -360,42 +360,42 @@ y6T3Y16v8maAqNihK6YdWZI19n2ctNWPF4PTykPnjwpauqYkB5k2wMOp
 
         public static IEnumerable<object[]> GetWrappingKeys()
         {
-            yield return new object[] { PrivateRsa2048Key, EncryptionAlgorithm.Aes128CbcHmacSha256, KeyManagementAlgorithm.RsaPkcs1 };
-            yield return new object[] { PrivateRsa2048Key, EncryptionAlgorithm.Aes128CbcHmacSha256, KeyManagementAlgorithm.RsaOaep };
+            yield return new object[] { PrivateRsa2048Key, EncryptionAlgorithm.A128CbcHS256, KeyManagementAlgorithm.Rsa1_5 };
+            yield return new object[] { PrivateRsa2048Key, EncryptionAlgorithm.A128CbcHS256, KeyManagementAlgorithm.RsaOaep };
 #if !NET461 && !NET47
-            yield return new object[] { PrivateRsa2048Key, EncryptionAlgorithm.Aes128CbcHmacSha256, KeyManagementAlgorithm.RsaOaep256 };
-            yield return new object[] { PrivateRsa2048Key, EncryptionAlgorithm.Aes128CbcHmacSha256, KeyManagementAlgorithm.RsaOaep384 };
-            yield return new object[] { PrivateRsa2048Key, EncryptionAlgorithm.Aes128CbcHmacSha256, KeyManagementAlgorithm.RsaOaep512 };
+            yield return new object[] { PrivateRsa2048Key, EncryptionAlgorithm.A128CbcHS256, KeyManagementAlgorithm.RsaOaep256 };
+            yield return new object[] { PrivateRsa2048Key, EncryptionAlgorithm.A128CbcHS256, KeyManagementAlgorithm.RsaOaep384 };
+            yield return new object[] { PrivateRsa2048Key, EncryptionAlgorithm.A128CbcHS256, KeyManagementAlgorithm.RsaOaep512 };
 #endif
         }
 
         public static IEnumerable<object[]> GetSignatureValidationKeys()
         {
-            yield return new object[] { PublicRsa2048Key, SignatureAlgorithm.RsaSha256 };
-            yield return new object[] { PublicRsa2048Key, SignatureAlgorithm.RsaSha384 };
-            yield return new object[] { PublicRsa2048Key, SignatureAlgorithm.RsaSha512 };
-            yield return new object[] { PublicRsa2048Key, SignatureAlgorithm.RsaSsaPssSha256 };
-            yield return new object[] { PublicRsa2048Key, SignatureAlgorithm.RsaSsaPssSha384 };
-            yield return new object[] { PublicRsa2048Key, SignatureAlgorithm.RsaSsaPssSha512 };
+            yield return new object[] { PublicRsa2048Key, SignatureAlgorithm.RS256 };
+            yield return new object[] { PublicRsa2048Key, SignatureAlgorithm.RS384 };
+            yield return new object[] { PublicRsa2048Key, SignatureAlgorithm.RS512 };
+            yield return new object[] { PublicRsa2048Key, SignatureAlgorithm.PS256 };
+            yield return new object[] { PublicRsa2048Key, SignatureAlgorithm.PS384 };
+            yield return new object[] { PublicRsa2048Key, SignatureAlgorithm.PS512 };
         }
 
         public static IEnumerable<object[]> GetSignatureCreationKeys()
         {
-            yield return new object[] { PrivateRsa2048Key, SignatureAlgorithm.RsaSha256 };
-            yield return new object[] { PrivateRsa2048Key, SignatureAlgorithm.RsaSha384 };
-            yield return new object[] { PrivateRsa2048Key, SignatureAlgorithm.RsaSha512 };
-            yield return new object[] { PrivateRsa2048Key, SignatureAlgorithm.RsaSsaPssSha256 };
-            yield return new object[] { PrivateRsa2048Key, SignatureAlgorithm.RsaSsaPssSha384 };
-            yield return new object[] { PrivateRsa2048Key, SignatureAlgorithm.RsaSsaPssSha512 };
+            yield return new object[] { PrivateRsa2048Key, SignatureAlgorithm.RS256 };
+            yield return new object[] { PrivateRsa2048Key, SignatureAlgorithm.RS384 };
+            yield return new object[] { PrivateRsa2048Key, SignatureAlgorithm.RS512 };
+            yield return new object[] { PrivateRsa2048Key, SignatureAlgorithm.PS256 };
+            yield return new object[] { PrivateRsa2048Key, SignatureAlgorithm.PS384 };
+            yield return new object[] { PrivateRsa2048Key, SignatureAlgorithm.PS512 };
         }
 
         [Fact]
         public override void WriteTo()
         {
-            var key = RsaJwk.GenerateKey(2048, true, SignatureAlgorithm.RsaSha256);
-            key.Kid = "kid-rsa";
-            key.KeyOps.Add("sign");
-            key.Use = JwkUseNames.Sig;
+            var key = RsaJwk.GeneratePrivateKey(2048, SignatureAlgorithm.RS256);
+            key.Kid = JsonEncodedText.Encode("kid-rsa");
+            key.KeyOps.Add(JwkKeyOpsValues.Sign);
+            key.Use = JwkUseValues.Sig;
             key.X5t = Base64Url.Decode("dGhpcyBpcyBhIFNIQTEgdGVzdCE");
             key.X5tS256 = Base64Url.Decode("dGhpcyBpcyBhIFNIQTI1NiB0ZXN0ISAgICAgICAgICAgIA");
             key.X5u = "https://example.com";
@@ -429,7 +429,7 @@ y6T3Y16v8maAqNihK6YdWZI19n2ctNWPF4PTykPnjwpauqYkB5k2wMOp
             Assert.Contains("\"qi\":\"" + Encoding.UTF8.GetString(Base64Url.Encode(key.QI)) + "\"", json);
         }
 
-        private static RsaJwk PrivateRsa2048Key => new RsaJwk
+        private static RsaJwk PrivateRsa2048Key => RsaJwk.FromBase64Url
         (
             n: "0vx7agoebGcQSuuPiLJXZptN9nndrQmbXEps2aiAFbWhM78LhWx4cbbfAAtVT86zwu1RK7aPFFxuhDR1L6tSoc_BJECPebWKRXjBZCiFV4n3oknjhMstn64tZ_2W-5JsGY4Hc5n9yBXArwl93lqt7_RN5w6Cf0h4QyQ5v-65YGjQR0_FDW2QvzqY368QQMicAtaSqzs8KJZgnYb9c7d0zgdAZHzu6qMQvRL5hajrn1n91CbOpbISD08qNLyrdkt-bFTWhAI4vMQFh6WeZu0fM4lFd2NcRwr3XPksINHaQ-G_xBniIqbw0Ls1jF44-csFCur-kEgU8awapJzKnqDKgw",
             e: "AQAB",
@@ -441,7 +441,7 @@ y6T3Y16v8maAqNihK6YdWZI19n2ctNWPF4PTykPnjwpauqYkB5k2wMOp
             qi: "GyM_p6JrXySiz1toFgKbWV-JdI3jQ4ypu9rbMWx3rQJBfmt0FoYzgUIZEVFEcOqwemRN81zoDAaa-Bk0KWNGDjJHZDdDmFhW3AN7lI-puxk_mHZGJ11rxyR8O55XLSe3SPmRfKwZI6yU24ZxvQKFYItdldUKGzO6Ia6zTKhAVRU"
         );
 
-        private static RsaJwk PublicRsa2048Key => new RsaJwk
+        private static RsaJwk PublicRsa2048Key => RsaJwk.FromBase64Url
         (
             n: "0vx7agoebGcQSuuPiLJXZptN9nndrQmbXEps2aiAFbWhM78LhWx4cbbfAAtVT86zwu1RK7aPFFxuhDR1L6tSoc_BJECPebWKRXjBZCiFV4n3oknjhMstn64tZ_2W-5JsGY4Hc5n9yBXArwl93lqt7_RN5w6Cf0h4QyQ5v-65YGjQR0_FDW2QvzqY368QQMicAtaSqzs8KJZgnYb9c7d0zgdAZHzu6qMQvRL5hajrn1n91CbOpbISD08qNLyrdkt-bFTWhAI4vMQFh6WeZu0fM4lFd2NcRwr3XPksINHaQ-G_xBniIqbw0Ls1jF44-csFCur-kEgU8awapJzKnqDKgw",
             e: "AQAB"

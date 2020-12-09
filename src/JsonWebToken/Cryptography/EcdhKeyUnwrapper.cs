@@ -5,87 +5,81 @@
 using System;
 using System.Buffers;
 using System.Buffers.Binary;
+using System.Diagnostics;
 using System.Security.Cryptography;
+using System.Text.Json;
 
-namespace JsonWebToken.Internal
+namespace JsonWebToken.Cryptography
 {
     internal sealed class EcdhKeyUnwrapper : KeyUnwrapper
     {
         private static readonly byte[] _secretPreprend = { 0x0, 0x0, 0x0, 0x1 };
 
-        private readonly IAlgorithm _algorithm;
+        private readonly JsonEncodedText _algorithm;
         private readonly int _algorithmNameLength;
         private readonly int _keySizeInBytes;
+        private readonly KeyManagementAlgorithm? _keyManagementAlgorithm;
         private readonly HashAlgorithmName _hashAlgorithm;
+        private readonly ECJwk _key;
 
-        private bool _disposed;
-
-        public EcdhKeyUnwrapper(ECJwk key, EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm contentEncryptionAlgorithm)
-            : base(key, encryptionAlgorithm, contentEncryptionAlgorithm)
+        public EcdhKeyUnwrapper(ECJwk key, EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm algorithm)
+            : base(encryptionAlgorithm, algorithm)
         {
-            if (contentEncryptionAlgorithm.WrappedAlgorithm is null)
+            Debug.Assert(key.SupportKeyManagement(algorithm));
+            Debug.Assert(algorithm.Category == AlgorithmCategory.EllipticCurve);
+            _key = key;
+            if (algorithm.WrappedAlgorithm is null)
             {
-                _algorithm = encryptionAlgorithm;
+                _algorithm = encryptionAlgorithm.Name;
                 _keySizeInBytes = encryptionAlgorithm.RequiredKeySizeInBytes;
             }
             else
             {
-                _algorithm = contentEncryptionAlgorithm;
-                _keySizeInBytes = contentEncryptionAlgorithm.WrappedAlgorithm.RequiredKeySizeInBits >> 3;
+                _algorithm = algorithm.Name;
+                _keySizeInBytes = algorithm.WrappedAlgorithm.RequiredKeySizeInBits >> 3;
+                _keyManagementAlgorithm = algorithm.WrappedAlgorithm;
             }
 
-            _algorithmNameLength = _algorithm.Utf8Name.Length;
+            _algorithmNameLength = _algorithm.EncodedUtf8Bytes.Length;
             _hashAlgorithm = GetHashAlgorithm(encryptionAlgorithm);
         }
 
         /// <inheritsdoc />
         public override int GetKeyUnwrapSize(int inputSize)
-        {
-            return EncryptionAlgorithm.RequiredKeySizeInBytes;
-        }
+            => EncryptionAlgorithm.RequiredKeySizeInBytes;
 
         /// <inheritsdoc />
-        public override bool TryUnwrapKey(ReadOnlySpan<byte> keyBytes, Span<byte> destination, JwtHeader header, out int bytesWritten)
+        public override bool TryUnwrapKey(ReadOnlySpan<byte> keyBytes, Span<byte> destination, JwtHeaderDocument header, out int bytesWritten)
         {
-            if (_disposed)
+            if (!header.TryGetHeaderParameter(JwtHeaderParameterNames.Epk.EncodedUtf8Bytes, out var epk))
             {
-                ThrowHelper.ThrowObjectDisposedException(GetType());
+                ThrowHelper.ThrowJwtDescriptorException_HeaderIsRequired(JwtHeaderParameterNames.Epk);
             }
 
-            var epk = header.Epk;
-            if (epk is null)
-            {
-                ThrowHelper.ThrowJwtDescriptorException_HeaderIsRequired(HeaderParameters.EpkUtf8);
-            }
+            header.TryGetHeaderParameter(JwtHeaderParameterNames.Apu.EncodedUtf8Bytes, out JwtElement apu);
+            header.TryGetHeaderParameter(JwtHeaderParameterNames.Apv.EncodedUtf8Bytes, out JwtElement apv);
+            byte[] secretAppend = BuildSecretAppend(apu, apv);
 
-            byte[] secretAppend = BuildSecretAppend(header.Apu, header.Apv);
-            byte[] exchangeHash;
-            using (var ephemeralKey = ECDiffieHellman.Create(epk.ExportParameters()))
-            using (var privateKey = ECDiffieHellman.Create(((ECJwk)Key).ExportParameters(true)))
+            ReadOnlySpan<byte> exchangeHash;
+            using (var ephemeralKey = ECDiffieHellman.Create(ECJwk.FromJwtElement(epk).ExportParameters()))
             {
+                var privateKey = _key.CreateEcdhKey();
                 if (ephemeralKey.KeySize != privateKey.KeySize)
                 {
                     return ThrowHelper.TryWriteError(out bytesWritten);
                 }
 
-                exchangeHash = privateKey.DeriveKeyFromHash(ephemeralKey.PublicKey, _hashAlgorithm, _secretPreprend, secretAppend);
+                exchangeHash = new ReadOnlySpan<byte>(privateKey.DeriveKeyFromHash(ephemeralKey.PublicKey, _hashAlgorithm, _secretPreprend, secretAppend), 0, _keySizeInBytes);
             }
 
             if (Algorithm.ProduceEncryptionKey)
             {
-                using var key = SymmetricJwk.FromSpan(new ReadOnlySpan<byte>(exchangeHash, 0, _keySizeInBytes), false);
-                if (key.TryGetKeyUnwrapper(EncryptionAlgorithm, Algorithm.WrappedAlgorithm, out var keyUnwrapper))
-                {
-                    return keyUnwrapper.TryUnwrapKey(keyBytes, destination, header, out bytesWritten);
-                }
-                else
-                {
-                    return ThrowHelper.TryWriteError(out bytesWritten);
-                }
+                using var keyUnwrapper = new AesKeyUnwrapper(exchangeHash, EncryptionAlgorithm, _keyManagementAlgorithm!);
+                return keyUnwrapper.TryUnwrapKey(keyBytes, destination, header, out bytesWritten);
             }
             else
             {
-                new ReadOnlySpan<byte>(exchangeHash, 0, _keySizeInBytes).CopyTo(destination);
+                exchangeHash.CopyTo(destination);
                 bytesWritten = destination.Length;
                 return true;
             }
@@ -93,15 +87,11 @@ namespace JsonWebToken.Internal
 
         protected override void Dispose(bool disposing)
         {
-            _disposed = true;
         }
 
         private static HashAlgorithmName GetHashAlgorithm(EncryptionAlgorithm encryptionAlgorithm)
         {
-            if (encryptionAlgorithm.SignatureAlgorithm is null)
-            {
-                goto Sha256;
-            }
+            Debug.Assert(encryptionAlgorithm.SignatureAlgorithm != null);
 
             var hashAlgorithm = encryptionAlgorithm.SignatureAlgorithm.HashAlgorithm;
             if (hashAlgorithm == default)
@@ -131,67 +121,31 @@ namespace JsonWebToken.Internal
         private void WriteAlgorithmId(Span<byte> destination)
         {
             BinaryPrimitives.WriteInt32BigEndian(destination, _algorithmNameLength);
-            _algorithm.Utf8Name.CopyTo(destination.Slice(sizeof(int)));
+            _algorithm.EncodedUtf8Bytes.CopyTo(destination.Slice(sizeof(int)));
         }
 
-        private byte[] BuildSecretAppend(string? apuS, string? apvS)
+        private byte[] BuildSecretAppend(JwtElement apuS, JwtElement apvS)
         {
-            byte[]? apuToReturn = null;
-            byte[]? apvToReturn = null;
-            byte[] secretAppend;
-            try
-            {
-                int apuLength = apuS == null ? 0 : Utf8.GetMaxByteCount(apuS.Length);
-                Span<byte> apu = apuLength <= Constants.MaxStackallocBytes
-                                        ? stackalloc byte[apuLength]
-                                        : (apuToReturn = ArrayPool<byte>.Shared.Rent(apuLength));
-                if (apuS != null)
-                {
-                    apuLength = Utf8.GetBytes(apuS, apu);
-                    apu = apu.Slice(0, apuLength);
-                }
+            var apu = apuS.IsEmpty ? default : apuS.GetRawValue();
+            var apv = apvS.IsEmpty ? default : apvS.GetRawValue();
+            int apuLength = Base64Url.GetArraySizeRequiredToDecode(apu.Length);
+            int apvLength = Base64Url.GetArraySizeRequiredToDecode(apv.Length);
 
-                int apvLength = apvS == null ? 0 : Utf8.GetMaxByteCount(apvS.Length);
-                Span<byte> apv = apvLength <= Constants.MaxStackallocBytes
-                                        ? stackalloc byte[apvLength]
-                                        : (apvToReturn = ArrayPool<byte>.Shared.Rent(apvLength));
-                if (apvS != null)
-                {
-                    apvLength = Utf8.GetBytes(apvS, apv);
-                    apv = apv.Slice(0, apvLength);
-                }
+            int algorithmLength = sizeof(int) + _algorithmNameLength;
+            int partyUInfoLength = sizeof(int) + apuLength;
+            int partyVInfoLength = sizeof(int) + apvLength;
+            const int suppPubInfoLength = sizeof(int);
 
-                apuLength = Base64Url.GetArraySizeRequiredToDecode(apuLength);
-                apvLength = Base64Url.GetArraySizeRequiredToDecode(apvLength);
-
-                int algorithmLength = sizeof(int) + _algorithmNameLength;
-                int partyUInfoLength = sizeof(int) + apuLength;
-                int partyVInfoLength = sizeof(int) + apvLength;
-                const int suppPubInfoLength = sizeof(int);
-
-                int secretAppendLength = algorithmLength + partyUInfoLength + partyVInfoLength + suppPubInfoLength;
-                secretAppend = new byte[secretAppendLength];
-                var secretAppendSpan = secretAppend.AsSpan();
-                WriteAlgorithmId(secretAppendSpan);
-                secretAppendSpan = secretAppendSpan.Slice(algorithmLength);
-                WritePartyInfo(apu, apuLength, secretAppendSpan);
-                secretAppendSpan = secretAppendSpan.Slice(partyUInfoLength);
-                WritePartyInfo(apv, apvLength, secretAppendSpan);
-                secretAppendSpan = secretAppendSpan.Slice(partyVInfoLength);
-                BinaryPrimitives.WriteInt32BigEndian(secretAppendSpan, _keySizeInBytes << 3);
-            }
-            finally
-            {
-                if (apuToReturn != null)
-                {
-                    ArrayPool<byte>.Shared.Return(apuToReturn);
-                }
-
-                if (apvToReturn != null)
-                {
-                    ArrayPool<byte>.Shared.Return(apvToReturn);
-                }
-            }
+            int secretAppendLength = algorithmLength + partyUInfoLength + partyVInfoLength + suppPubInfoLength;
+            var secretAppend = new byte[secretAppendLength];
+            var secretAppendSpan = secretAppend.AsSpan(0, secretAppendLength);
+            WriteAlgorithmId(secretAppendSpan);
+            secretAppendSpan = secretAppendSpan.Slice(algorithmLength);
+            WritePartyInfo(apu.Span, apuLength, secretAppendSpan);
+            secretAppendSpan = secretAppendSpan.Slice(partyUInfoLength);
+            WritePartyInfo(apv.Span, apvLength, secretAppendSpan);
+            secretAppendSpan = secretAppendSpan.Slice(partyVInfoLength);
+            BinaryPrimitives.WriteInt32BigEndian(secretAppendSpan, _keySizeInBytes << 3);
 
             return secretAppend;
         }

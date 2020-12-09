@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.Azure.KeyVault;
 using Microsoft.Azure.KeyVault.WebKey;
@@ -41,7 +42,7 @@ namespace JsonWebToken.KeyVault
             _client = new KeyVaultClient((authority, resource, scope) => GetTokenFromClientSecret(authority, resource, clientId, clientSecret));
         }
 
-        public Jwk[] GetKeys(JwtHeader header)
+        public Jwk[] GetKeys(JwtHeaderDocument header)
         {
             return GetKeysAsync().GetAwaiter().GetResult();
         }
@@ -55,24 +56,24 @@ namespace JsonWebToken.KeyVault
                 var kvKey = await _client.GetKeyAsync(keyIdentifier.Identifier.Identifier);
                 Jwk? key = kvKey.Key.Kty switch
                 {
-                    JsonWebKeyType.Octet => new SymmetricJwk(kvKey.Key.K),
-                    JsonWebKeyType.Rsa => new RsaJwk(kvKey.Key.ToRSAParameters()),
-                    JsonWebKeyType.RsaHsm => new RsaJwk(kvKey.Key.ToRSAParameters()),
+                    JsonWebKeyType.Octet => SymmetricJwk.FromByteArray(kvKey.Key.K, false),
+                    JsonWebKeyType.Rsa => RsaJwk.FromParameters(kvKey.Key.ToRSAParameters(), false),
+                    JsonWebKeyType.RsaHsm => RsaJwk.FromParameters(kvKey.Key.ToRSAParameters(), false),
 #if !NETFRAMEWORK
-                    JsonWebKeyType.EllipticCurve => ECJwk.FromParameters(ConvertToECParameters(kvKey.Key.ToEcParameters())),
-                    JsonWebKeyType.EllipticCurveHsm => ECJwk.FromParameters(ConvertToECParameters(kvKey.Key.ToEcParameters())),
+                    JsonWebKeyType.EllipticCurve => ECJwk.FromParameters(ConvertToECParameters(kvKey.Key.ToEcParameters()), computeThumbprint: false),
+                    JsonWebKeyType.EllipticCurveHsm => ECJwk.FromParameters(ConvertToECParameters(kvKey.Key.ToEcParameters()), computeThumbprint: false),
 #endif
                     _ => null
                 };
 
                 if (!(key is null))
                 {
-                    key.Kid = kvKey.Key.Kid;
+                    key.Kid = JsonEncodedText.Encode(kvKey.Key.Kid);
                     if (kvKey.Key.KeyOps != null)
                     {
                         for (int i = 0; i < kvKey.Key.KeyOps.Count; i++)
                         {
-                            key.KeyOps.Add(kvKey.Key.KeyOps[i]);
+                            key.KeyOps.Add(JsonEncodedText.Encode(kvKey.Key.KeyOps[i]));
                         }
                     }
 

@@ -8,7 +8,7 @@ using System.Runtime.InteropServices;
 using System.Runtime.Intrinsics;
 using System.Runtime.Intrinsics.X86;
 
-namespace JsonWebToken.Internal
+namespace JsonWebToken.Cryptography
 {
     internal sealed class Aes192CbcEncryptor : AesEncryptor
     {
@@ -25,7 +25,7 @@ namespace JsonWebToken.Internal
                 ThrowHelper.ThrowArgumentOutOfRangeException_MustBeAtLeast(ExceptionArgument.ciphertext, GetCiphertextLength(plaintext.Length));
             }
 
-            var keys = new AesEncryption192Keys(key);
+            var keys = new Aes192EncryptionKeys(key);
             var state = nonce.AsVector128<byte>();
             int left = plaintext.Length & BlockSize - 1;
             ref byte output = ref MemoryMarshal.GetReference(ciphertext);
