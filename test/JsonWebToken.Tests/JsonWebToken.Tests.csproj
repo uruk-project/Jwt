@@ -10,11 +10,7 @@
     <LangVersion>8.0</LangVersion>
 
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|netcoreapp3.1|AnyCPU'">
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <NoWarn>1701;1702</NoWarn>
+    <NoWarn>1701;1702;xUnit1013</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
