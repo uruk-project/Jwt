@@ -7,7 +7,7 @@ namespace JsonWebToken
 {
     public sealed class AccountPurgedSecEvent : SecEvent
     {
-        private static readonly JsonEncodedText _name = JsonEncodedText.Encode("https://schemas.openid.net/secevent/risc/event-type/account-purged", Constants.JsonEncoder);
+        private static readonly JsonEncodedText _name = JsonEncodedText.Encode("https://schemas.openid.net/secevent/risc/event-type/account-purged", JsonSerializationBehavior.JsonEncoder);
         public override JsonEncodedText Name => _name;
     }
 }

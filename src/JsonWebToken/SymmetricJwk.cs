@@ -286,7 +286,7 @@ namespace JsonWebToken
             {
                 Span<byte> thumbprint = stackalloc byte[43];
                 key.ComputeThumbprint(thumbprint);
-                key.Kid = JsonEncodedText.Encode(thumbprint, Constants.JsonEncoder);
+                key.Kid = JsonEncodedText.Encode(thumbprint, JsonSerializationBehavior.JsonEncoder);
             }
 
             return key;
@@ -361,7 +361,7 @@ namespace JsonWebToken
             {
                 Span<byte> thumbprint = stackalloc byte[43];
                 key.ComputeThumbprint(thumbprint);
-                key.Kid = JsonEncodedText.Encode(thumbprint, Constants.JsonEncoder);
+                key.Kid = JsonEncodedText.Encode(thumbprint, JsonSerializationBehavior.JsonEncoder);
             }
 
             return key;
@@ -384,7 +384,7 @@ namespace JsonWebToken
             {
                 Span<byte> thumbprint = stackalloc byte[43];
                 key.ComputeThumbprint(thumbprint);
-                key.Kid = JsonEncodedText.Encode(thumbprint, Constants.JsonEncoder);
+                key.Kid = JsonEncodedText.Encode(thumbprint, JsonSerializationBehavior.JsonEncoder);
             }
 
             return key;
@@ -407,7 +407,7 @@ namespace JsonWebToken
             {
                 Span<byte> thumbprint = stackalloc byte[43];
                 key.ComputeThumbprint(thumbprint);
-                key.Kid = JsonEncodedText.Encode(thumbprint, Constants.JsonEncoder);
+                key.Kid = JsonEncodedText.Encode(thumbprint, JsonSerializationBehavior.JsonEncoder);
             }
 
             return key;

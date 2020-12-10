@@ -170,7 +170,7 @@ namespace JsonWebToken
                 try
                 {
                     using var bufferWriter = new PooledByteBufferWriter();
-                    var writer = new Utf8JsonWriter(bufferWriter, Constants.NoJsonValidation);
+                    var writer = new Utf8JsonWriter(bufferWriter, JsonSerializationBehavior.NoJsonValidation);
                     int base64EncodedHeaderLength = 0;
                     ReadOnlySpan<byte> headerJson = default;
                     var headerCache = context.HeaderCache;

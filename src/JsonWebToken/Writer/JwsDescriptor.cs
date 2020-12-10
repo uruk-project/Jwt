@@ -112,7 +112,7 @@ namespace JsonWebToken
                 }
 
                 using var bufferWriter = new PooledByteBufferWriter();
-                using var writer = new Utf8JsonWriter(bufferWriter, Constants.NoJsonValidation);
+                using var writer = new Utf8JsonWriter(bufferWriter, JsonSerializationBehavior.NoJsonValidation);
                 _payload.WriteTo(writer);
                 int payloadLength = (int)writer.BytesCommitted + writer.BytesPending;
                 int length = Base64Url.GetArraySizeRequiredToEncode(payloadLength)

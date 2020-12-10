@@ -7,7 +7,7 @@ namespace JsonWebToken
 {
     public sealed class RecoveryActivatedSecEvent : SecEvent
     {
-        private static readonly JsonEncodedText _name = JsonEncodedText.Encode("https://schemas.openid.net/secevent/risc/event-type/recovery-activated", Constants.JsonEncoder);
+        private static readonly JsonEncodedText _name = JsonEncodedText.Encode("https://schemas.openid.net/secevent/risc/event-type/recovery-activated", JsonSerializationBehavior.JsonEncoder);
         public override JsonEncodedText Name => _name;
     }
 }

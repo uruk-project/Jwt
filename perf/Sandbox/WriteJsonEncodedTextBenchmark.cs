@@ -9,7 +9,7 @@ namespace JsonWebToken.Performance
     public class WriteJsonEncodedTextBenchmark
     {
         private static readonly PooledByteBufferWriter buffer = new PooledByteBufferWriter();
-        private static Utf8JsonWriter writer = new Utf8JsonWriter(buffer, Constants.NoJsonValidation);
+        private static Utf8JsonWriter writer = new Utf8JsonWriter(buffer, JsonSerializationBehavior.NoJsonValidation);
         private static ReadOnlySpan<byte> propertyNameSegment => new byte[] { (byte)'s', (byte)'t', (byte)'r', (byte)'i', (byte)'n', (byte)'g' };
         private static ReadOnlySpan<byte> propertyValueSegment => new byte[] { (byte)'t', (byte)'h', (byte)'i', (byte)'s', (byte)' ', (byte)'i', (byte)'s', (byte)' ', (byte)'a', (byte)' ', (byte)'s', (byte)'t', (byte)'r', (byte)'i', (byte)'n', (byte)'g', (byte)' ', (byte)'v', (byte)'a', (byte)'l', (byte)'u', (byte)'e' };
         private static readonly string propertyNameString = "string";

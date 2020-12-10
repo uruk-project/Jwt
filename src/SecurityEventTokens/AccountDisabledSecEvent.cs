@@ -7,7 +7,7 @@ namespace JsonWebToken
 {
     public sealed class AccountDisabledSecEvent : SecEvent
     {
-        private static readonly JsonEncodedText _name = JsonEncodedText.Encode("https://schemas.openid.net/secevent/risc/event-type/account-disabled", Constants.JsonEncoder);
+        private static readonly JsonEncodedText _name = JsonEncodedText.Encode("https://schemas.openid.net/secevent/risc/event-type/account-disabled", JsonSerializationBehavior.JsonEncoder);
         public static readonly JsonEncodedText ReasonAttribute = JsonEncodedText.Encode("reason");
         public static readonly JsonEncodedText HijackingReason = JsonEncodedText.Encode("hijacking");
         public static readonly JsonEncodedText BulkAccountReason = JsonEncodedText.Encode("bulk-account");
