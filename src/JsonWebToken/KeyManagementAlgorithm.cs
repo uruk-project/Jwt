@@ -200,28 +200,19 @@ namespace JsonWebToken
             _sha2 = sha2;
         }
 
-        /// <summary>Determines whether this instance and a specified object, which must also be a<see cref="KeyManagementAlgorithm"/> object, have the same value.
-        /// </summary>
-        /// <param name="obj"></param>
-        /// <returns></returns>
+        /// <summary>Determines whether this instance and a specified object, which must also be a<see cref="KeyManagementAlgorithm"/> object, have the same value.</summary>
         public override bool Equals(object? obj)
             => Equals(obj as KeyManagementAlgorithm);
 
         /// <summary>Determines whether two specified <see cref="KeyManagementAlgorithm"/> objects have the same value.</summary>
-        /// <param name="other"></param>
-        /// <returns></returns>
         public bool Equals(KeyManagementAlgorithm? other)
             => other is null ? false : _id == other._id;
 
         /// <summary>Returns the hash code for this <see cref="KeyManagementAlgorithm"/>.</summary>
-        /// <returns></returns>
         public override int GetHashCode()
             => _id.GetHashCode();
 
         /// <summary>Determines whether two specified <see cref="KeyManagementAlgorithm"/> have the same value.</summary>
-        /// <param name="x"></param>
-        /// <param name="y"></param>
-        /// <returns></returns>
         public static bool operator ==(KeyManagementAlgorithm? x, KeyManagementAlgorithm? y)
         {
             // Fast path: should be singletons
@@ -239,9 +230,6 @@ namespace JsonWebToken
         }
 
         /// <summary>Determines whether two specified <see cref="KeyManagementAlgorithm"/> have different values.</summary>
-        /// <param name="x"></param>
-        /// <param name="y"></param>
-        /// <returns></returns>
         public static bool operator !=(KeyManagementAlgorithm? x, KeyManagementAlgorithm? y)
         {
             // Fast path: should be singletons
@@ -258,17 +246,11 @@ namespace JsonWebToken
             return !x.Equals(y);
         }
 
-        /// <summary>
-        /// Cast the <see cref="KeyManagementAlgorithm"/> into its <see cref="string"/> representation.
-        /// </summary>
-        /// <param name="value"></param>
+        /// <summary>Cast the <see cref="KeyManagementAlgorithm"/> into its <see cref="string"/> representation.</summary>
         public static explicit operator string?(KeyManagementAlgorithm? value)
             => value?.Name.ToString();
 
-        /// <summary>
-        /// Cast the <see cref="string"/> into its <see cref="SignatureAlgorithm"/> representation.
-        /// </summary>
-        /// <param name="value"></param>
+        /// <summary>Cast the <see cref="string"/> into its <see cref="SignatureAlgorithm"/> representation.</summary>
         public static explicit operator KeyManagementAlgorithm?(byte[]? value)
         {
             if (value is null)
@@ -284,10 +266,7 @@ namespace JsonWebToken
             return algorithm;
         }
 
-        /// <summary>
-        /// Cast the <see cref="string"/> into its <see cref="KeyManagementAlgorithm"/> representation.
-        /// </summary>
-        /// <param name="value"></param>
+        /// <summary>Cast the <see cref="string"/> into its <see cref="KeyManagementAlgorithm"/> representation.</summary>
         public static explicit operator KeyManagementAlgorithm?(string? value)
         {
             if (value is null)
@@ -303,10 +282,7 @@ namespace JsonWebToken
             return algorithm;
         }
 
-        /// <summary>
-        /// Cast the <see cref="KeyManagementAlgorithm"/> into its <see cref="byte"/> array representation.
-        /// </summary>
-        /// <param name="value"></param>
+        /// <summary>Cast the <see cref="KeyManagementAlgorithm"/> into its <see cref="byte"/> array representation.</summary>
         public static explicit operator byte[]?(KeyManagementAlgorithm? value)
             => value is null ? null : value._utf8Name.EncodedUtf8Bytes.ToArray();
 
@@ -314,11 +290,7 @@ namespace JsonWebToken
         public override string ToString()
             => Name.ToString();
 
-        /// <summary>
-        /// Parses the current value of the <see cref="Utf8JsonReader"/> into its <see cref="KeyManagementAlgorithm"/> representation.
-        /// </summary>
-        /// <param name="reader"></param>
-        /// <param name="algorithm"></param>
+        /// <summary>Parses the current value of the <see cref="Utf8JsonReader"/> into its <see cref="KeyManagementAlgorithm"/> representation.</summary>
         public static bool TryParseSlow(ref Utf8JsonReader reader, [NotNullWhen(true)] out KeyManagementAlgorithm? algorithm)
         {
             var algorithms = _algorithms;
@@ -335,11 +307,7 @@ namespace JsonWebToken
             return false;
         }
 
-        /// <summary>
-        /// Parses the <see cref="ReadOnlySpan{T}"/> into its <see cref="KeyManagementAlgorithm"/> representation.
-        /// </summary>
-        /// <param name="value"></param>
-        /// <param name="algorithm"></param>
+        /// <summary>Parses the <see cref="ReadOnlySpan{T}"/> into its <see cref="KeyManagementAlgorithm"/> representation.</summary>
         public static bool TryParse(ReadOnlySpan<byte> value, [NotNullWhen(true)] out KeyManagementAlgorithm? algorithm)
         {
             switch (value.Length)
@@ -454,8 +422,6 @@ namespace JsonWebToken
         }
 
         /// <summary>Parses the <see cref="string"/> into its <see cref="KeyManagementAlgorithm"/> representation.</summary>
-        /// <param name="value"></param>
-        /// <param name="algorithm"></param>
         public static bool TryParse(string? value, [NotNullWhen(true)] out KeyManagementAlgorithm? algorithm)
         {
             switch (value)
@@ -526,8 +492,6 @@ namespace JsonWebToken
         }
 
         /// <summary>Parses the <see cref="JwtElement"/> into its <see cref="KeyManagementAlgorithm"/> representation.</summary>
-        /// <param name="value"></param>
-        /// <param name="algorithm"></param>
         public static bool TryParse(JwtElement value, [NotNullWhen(true)] out KeyManagementAlgorithm? algorithm)
         {
             if (value.ValueEquals(Dir._utf8Name.EncodedUtf8Bytes))
@@ -633,8 +597,6 @@ namespace JsonWebToken
         }
 
         /// <summary>Parses the <see cref="JsonElement"/> into its <see cref="KeyManagementAlgorithm"/> representation.</summary>
-        /// <param name="value"></param>
-        /// <param name="algorithm"></param>
         public static bool TryParse(JsonElement value, [NotNullWhen(true)] out KeyManagementAlgorithm? algorithm)
         {
             if (value.ValueEquals(Dir._utf8Name.EncodedUtf8Bytes))
@@ -740,8 +702,6 @@ namespace JsonWebToken
         }
 
         /// <summary>Parses the current value of the <see cref="Utf8JsonReader"/> into its <see cref="KeyManagementAlgorithm"/> representation.</summary>
-        /// <param name="reader"></param>
-        /// <param name="algorithm"></param>
         public static bool TryParse(ref Utf8JsonReader reader, [NotNullWhen(true)] out KeyManagementAlgorithm? algorithm)
         {
             var value = reader.ValueSpan;
