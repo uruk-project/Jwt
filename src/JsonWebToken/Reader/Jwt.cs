@@ -587,7 +587,7 @@ namespace JsonWebToken
             }
             else
             {
-                if (KeyManagementAlgorithm.TryParse(alg, out var algorithm))
+                if (KeyManagementAlgorithm.TryParse(alg.GetRawValue().Span, out var algorithm))
                 {
                     int decodedSize = Base64Url.GetArraySizeRequiredToDecode(rawEncryptedKey.Length);
 
