@@ -26,6 +26,37 @@ namespace JwsCreationSample
                 }
             };
 
+            // Adds another claim
+            descriptor.Payload.Add("ClaimName", new JsonObject
+            {
+                { "stuff1", "xyz789" },
+                { "stuff2", "abc123" },
+                {
+                    "subObject" , new JsonObject
+                    {
+                        { "prop1" , "abc123" },
+                        { "prop2" , "xyz789" }
+                    }
+                },
+                {
+                    "Modules" , new []
+                    {
+                        new JsonObject
+                        {
+                            { "name" , "module1" },
+                            { "prop1" , "abc123" },
+                            { "prop2" , "xyz789" }
+                        },
+                        new JsonObject
+                        {
+                            { "name" , "module2" },
+                            { "prop1" , "abc123" },
+                            { "prop2" , "xyz789" }
+                        }
+                    }
+                }
+            });
+
             // Generates the UTF-8 string representation of the JWT
             var writer = new JwtWriter();
             var token = writer.WriteTokenString(descriptor);

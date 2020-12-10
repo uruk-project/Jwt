@@ -7,7 +7,7 @@ namespace JsonWebToken
 {
     public sealed class IdentifierRecycledSecEvent : SecEvent
     {
-        private static readonly JsonEncodedText _name = JsonEncodedText.Encode("https://schemas.openid.net/secevent/risc/event-type/identifier-recycled", Constants.JsonEncoder);
+        private static readonly JsonEncodedText _name = JsonEncodedText.Encode("https://schemas.openid.net/secevent/risc/event-type/identifier-recycled", JsonSerializationBehavior.JsonEncoder);
         public override JsonEncodedText Name => _name;
     }
 }

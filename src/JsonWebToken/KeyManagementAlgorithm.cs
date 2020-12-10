@@ -192,7 +192,7 @@ namespace JsonWebToken
         public KeyManagementAlgorithm(AlgorithmId id, string name, AlgorithmCategory keyType, ushort requiredKeySizeInBits, KeyManagementAlgorithm? wrappedAlgorithm, Sha2? sha2, bool produceEncryptedKey)
         {
             _id = id;
-            _utf8Name = JsonEncodedText.Encode(name, Constants.JsonEncoder);
+            _utf8Name = JsonEncodedText.Encode(name, JsonSerializationBehavior.JsonEncoder);
             _category = keyType;
             _requiredKeySizeInBits = requiredKeySizeInBits;
             _wrappedAlgorithm = wrappedAlgorithm;

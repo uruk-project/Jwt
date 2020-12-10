@@ -7,7 +7,7 @@ namespace JsonWebToken
 {
     public sealed class AccountCredentialChangeRequiredSecEvent : SecEvent
     {
-        private static readonly JsonEncodedText _name = JsonEncodedText.Encode("https://schemas.openid.net/secevent/risc/event-type/account-credential-change-required", Constants.JsonEncoder);
+        private static readonly JsonEncodedText _name = JsonEncodedText.Encode("https://schemas.openid.net/secevent/risc/event-type/account-credential-change-required", JsonSerializationBehavior.JsonEncoder);
         public override JsonEncodedText Name => _name;
     }
 }

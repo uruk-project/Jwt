@@ -49,7 +49,7 @@ namespace JsonWebToken
 
         public static OpenIdConnectConfiguration FromJson(ReadOnlySpan<byte> json)
         {
-            var config = JsonSerializer.Deserialize<OpenIdConnectConfiguration>(json, Constants.DefaultSerializerOptions);
+            var config = JsonSerializer.Deserialize<OpenIdConnectConfiguration>(json, JsonSerializationBehavior.SerializerOptions);
             if (config is null)
             {
                 ThrowHelper.ThrowFormatException_MalformedJson();

@@ -7,7 +7,7 @@ namespace JsonWebToken
 {
     public sealed class SessionsRevokedChangedSecEvent : SecEvent
     {
-        private static readonly JsonEncodedText _name = JsonEncodedText.Encode("https://schemas.openid.net/secevent/risc/event-type/sessions-revoked", Constants.JsonEncoder);
+        private static readonly JsonEncodedText _name = JsonEncodedText.Encode("https://schemas.openid.net/secevent/risc/event-type/sessions-revoked", JsonSerializationBehavior.JsonEncoder);
         public override JsonEncodedText Name => _name;
     }
 }

@@ -190,12 +190,12 @@ namespace JsonWebToken
                     else
                     {
                         writer.WritePropertyName(Name);
-                        JsonSerializer.Serialize(writer, Value, Constants.DefaultSerializerOptions);
+                        JsonSerializer.Serialize(writer, Value, JsonSerializationBehavior.SerializerOptions);
                     }
                     break;
                 case JwtValueKind.Array:
                     writer.WritePropertyName(Name);
-                    JsonSerializer.Serialize(writer, Value, Constants.DefaultSerializerOptions);
+                    JsonSerializer.Serialize(writer, Value, JsonSerializationBehavior.SerializerOptions);
                     break;
                 case JwtValueKind.True:
                     writer.WriteBoolean(Name, true);

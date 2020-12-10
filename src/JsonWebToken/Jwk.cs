@@ -334,7 +334,7 @@ namespace JsonWebToken
         /// <param name="bufferWriter"></param>
         public void Serialize(IBufferWriter<byte> bufferWriter)
         {
-            using var writer = new Utf8JsonWriter(bufferWriter, Constants.NoJsonValidation);
+            using var writer = new Utf8JsonWriter(bufferWriter, JsonSerializationBehavior.NoJsonValidation);
             WriteTo(writer);
             writer.Flush();
         }
@@ -672,7 +672,7 @@ namespace JsonWebToken
             key.X5t = certificate.GetCertHash();
             Span<byte> thumbprint = stackalloc byte[43];
             key.ComputeThumbprint(thumbprint);
-            key.Kid = JsonEncodedText.Encode(thumbprint, Constants.JsonEncoder);
+            key.Kid = JsonEncodedText.Encode(thumbprint, JsonSerializationBehavior.JsonEncoder);
             return key;
         }
 
@@ -744,7 +744,7 @@ namespace JsonWebToken
                 {
                     if (reader.TokenType != JsonTokenType.StartArray)
                     {
-                        key._keyOps.Add(JsonEncodedText.Encode(reader.ValueSpan, Constants.JsonEncoder));
+                        key._keyOps.Add(JsonEncodedText.Encode(reader.ValueSpan, JsonSerializationBehavior.JsonEncoder));
                     }
                 }
             }
@@ -786,15 +786,15 @@ namespace JsonWebToken
                     }
                     else
                     {
-                        key._alg = JsonEncodedText.Encode(reader.ValueSpan, Constants.JsonEncoder);
+                        key._alg = JsonEncodedText.Encode(reader.ValueSpan, JsonSerializationBehavior.JsonEncoder);
                     }
 
                     break;
                 case kid:
-                    key.Kid = JsonEncodedText.Encode(reader.ValueSpan, Constants.JsonEncoder);
+                    key.Kid = JsonEncodedText.Encode(reader.ValueSpan, JsonSerializationBehavior.JsonEncoder);
                     break;
                 case use:
-                    key.Use = JsonEncodedText.Encode(reader.ValueSpan, Constants.JsonEncoder);
+                    key.Use = JsonEncodedText.Encode(reader.ValueSpan, JsonSerializationBehavior.JsonEncoder);
                     break;
                 case x5t:
                     key.X5t = Base64Url.Decode(reader.ValueSpan);
@@ -877,7 +877,7 @@ namespace JsonWebToken
         {
             Span<byte> thumbprint = stackalloc byte[43];
             key.ComputeThumbprint(thumbprint);
-            key.Kid = JsonEncodedText.Encode(thumbprint, Constants.JsonEncoder);
+            key.Kid = JsonEncodedText.Encode(thumbprint, JsonSerializationBehavior.JsonEncoder);
         }
 
         internal bool CanUseForSignature(SignatureAlgorithm? signatureAlgorithm)
