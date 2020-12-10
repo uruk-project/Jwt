@@ -3,6 +3,7 @@
     <TargetFrameworks Condition="'$(OS)' == 'Windows_NT'">net5.0;netcoreapp3.1;netcoreapp2.1;net461;net47</TargetFrameworks>
     <TargetFrameworks Condition="'$(OS)' != 'Windows_NT'">net5.0;netcoreapp3.1</TargetFrameworks>
 
+    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
     <IsPackable>false</IsPackable>
 
     <SignAssembly>true</SignAssembly>
