@@ -27,36 +27,21 @@ namespace JsonWebToken
         public abstract bool IsEnabled { get; }
 
         /// <summary>Try to validate the token signature.</summary>
-        /// <param name="header"></param>
-        /// <param name="payload"></param>
-        /// <param name="contentBytes"></param>
-        /// <param name="signatureSegment"></param>
-        /// <param name="error"></param>
-        /// <returns></returns>
         public abstract bool TryValidateSignature(JwtHeaderDocument header, JwtPayloadDocument payload, ReadOnlySpan<byte> contentBytes, ReadOnlySpan<byte> signatureSegment, [NotNullWhen(false)] out SignatureValidationError? error);
 
         /// <summary>Creates a new <see cref="SignatureValidationPolicy"/> instance.</summary>
-        /// <param name="keyProvider"></param>
-        /// <param name="algorithm"></param>
-        /// <returns></returns>
         internal static SignatureValidationPolicy Create(IKeyProvider keyProvider, SignatureAlgorithm? algorithm)
         {
             return new DefaultSignatureValidationPolicy(keyProvider, algorithm);
         }
 
         /// <summary>Creates a new <see cref="SignatureValidationPolicy"/> instance.</summary>
-        /// <param name="issuer"></param>
-        /// <param name="policy"></param>
-        /// <returns></returns>
         internal static SignatureValidationPolicy Create(string issuer, SignatureValidationPolicy policy)
         {
             return new SingleIssuerSignatureValidationPolicy(issuer, policy);
         }
 
         /// <summary>Creates a new <see cref="SignatureValidationPolicy"/> instance.</summary>
-        /// <param name="policies"></param>
-        /// <param name="defaultPolicy"></param>
-        /// <returns></returns>
         internal static SignatureValidationPolicy Create(Dictionary<string, SignatureValidationPolicy> policies, SignatureValidationPolicy defaultPolicy)
         {
             return new MultiIssuersSignatureValidationPolicy(policies, defaultPolicy);

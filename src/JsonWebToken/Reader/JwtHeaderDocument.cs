@@ -23,14 +23,22 @@ namespace JsonWebToken
         private readonly JwtElement _kid;
         private readonly JwtElement _crit;
 
-        /// <inheritdoc/>
-        internal JwtElement Kid => _kid;
+        /// <summary>Gets the 'kid' header parameter value.</summary>
+        public JwtElement Kid => _kid;
 
-        internal JwtElement Alg => _alg;
+        /// <summary>Gets the 'alg' header parameter value.</summary>
+        public JwtElement Alg => _alg;
 
-        internal JwtElement Enc => _enc;
+        /// <summary>Gets the 'enc' header parameter value.</summary>
+        public JwtElement Enc => _enc;
 
         internal JwtElement Crit => _crit;
+
+        /// <summary>Gets the signature algorithm associated with this instance. Only present if the current token is a JWS.</summary>
+        public SignatureAlgorithm? SignatureAlgorithm => SignatureAlgorithm.TryParse(_alg.GetRawValue().Span, out var value) ? value : null;
+
+        /// <summary>Gets the key management algorithm associated with this instance. Only present if the current token is a JWE.</summary>
+        public KeyManagementAlgorithm? KeyManagementAlgorithm => KeyManagementAlgorithm.TryParse(_alg.GetRawValue().Span, out var value) ? value : null;
 
         private JwtHeaderDocument(JwtDocument document, int algIdx, int encIdx, int kidIdx, int critIdx)
         {
@@ -196,7 +204,7 @@ namespace JsonWebToken
         /// </exception>
         public bool TryGetHeaderParameter(JsonEncodedText headerParameterName, out JwtElement value)
             => _document.TryGetProperty(headerParameterName.EncodedUtf8Bytes, out value);
-        
+
         /// <summary>
         ///   Looks for a header parameter named <paramref name="headerParameterName"/> in the current JWT, returning
         ///   whether or not such a parameter existed. When the parameter exists <paramref name="value"/>
@@ -249,7 +257,7 @@ namespace JsonWebToken
         /// <param name="headerParameterName"></param>
         /// <returns></returns>
         public bool ContainsHeaderParameter(string headerParameterName)
-            =>  _document.ContainsKey(headerParameterName);
+            => _document.ContainsKey(headerParameterName);
 
         /// <summary>Determines whether the <see cref="JwtHeaderDocument"/> contains the specified header parameter.</summary>
         /// <param name="headerParameterName"></param>

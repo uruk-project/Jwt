@@ -11,7 +11,6 @@ namespace JsonWebToken
     /// https://tools.ietf.org/html/draft-ietf-secevent-token-13#section-2.2
     /// </summary>
     public static class SecEventClaimNames
-
     {
         /// <summary>
         /// https://tools.ietf.org/html/rfc8417#section-2.2
@@ -21,12 +20,11 @@ namespace JsonWebToken
         /// <summary>
         /// https://tools.ietf.org/html/rfc8417#section-2.2
         /// </summary>
-        public static readonly string Txn = "txn";
+        public static readonly JsonEncodedText Txn = JsonEncodedText.Encode("txn");
 
         /// <summary>
         /// https://tools.ietf.org/html/rfc8417#section-2.2
         /// </summary>
-        public static readonly string Toe = "toe";
-
+        public static readonly JsonEncodedText Toe = JsonEncodedText.Encode("toe");
     }
 }

@@ -38,7 +38,8 @@ namespace JsonWebToken
         /// <summary>Gets the raw binary value of the current <see cref="JwtPayloadDocument"/>.</summary>
         public ReadOnlyMemory<byte> RawValue => _document.RawValue;
 
-        internal JwtElement Iss => _iss;
+        /// <summary>Gets the 'iss' header parameter value.</summary>
+        public JwtElement Iss => _iss;
 
         private JwtPayloadDocument(JwtDocument document, byte control, int issIdx)
         {
@@ -430,6 +431,26 @@ namespace JsonWebToken
                 throw new KeyNotFoundException();
             }
         }
+
+        /// <summary>
+        ///   Looks for a claim named <paramref name="claimName"/> in the current JWT, returning
+        ///   the value of that claim.
+        /// </summary>
+        /// <param name="claimName">Name of the claim to find.</param>
+        /// <returns>
+        ///  The value of the located claim.
+        /// </returns>
+        /// <exception cref="InvalidOperationException">
+        ///   This value is not <see cref="JsonValueKind.Object"/>.
+        /// </exception>
+        /// <exception cref="ObjectDisposedException">
+        ///   The parent <see cref="JwtDocument"/> has been disposed.
+        /// </exception>
+        /// <exception cref="KeyNotFoundException">
+        ///   The <paramref name="claimName"/> is not found.
+        /// </exception>
+        public JwtElement this[JsonEncodedText claimName]
+            => this[claimName.];
 
         /// <inheritdoc/>
         public override string ToString()

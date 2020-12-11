@@ -46,7 +46,7 @@ namespace JsonWebToken
         public Jwt? NestedToken => throw new NotImplementedException();
 
         /// <summary>This property is obsolete. Gets the signature algorithm associated with this instance.</summary>
-        [Obsolete("This property is obsolete. Use the propert Headeroad.TryGetClaim(JwtClaimNames.Iss, out var value) instead.", true)]
+        [Obsolete("This property is obsolete. Use the property Header.SignatureAlgorithm instead.", true)]
         [EditorBrowsable(EditorBrowsableState.Never)]
         public SignatureAlgorithm? SignatureAlgorithm => throw new NotImplementedException();
 
