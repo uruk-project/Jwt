@@ -12,7 +12,7 @@ namespace JsonWebToken
         private readonly SemaphoreSlim _refreshLock = new SemaphoreSlim(1);
         private readonly HttpDocumentRetriever _documentRetriever;
         private long _syncAfter;
-        private Jwks? _currentKeys;
+        private Jwks? _currentJwks;
         private bool _disposed;
 
         /// <summary>1 day is the default time interval that afterwards, <see cref="GetKeys(JwtHeaderDocument, string)"/> will obtain new configuration.</summary>
@@ -60,10 +60,10 @@ namespace JsonWebToken
             }
 
             var kid = header.Kid;
-            var now = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
-            if (_currentKeys != null && _syncAfter > now)
+            long now = EpochTime.UtcNow;
+            if (_currentJwks != null && _syncAfter > now)
             {
-                return _currentKeys.GetKeys(kid);
+                return _currentJwks.GetKeys(kid);
             }
 
             if (_syncAfter <= now)
@@ -72,7 +72,9 @@ namespace JsonWebToken
                 try
                 {
                     var value = _documentRetriever.GetDocument(metadataAddress, CancellationToken.None);
-                    _currentKeys = Jwks.FromJson(value);
+                    var refreshedJwks = Jwks.FromJson(value);
+                    Jwks.PublishJwksRefreshed(refreshedJwks);
+                    _currentJwks = refreshedJwks;
                     _syncAfter = now + AutomaticRefreshInterval;
                 }
                 catch
@@ -86,9 +88,9 @@ namespace JsonWebToken
                 }
             }
 
-            if (_currentKeys != null)
+            if (_currentJwks != null)
             {
-                return _currentKeys.GetKeys(kid);
+                return _currentJwks.GetKeys(kid);
             }
 
             ThrowHelper.ThrowInvalidOperationException_UnableToObtainKeysException(metadataAddress);
@@ -105,7 +107,7 @@ namespace JsonWebToken
                 {
                     _refreshLock.Dispose();
                     _documentRetriever.Dispose();
-                    _currentKeys?.Dispose();
+                    _currentJwks?.Dispose();
                 }
 
                 _disposed = true;
