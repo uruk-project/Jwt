@@ -450,7 +450,7 @@ namespace JsonWebToken
         ///   The <paramref name="claimName"/> is not found.
         /// </exception>
         public JwtElement this[JsonEncodedText claimName]
-            => this[claimName.];
+            => this[claimName.EncodedUtf8Bytes];
 
         /// <inheritdoc/>
         public override string ToString()
