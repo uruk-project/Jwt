@@ -20,7 +20,7 @@ namespace JsonWebToken
         private readonly List<byte[]> _issuers = new List<byte[]>();
         private int _maximumTokenSizeInBytes = DefaultMaximumTokenSizeInBytes;
         private bool _hasSignatureValidation = false;
-        private SignatureValidationPolicy _defaultSignaturePolicy = SignatureValidationPolicy.IgnoreSignature;
+        private SignatureValidationPolicy _defaultSignaturePolicy = SignatureValidationPolicy.InvalidSignature;
         private bool _ignoreCriticalHeader = false;
         private bool _ignoreNestedToken;
 

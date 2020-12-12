@@ -119,9 +119,6 @@ namespace JsonWebToken
         public IKeyProvider[] DecryptionKeyProviders { get; }
 
         /// <summary>Try to validate the token, according to the <paramref name="header"/> and the <paramref name="payload"/>.</summary>
-        /// <param name="header"></param>
-        /// <param name="payload"></param>
-        /// <param name="error"></param>
         public bool TryValidateJwt(JwtHeaderDocument header, JwtPayloadDocument payload, [NotNullWhen(false)] out TokenValidationError? error)
         {
             if (payload.Control != 0)
@@ -195,8 +192,6 @@ namespace JsonWebToken
         }
 
         /// <summary>Try to validate the token header, according to the <paramref name="header"/>.</summary>
-        /// <param name="header"></param>
-        /// <param name="error"></param>
         /// <returns><c>true</c> if the <paramref name="header"/> is valid. <c>false</c> otherwise.</returns>
         public bool TryValidateHeader(JwtHeaderDocument header, [NotNullWhen(false)] out TokenValidationError? error)
         {
@@ -232,12 +227,6 @@ namespace JsonWebToken
         }
 
         /// <summary>Try to validate the token signature.</summary>
-        /// <param name="header"></param>
-        /// <param name="payload"></param>
-        /// <param name="contentBytes"></param>
-        /// <param name="signatureSegment"></param>
-        /// <param name="error"></param>
-        /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool TryValidateSignature(JwtHeaderDocument header, JwtPayloadDocument payload, ReadOnlySpan<byte> contentBytes, ReadOnlySpan<byte> signatureSegment, [NotNullWhen(false)] out SignatureValidationError? error)
         {
