@@ -95,6 +95,17 @@ namespace JsonWebToken
             }
         }
 
+        /// <summary>Defines a delegate to call when a <see cref="Jwks"/> has been refreshed.</summary>
+        /// <param name="keys"></param>
+        public delegate void JwksRefreshed(Jwks keys);
+
+        /// <summary>Event that occur when the <see cref="Jwks"/> has been refreshed. The parameter keys is the refreshed <see cref="Jwks"/>.</summary>
+        public static event JwksRefreshed? OnJwksRefreshed;
+
+        /// <summary>Publish an event that notify a <see cref="Jwks"/> has been refreshed.</summary>
+        public static void PublishJwksRefreshed(Jwks keys)
+            => OnJwksRefreshed?.Invoke(keys);
+
         /// <summary>Adds the <paramref name="key"/> to the JWKS.</summary>
         /// <param name="key"></param>
         public void Add(Jwk key)

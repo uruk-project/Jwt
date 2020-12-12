@@ -19,6 +19,30 @@ namespace JwkSample
             ReadSymmetricKeyFromBase64Url();
             ReadSymmetricKeyFromByteArray();
             ReadKeysFromJwksEndpoint();
+
+            InterceptKeyRefreshedEvent();
+        }
+
+        private static void InterceptKeyRefreshedEvent()
+        {
+            Jwks.OnJwksRefreshed += OnKeysRefreshed;
+
+            var jwks = new Jwks 
+            {
+                SymmetricJwk.GenerateKey(128),
+                SymmetricJwk.GenerateKey(128),
+                SymmetricJwk.GenerateKey(128),
+                SymmetricJwk.GenerateKey(128)
+            };
+
+
+            Jwks.PublishJwksRefreshed(jwks);
+        }
+
+        private static void OnKeysRefreshed(Jwks keys)
+        {
+            Console.WriteLine("This key has been refreshed:");
+            Console.WriteLine(keys);
         }
 
         private static void GenerateKeys()
