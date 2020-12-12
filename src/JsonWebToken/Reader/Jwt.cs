@@ -324,8 +324,7 @@ namespace JsonWebToken
                     header,
                     payload,
                     utf8Token.Slice(headerSegment.Start, headerSegment.Length + payloadSegment.Length + 1),
-                    utf8Token.Slice(signatureSegment.Start, signatureSegment.Length),
-                    out var signatureError))
+                    utf8Token.Slice(signatureSegment.Start, signatureSegment.Length), out var signatureError))
                 {
                     jwt = new Jwt(TokenValidationError.SignatureValidationFailed(signatureError));
                     goto ExitFalse;
@@ -407,7 +406,7 @@ namespace JsonWebToken
             int ciphertextBufferLength = Base64Url.GetArraySizeRequiredToDecode(ciphertextSegment.Length);
             byte[] ciphertextBuffer = ArrayPool<byte>.Shared.Rent(ciphertextBufferLength);
             Span<byte> decryptedBytes = new Span<byte>(ciphertextBuffer, 0, ciphertextBufferLength);
-            if (TryDecryptToken(keys, rawHeader, rawCiphertext, rawInitializationVector, rawAuthenticationTag, encryptionAlgorithm, decryptedBytes, bytesWritten: out int bytesWritten))
+            if (TryDecryptToken(keys, rawHeader, rawCiphertext, rawInitializationVector, rawAuthenticationTag, encryptionAlgorithm, decryptedBytes, out int bytesWritten))
             {
                 decryptedBytes = decryptedBytes.Slice(0, bytesWritten);
             }
