@@ -130,7 +130,7 @@ namespace JwkSample
         private static void ReadKeysFromJwksEndpoint()
         {
             // The JwksKeyProvider retrieve the JWKs from an HTTP endpoint. The JkuKeyProvider & X5uKeyProvider do the same for differents formats.
-            var jwksProvider = new JwksKeyProvider("https://login.microsoftonline.com/common/discovery/v2.0/keys"); // you may provide an HttpClientHandler with if you are behind a proxy.
+            var jwksProvider = new JwksHttpKeyProvider("https://login.microsoftonline.com/common/discovery/v2.0/keys"); // you may provide an HttpClientHandler with if you are behind a proxy.
             var keys = jwksProvider.GetKeys();
             Console.WriteLine("JWK from internet faced JWKS:");
             foreach (var key in keys)

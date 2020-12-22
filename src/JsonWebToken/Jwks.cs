@@ -25,6 +25,7 @@ namespace JsonWebToken
         /// <summary>Initializes an new instance of <see cref="Jwks"/>.</summary>
         public Jwks()
         {
+            Issuer = string.Empty;
         }
 
         /// <summary>Initializes an new instance of <see cref="Jwks"/>.</summary>
@@ -37,6 +38,7 @@ namespace JsonWebToken
             }
 
             _keys.Add(key);
+            Issuer = string.Empty;
         }
 
         /// <summary>Initializes an new instance of <see cref="Jwks"/>.</summary>
@@ -55,6 +57,46 @@ namespace JsonWebToken
                     _keys.Add(key);
                 }
             }
+    
+            Issuer = string.Empty;
+        }
+
+        /// <summary>Initializes an new instance of <see cref="Jwks"/>.</summary>
+        public Jwks(string issuer)
+        {
+            Issuer = issuer ?? throw new ArgumentNullException(nameof(issuer));
+        }
+
+        /// <summary>Initializes an new instance of <see cref="Jwks"/>.</summary>
+        public Jwks(string issuer, Jwk key)
+        {
+            if (key is null)
+            {
+                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.key);
+            }
+
+            _keys.Add(key);
+            Issuer = issuer ?? throw new ArgumentNullException(nameof(issuer));
+        }
+
+        /// <summary>Initializes an new instance of <see cref="Jwks"/>.</summary>
+        public Jwks(string issuer, IList<Jwk> keys)
+        {
+            if (keys is null)
+            {
+                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.keys);
+            }
+
+            for (int i = 0; i < keys.Count; i++)
+            {
+                var key = keys[i];
+                if (key != null)
+                {
+                    _keys.Add(key);
+                }
+            }
+
+            Issuer = issuer ?? throw new ArgumentNullException(nameof(issuer));
         }
 
         /// <summary>Gets or sets the first <see cref="Jwk"/> with its 'kid'.</summary>
@@ -403,6 +445,9 @@ namespace JsonWebToken
         /// <summary>Gets the number of keys contained in the <see cref="Jwks"/>.</summary>
         public int Count => _keys.Count;
 
+        /// <summary>Gets the issuer of the keys.</summary>
+        public string Issuer { get; }
+
         /// <summary>Gets the list of <see cref="Jwk"/> identified by the 'kid'.</summary>
         /// <param name="kid"></param>
         /// <returns></returns>
@@ -428,9 +473,9 @@ namespace JsonWebToken
         }
 
         /// <summary>Returns a new instance of <see cref="Jwks"/>.</summary>
-        /// <param name="json">a string that contains JSON Web Key parameters in JSON format.</param>
-        /// <returns><see cref="Jwks"/></returns>
-        public static Jwks FromJson(string json)
+        /// <param name="issuer">The issuer of the keys.</param>
+        /// <param name="json">A string that contains JSON Web Key parameters in JSON format.</param>
+        public static Jwks FromJson(string issuer, string json)
         {
             if (json is null)
             {
@@ -445,7 +490,7 @@ namespace JsonWebToken
                             ? stackalloc byte[length]
                             : (jsonToReturn = ArrayPool<byte>.Shared.Rent(length));
                 length = Utf8.GetBytes(json, jsonSpan);
-                return FromJson(jsonSpan.Slice(0, length));
+                return FromJson(issuer, jsonSpan.Slice(0, length));
             }
             finally
             {
@@ -457,9 +502,9 @@ namespace JsonWebToken
         }
 
         /// <summary>Returns a new instance of <see cref="Jwks"/>.</summary>
+        /// <param name="issuer">The issuer of the keys.</param>
         /// <param name="json">a string that contains JSON Web Key parameters in JSON format.</param>
-        /// <returns><see cref="Jwks"/></returns>
-        public static Jwks FromJson(ReadOnlySpan<byte> json)
+        public static Jwks FromJson(string issuer, ReadOnlySpan<byte> json)
         {
             // a JWKS is :
             // {
@@ -469,7 +514,7 @@ namespace JsonWebToken
             //   ...
             //   ]
             // }
-            var jwks = new Jwks();
+            var jwks = new Jwks(issuer);
             var reader = new Utf8JsonReader(json, true, default);
 
             if (reader.Read() && reader.TokenType is JsonTokenType.StartObject && reader.Read())

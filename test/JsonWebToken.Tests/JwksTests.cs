@@ -9,20 +9,20 @@ namespace JsonWebToken.Tests
     {
         [Theory]
         [MemberData(nameof(GetJwks))]
-        public void ReadJwks_Valid(string json, int count)
+        public void ReadJwks_Valid(string issuer, string json, int count)
         {
-            var jwks = Jwks.FromJson(json);
+            var jwks = Jwks.FromJson(issuer, json);
 
             Assert.Equal(count, jwks.Count);
         }
 
         [Theory]
         [MemberData(nameof(GetInvalidJwks))]
-        public void ReadJwks_Invalid(string json)
+        public void ReadJwks_Invalid(string issuer, string json)
         {
             try
             {
-                Jwks.FromJson(json);
+                Jwks.FromJson(issuer, json);
                 Assert.False(true, "Expected to throw an exception.");
             }
             catch (Exception e)
@@ -33,9 +33,9 @@ namespace JsonWebToken.Tests
 
         [Theory]
         [MemberData(nameof(GetJwksForKid))]
-        public void ReadJwks_Kid(string json)
+        public void ReadJwks_Kid(string issuer, string json)
         {
-            var jwks = Jwks.FromJson(json);
+            var jwks = Jwks.FromJson(issuer, json);
 
             var unidentifiedKeys = jwks.Where(k => k.Kid.EncodedUtf8Bytes.IsEmpty);
 
@@ -172,30 +172,35 @@ namespace JsonWebToken.Tests
         {
             yield return new object[]
            {
+               "", 
                EmptyJwks, 0
            };
 
             // https://login.salesforce.com/id/keys
             yield return new object[]
             {
+                "https://login.salesforce.com/id/keys",
                 SalesforceJwks, 3
             };
 
             // https://login.microsoftonline.com/common/discovery/v2.0/keys
             yield return new object[]
            {
+               "https://login.microsoftonline.com/common/discovery/v2.0/keys",
                MicrosoftJwks, 5
            };
 
             // https://api.paypal.com/v1/oauth2/certs
             yield return new object[]
             {
+                "https://api.paypal.com/v1/oauth2/certs",
                 PaypalJwks, 2
             };
 
             // https://www.googleapis.com/oauth2/v3/certs
             yield return new object[]
             {
+                "https://www.googleapis.com/oauth2/v3/certs",
                GoogleJwks, 2
             };
 
@@ -203,12 +208,14 @@ namespace JsonWebToken.Tests
 #if NET461
             yield return new object[]
             {
+                "https://login.eveonline.com/oauth/jwks",
                 EveOnlineJwks, 1
             };
 #else
             yield return new object[]
             {
-               EveOnlineJwks, 2
+                "https://login.eveonline.com/oauth/jwks",
+                EveOnlineJwks, 2
             };
 #endif
         }
@@ -217,12 +224,13 @@ namespace JsonWebToken.Tests
         {
             // No 'keys' property
             yield return new object[]
-            {
+            {  "No 'keys' property",
                 @"{""keysx"":[]}"
             };
             // Malformed JSON - Missing closing square bracket.
             yield return new object[]
             {
+                "Malformed JSON - Missing closing square bracket.",
                 @"{
                     ""keys"": [
                         {
@@ -246,6 +254,7 @@ namespace JsonWebToken.Tests
             // Malformed JSON - Missing closing curly bracket.
             yield return new object[]
             {
+                "Malformed JSON - Missing closing curly bracket.",
                 @"{
                     ""keys"": [
                         {
@@ -269,6 +278,7 @@ namespace JsonWebToken.Tests
             // Malformed JSON - invalid key.",
             yield return new object[]
             {
+                "Malformed JSON - invalid key.",
                 @"{
                     ""keys"": [
                         {
@@ -295,15 +305,15 @@ namespace JsonWebToken.Tests
 
         public static IEnumerable<object[]> GetJwksForKid()
         {
-            // No 'keys' property
             yield return new object[]
             {
+                "No 'keys' property",
                 @"{""keys"":[]}"
             };
 
-            // 1 key, no kid
             yield return new object[]
             {
+                "1 key, no kid",
                 @"{
                     ""keys"": [
                         {
@@ -314,9 +324,10 @@ namespace JsonWebToken.Tests
                     ]
                 }"
             };
-            // 1 key, with kid
+
             yield return new object[]
             {
+                "1 key, with kid", 
                 @"{
                     ""keys"": [
                         {
@@ -326,9 +337,10 @@ namespace JsonWebToken.Tests
                     ]
                 }"
             };
-            // 2 keys, without kid
+            
             yield return new object[]
             {
+                "2 keys, without kid",
                 @"{
                     ""keys"": [
                         {
@@ -342,9 +354,10 @@ namespace JsonWebToken.Tests
                     ]
                 }"
             };
-            // 2 keys, without kid for 1st
+            
             yield return new object[]
             {
+                "2 keys, without kid for 1st",
                 @"{
                     ""keys"": [
                         {
@@ -359,9 +372,10 @@ namespace JsonWebToken.Tests
                     ]
                 }"
             };
-            // 2 keys, without kid for 2nd
+            
             yield return new object[]
             {
+                "2 keys, without kid for 2nd",
                 @"{
                     ""keys"": [
                         {
@@ -376,9 +390,10 @@ namespace JsonWebToken.Tests
                     ]
                 }"
             };
-            // 2 keys, with kid
+            
             yield return new object[]
             {
+                "2 keys, with kid",
                 @"{
                     ""keys"": [
                         {
@@ -397,6 +412,7 @@ namespace JsonWebToken.Tests
 
             yield return new object[]
             {
+                "3 keys, without kid",
                 @"{
                     ""keys"": [
                         {
@@ -416,6 +432,7 @@ namespace JsonWebToken.Tests
             };
             yield return new object[]
             {
+                "3 keys, 1st kid",
                 @"{
                     ""keys"": [
                         {
@@ -436,6 +453,7 @@ namespace JsonWebToken.Tests
             };
             yield return new object[]
             {
+                "3 keys, 2nd kid",
                 @"{
                     ""keys"": [
                         {
@@ -456,6 +474,7 @@ namespace JsonWebToken.Tests
             };
             yield return new object[]
             {
+                "3 keys, 3rd kid",
                 @"{
                     ""keys"": [
                         {
@@ -476,6 +495,7 @@ namespace JsonWebToken.Tests
             };
             yield return new object[]
             {
+                "3 keys, 2nd&3rd kid",
                 @"{
                     ""keys"": [
                         {
@@ -497,6 +517,7 @@ namespace JsonWebToken.Tests
             };
             yield return new object[]
             {
+                "3 keys, 1st&3rd kid",
                 @"{
                     ""keys"": [
                         {
@@ -518,6 +539,7 @@ namespace JsonWebToken.Tests
             };
             yield return new object[]
             {
+                "3 keys, 1st&2nd kid",
                 @"{
                     ""keys"": [
                         {
@@ -539,6 +561,7 @@ namespace JsonWebToken.Tests
             };
             yield return new object[]
             {
+                "3 keys, 3 kid",
                 @"{
                     ""keys"": [
                         {
@@ -561,6 +584,7 @@ namespace JsonWebToken.Tests
             };
             yield return new object[]
             {
+                "3 keys, 3 identical kid",
                 @"{
                     ""keys"": [
                         {
@@ -583,6 +607,7 @@ namespace JsonWebToken.Tests
             };
             yield return new object[]
             {
+                "3 keys, 2 identical kid & 3rd different",
                 @"{
                     ""keys"": [
                         {
@@ -605,6 +630,7 @@ namespace JsonWebToken.Tests
             };
             yield return new object[]
             {
+                "3 keys, 2 identical kid & 2nd different",
                 @"{
                     ""keys"": [
                         {
@@ -627,6 +653,7 @@ namespace JsonWebToken.Tests
             };
             yield return new object[]
             {
+                "3 keys, 2 identical kid & 1st different",
                 @"{
                     ""keys"": [
                         {
