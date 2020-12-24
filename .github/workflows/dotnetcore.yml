@@ -49,7 +49,16 @@ jobs:
         uses: actions/setup-dotnet@v1
         with:
           dotnet-version: '5.0.x'
-          
+
+      - name: Fix brew on macOS GitHub runners	
+        # GitHub runners are broken. See:	
+        # https://github.com/actions/virtual-environments/issues/2089
+        if: runner.os == 'macOS'	
+        run: |	
+          brew tap-new --no-git local/openssl
+          FORMULA_PATH=$(brew extract openssl local/openssl | grep "Homebrew/Library/Taps")
+          brew install $FORMULA_PATH          
+
       - name: Build
         run: dotnet build -c ${{ matrix.configuration }}
 
