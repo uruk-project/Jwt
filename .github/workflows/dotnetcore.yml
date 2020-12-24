@@ -33,6 +33,7 @@ jobs:
       DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 1
       NUGET_XMLDOC_MODE: skip
       NUGET_PACKAGES: ${{ github.workspace }}/.nuget/packages
+      CLR_OPENSSL_VERSION_OVERRIDE: '1.0.2t' # for macOS OpenSSL issue
 #      COMPlus_EnableAVX: 0
 #      COMPlus_EnableSSE: 0
     steps:
@@ -59,10 +60,10 @@ jobs:
           FORMULA_PATH=$(brew extract openssl local/openssl | grep "Homebrew/Library/Taps")
           brew install $FORMULA_PATH
           # Set OpenSSL 1.0.2t as default
-          ln -sf /usr/local/Cellar/openssl@1.0.2t /usr/local/Cellar/openssl
-          ln -sf /usr/local/Cellar/openssl/1.0.2t/bin/openssl /usr/local/bin/openssl
-          rm /usr/local/opt/openssl
-          ln -sf ../Cellar/openssl/1.0.2t /usr/local/opt/openssl   
+          #ln -sf /usr/local/Cellar/openssl@1.0.2t /usr/local/Cellar/openssl
+          #ln -sf /usr/local/Cellar/openssl/1.0.2t/bin/openssl /usr/local/bin/openssl
+          #rm /usr/local/opt/openssl
+          #ln -sf ../Cellar/openssl/1.0.2t /usr/local/opt/openssl   
 
       - name: Build
         run: dotnet build -c ${{ matrix.configuration }}
