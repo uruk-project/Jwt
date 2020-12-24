@@ -139,7 +139,7 @@ namespace JsonWebToken
 
             _hasSignatureValidation = true;
             var policy = SignatureValidationPolicy.Create(keyProvider, defaultAlgorithm);
-            _signaturePolicies.Add(issuer, policy);
+            _signaturePolicies[issuer] =  policy;
             return this;
         }
 
@@ -152,7 +152,7 @@ namespace JsonWebToken
             }
 
             _hasSignatureValidation = true;
-            _signaturePolicies.Add(issuer, SignatureValidationPolicy.IgnoreSignature);
+            _signaturePolicies[issuer] = SignatureValidationPolicy.IgnoreSignature;
             return this;
         }
 
@@ -173,7 +173,7 @@ namespace JsonWebToken
             }
 
             _hasSignatureValidation = true;
-            _signaturePolicies.Add(issuer, SignatureValidationPolicy.NoSignature);
+            _signaturePolicies[issuer] = SignatureValidationPolicy.NoSignature;
             return this;
         }
 
