@@ -32,7 +32,7 @@ namespace JsonWebToken
         /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static MemberStore CreateSlowGrowingStore()
-                => new MemberStore(SlowGrowingEmptyMap.Empty);
+            => new MemberStore(SlowGrowingEmptyMap.Empty);
 
         private IMap _map;
 
@@ -51,24 +51,18 @@ namespace JsonWebToken
         /// </summary>
         /// <param name="writer"></param>
         public void WriteTo(Utf8JsonWriter writer)
-        {
-            _map.WriteTo(writer);
-        }
+            => _map.WriteTo(writer);
 
         /// <summary>
         /// Copy the current <see cref="MemberStore"/> into the <paramref name="destination"/>.
         /// </summary>
         /// <param name="destination"></param>
         public void CopyTo(MemberStore destination)
-        {
-            destination._map = _map.Merge(destination._map);
-        }
+            => destination._map = _map.Merge(destination._map);
 
         /// <inheritdoc/>
         public IEnumerator<JwtMember> GetEnumerator()
-        {
-            return _map.GetEnumerator();
-        }
+            => _map.GetEnumerator();
 
         /// <summary>
         /// Adds the <paramref name="value"/>.

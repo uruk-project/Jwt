@@ -4,42 +4,57 @@
 using System;
 using System.Collections.Generic;
 using System.Security.Cryptography;
-using System.Security.Cryptography.X509Certificates;
 using System.Text.Json;
 using System.Threading.Tasks;
-using Microsoft.Azure.KeyVault;
-using Microsoft.Azure.KeyVault.WebKey;
-using Microsoft.IdentityModel.Clients.ActiveDirectory;
-using KVECParameters = Microsoft.Azure.KeyVault.WebKey.ECParameters;
-#if !NETFRAMEWORK
-using SscECParameters = System.Security.Cryptography.ECParameters;
-#endif
+using Azure.Core;
+using Azure.Identity;
+using Azure.Security.KeyVault.Keys;
 
 namespace JsonWebToken.KeyVault
 {
     public sealed class KeyVaultKeyProvider : IKeyProvider
     {
-        private readonly IKeyVaultClient _client;
-        private readonly string _vaultBaseUrl;
+        private readonly string _issuer;
+        private readonly KeyClient _client;
 
         public int MaxResults { get; set; } = 10;
 
-        public KeyVaultKeyProvider(string vaulBaseUrl, IKeyVaultClient client)
+        public string Issuer => _issuer;
+
+        /// <summary>Initializes a new instance of the <see cref="KeyVaultKeyProvider"/> class.</summary>
+        public KeyVaultKeyProvider(string issuer, KeyClient client)
         {
-            _vaultBaseUrl = vaulBaseUrl ?? throw new ArgumentNullException(nameof(vaulBaseUrl));
-            _client = client;
+            _issuer = issuer ?? throw new ArgumentNullException(nameof(issuer));
+            _client = client ?? throw new ArgumentNullException(nameof(client));
         }
 
-        public KeyVaultKeyProvider(string vaulBaseUrl, string clientId, X509Certificate2 certificate)
+        /// <summary>Initializes a new instance of the <see cref="KeyVaultKeyProvider"/> class with default credentials. See <see cref="DefaultAzureCredential"/>.</summary>
+        public KeyVaultKeyProvider(string issuer, string vaultUri)
         {
-            _vaultBaseUrl = vaulBaseUrl ?? throw new ArgumentNullException(nameof(vaulBaseUrl));
-            _client = new KeyVaultClient((authority, resource, scope) => GetTokenFromClientCertificate(authority, resource, clientId, certificate));
+            if (vaultUri is null)
+            {
+                throw new ArgumentNullException(nameof(vaultUri));
+            }
+
+            _issuer = issuer ?? throw new ArgumentNullException(nameof(issuer));
+            _client = new KeyClient(new Uri(vaultUri), new DefaultAzureCredential());
         }
 
-        public KeyVaultKeyProvider(string vaulBaseUrl, string clientId, string clientSecret)
+        /// <summary>Initializes a new instance of the <see cref="KeyVaultKeyProvider"/> class.</summary>
+        public KeyVaultKeyProvider(string issuer, string vaultUri, TokenCredential credential)
         {
-            _vaultBaseUrl = vaulBaseUrl ?? throw new ArgumentNullException(nameof(vaulBaseUrl));
-            _client = new KeyVaultClient((authority, resource, scope) => GetTokenFromClientSecret(authority, resource, clientId, clientSecret));
+            if (vaultUri is null)
+            {
+                throw new ArgumentNullException(nameof(vaultUri));
+            }
+
+            if (credential is null)
+            {
+                throw new ArgumentNullException(nameof(credential));
+            }
+
+            _issuer = issuer ?? throw new ArgumentNullException(nameof(issuer));
+            _client = new KeyClient(new Uri(vaultUri), credential);
         }
 
         public Jwk[] GetKeys(JwtHeaderDocument header)
@@ -50,30 +65,35 @@ namespace JsonWebToken.KeyVault
         private async Task<Jwk[]> GetKeysAsync()
         {
             var keys = new List<Jwk>();
-            var keyIdentifiers = await _client.GetKeysAsync(_vaultBaseUrl, MaxResults);
-            foreach (var keyIdentifier in keyIdentifiers)
+            
+            await foreach (var keyProperties in _client.GetPropertiesOfKeysAsync())
             {
-                var kvKey = await _client.GetKeyAsync(keyIdentifier.Identifier.Identifier);
-                Jwk? key = kvKey.Key.Kty switch
+                var kvKey = await _client.GetKeyAsync(keyProperties.Name);
+                Jwk? key = null;
+                if (kvKey.Value.KeyType == KeyType.Oct)
                 {
-                    JsonWebKeyType.Octet => SymmetricJwk.FromByteArray(kvKey.Key.K, false),
-                    JsonWebKeyType.Rsa => RsaJwk.FromParameters(kvKey.Key.ToRSAParameters(), false),
-                    JsonWebKeyType.RsaHsm => RsaJwk.FromParameters(kvKey.Key.ToRSAParameters(), false),
+                    key = SymmetricJwk.FromByteArray(kvKey.Value.Key.K, false);
+                }
+                else if(kvKey.Value.KeyType == KeyType.Rsa || kvKey.Value.KeyType == KeyType.RsaHsm)
+                {
+                    key = RsaJwk.FromParameters(kvKey.Value.Key.ToRSA(true).ExportParameters(true), false);
+                }
 #if !NETFRAMEWORK
-                    JsonWebKeyType.EllipticCurve => ECJwk.FromParameters(ConvertToECParameters(kvKey.Key.ToEcParameters()), computeThumbprint: false),
-                    JsonWebKeyType.EllipticCurveHsm => ECJwk.FromParameters(ConvertToECParameters(kvKey.Key.ToEcParameters()), computeThumbprint: false),
+                else if (kvKey.Value.KeyType == KeyType.Ec || kvKey.Value.KeyType == KeyType.EcHsm)
+                {
+                    ECJwk.FromParameters(ConvertToECParameters(kvKey.Value), computeThumbprint: false);
+                }
 #endif
-                    _ => null
-                };
 
                 if (!(key is null))
                 {
-                    key.Kid = JsonEncodedText.Encode(kvKey.Key.Kid);
-                    if (kvKey.Key.KeyOps != null)
+
+                    key.Kid = JsonEncodedText.Encode(kvKey.Value.Key.Id);
+                    if (kvKey.Value.Key.KeyOps != null)
                     {
-                        for (int i = 0; i < kvKey.Key.KeyOps.Count; i++)
+                        foreach (var operation in kvKey.Value.Key.KeyOps)
                         {
-                            key.KeyOps.Add(JsonEncodedText.Encode(kvKey.Key.KeyOps[i]));
+                            key.KeyOps.Add(JsonEncodedText.Encode(operation.ToString()));
                         }
                     }
 
@@ -85,40 +105,41 @@ namespace JsonWebToken.KeyVault
         }
 
 #if !NETFRAMEWORK
-        private static SscECParameters ConvertToECParameters(KVECParameters inputParameters)
+        private static ECParameters ConvertToECParameters(KeyVaultKey key)
         {
-            var curve = inputParameters.Curve switch
+            ECCurve curve;
+            if (key.Key.CurveName == KeyCurveName.P256)
             {
-                "P-256" => ECCurve.NamedCurves.nistP256,
-                "P-384" => ECCurve.NamedCurves.nistP384,
-                "P521" => ECCurve.NamedCurves.nistP521,
-                _ => throw new NotSupportedException(),
-            };
-            return new SscECParameters
+                curve = ECCurve.NamedCurves.nistP256;
+            } 
+            else if (key.Key.CurveName == KeyCurveName.P384)
+            {
+                curve = ECCurve.NamedCurves.nistP384;
+            }
+            else if (key.Key.CurveName == KeyCurveName.P521)
+            {
+                curve = ECCurve.NamedCurves.nistP521;
+            }
+            else if (key.Key.CurveName == KeyCurveName.P256K)
+            {
+                curve = ECCurve.CreateFromValue("1.3.132.0.10");
+            }
+            else
+            {
+                throw new NotSupportedException();
+            }
+
+            return new ECParameters
             {
                 Curve = curve,
-                D = inputParameters.D,
+                D = key.Key.D,
                 Q = new ECPoint
                 {
-                    X = inputParameters.X,
-                    Y = inputParameters.Y
+                    X = key.Key.X,
+                    Y = key.Key.Y
                 }
             };
         }
 #endif
-
-        private static async Task<string> GetTokenFromClientCertificate(string authority, string resource, string clientId, X509Certificate2 certificate)
-        {
-            var authContext = new AuthenticationContext(authority);
-            var result = await authContext.AcquireTokenAsync(resource, new ClientAssertionCertificate(clientId, certificate));
-            return result.AccessToken;
-        }
-
-        private static async Task<string> GetTokenFromClientSecret(string authority, string resource, string clientId, string clientSecret)
-        {
-            var authContext = new AuthenticationContext(authority);
-            var result = await authContext.AcquireTokenAsync(resource, new ClientCredential(clientId, clientSecret));
-            return result.AccessToken;
-        }
     }
 }

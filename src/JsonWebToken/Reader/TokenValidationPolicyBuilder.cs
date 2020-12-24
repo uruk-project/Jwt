@@ -66,23 +66,22 @@ namespace JsonWebToken
             return this;
         }
 
-        /// <summary>Configure the <see cref="TokenValidationPolicy"/> based on the <paramref name="metadataUrl"/>
-        /// as defined by https://tools.ietf.org/html/rfc8414 and https://openid.net/specs/openid-connect-discovery-1_0.html.
-        /// The <paramref name="issuer"/> must be a valid URL.</summary>
-        public TokenValidationPolicyBuilder RequireMetadataConfiguration(string issuer, SignatureAlgorithm defaultAlgorithm, string metadataUrl = "/.well-known/oauth-authorization-server",  HttpMessageHandler? handler = null)
+        /// <summary>Configure the <see cref="TokenValidationPolicy"/> based on the <paramref name="metadataUri"/>
+        /// as defined by https://tools.ietf.org/html/rfc8414 and https://openid.net/specs/openid-connect-discovery-1_0.html.</summary>
+        public TokenValidationPolicyBuilder RequireMetadataConfiguration(string metadataUri, SignatureAlgorithm defaultAlgorithm, HttpMessageHandler? handler = null)
         {
-            metadataUrl = issuer + metadataUrl;
-            if (!Uri.IsWellFormedUriString(metadataUrl, UriKind.Absolute))
+            if (!Uri.IsWellFormedUriString(metadataUri, UriKind.Absolute))
             {
-                throw new InvalidOperationException($"'{metadataUrl}' is not a valid URL.");
+                throw new InvalidOperationException($"'{metadataUri}' is not a valid URL.");
             }
 
-            return RequireSignatureByDefault(issuer, new JwksKeyProvider(metadataUrl, handler, MetadataRetrievalBehavior.FromMetadataUrl), defaultAlgorithm);
+            var keyProvider = new JwksHttpKeyProvider(metadataUri, handler);
+            return RequireSignatureByDefault(keyProvider.Issuer!, keyProvider, defaultAlgorithm);
         }
 
         /// <summary>Configure the signature behavior for a specific <paramref name="issuer"/>.</summary>
         public TokenValidationPolicyBuilder RequireSignature(string issuer, string jwksUrl, SignatureAlgorithm defaultAlgorithm, HttpMessageHandler? handler = null)
-            => RequireSignatureByDefault(issuer, new JwksKeyProvider(jwksUrl, handler, MetadataRetrievalBehavior.FromJwksUrl), defaultAlgorithm);
+            => RequireSignatureByDefault(issuer, new JwksHttpKeyProvider(issuer, jwksUrl, handler), defaultAlgorithm);
 
         /// <summary>Configure the signature behavior for a specific <paramref name="issuer"/>.</summary>
         public TokenValidationPolicyBuilder RequireSignature(string issuer, Jwk key, SignatureAlgorithm defaultAlgorithm)
@@ -97,7 +96,7 @@ namespace JsonWebToken
                 throw new InvalidOperationException($"The key does not define an 'alg' parameter, and the parameter {nameof(defaultAlgorithm)} is undefined. At least one algorithm must be defined.");
             }
 
-            return RequireSignature(issuer, new Jwks(key), defaultAlgorithm);
+            return RequireSignature(issuer, new Jwks(issuer, key), defaultAlgorithm);
         }
 
         /// <summary>Configure the signature behavior for a specific <paramref name="issuer"/>.</summary>
@@ -208,39 +207,11 @@ namespace JsonWebToken
         /// Defines the default signature validation when there is no issuer configuration.
         /// Use the method <see cref="RequireSignatureByDefault(string, IKeyProvider, SignatureAlgorithm?)"/> for linking the issuer with the signature.
         /// </summary>
-        public TokenValidationPolicyBuilder RequireSignatureByDefault(string jwksUrl)
-            => RequireSignatureByDefault(jwksUrl, null, (HttpMessageHandler?)null);
-
-        /// <summary>
-        /// Defines the default signature validation when there is no issuer configuration.
-        /// Use the method <see cref="RequireSignatureByDefault(string, IKeyProvider, SignatureAlgorithm?)"/> for linking the issuer with the signature.
-        /// </summary>
-        public TokenValidationPolicyBuilder DefaultSignature(string jwksUrl, SignatureAlgorithm algorithm)
-            => RequireSignatureByDefault(jwksUrl, algorithm, null);
-
-        /// <summary>
-        /// Defines the default signature validation when there is no issuer configuration.
-        /// Use the method <see cref="RequireSignatureByDefault(string, IKeyProvider, SignatureAlgorithm?)"/> for linking the issuer with the signature.
-        /// </summary>
-        public TokenValidationPolicyBuilder RequireSignatureByDefault(string jwksUrl, HttpMessageHandler handler)
-            => RequireSignatureByDefault(jwksUrl, null, handler);
-
-        /// <summary>
-        /// Defines the default signature validation when there is no issuer configuration.
-        /// Use the method <see cref="RequireSignatureByDefault(string, IKeyProvider, SignatureAlgorithm?)"/> for linking the issuer with the signature.
-        /// </summary>
-        public TokenValidationPolicyBuilder RequireSignatureByDefault(string jwksUrl, SignatureAlgorithm? algorithm, HttpMessageHandler? handler)
-            => RequireSignatureByDefault(new JwksKeyProvider(jwksUrl, handler), algorithm);
-
-        /// <summary>
-        /// Defines the default signature validation when there is no issuer configuration.
-        /// Use the method <see cref="RequireSignatureByDefault(string, IKeyProvider, SignatureAlgorithm?)"/> for linking the issuer with the signature.
-        /// </summary>
         public TokenValidationPolicyBuilder RequireSignatureByDefault(Jwk key)
         {
             if (key.SignatureAlgorithm == null)
             {
-                throw new InvalidOperationException($"The key does not define an 'alg' parameter. Use the method {nameof(DefaultSignature)} with a {nameof(Jwk)} and a {nameof(SignatureAlgorithm)}.");
+                throw new InvalidOperationException($"The key does not define an 'alg' parameter. Use the method {nameof(RequireSignatureByDefault)} with a {nameof(Jwk)} and a {nameof(SignatureAlgorithm)}.");
             }
 
             return RequireSignatureByDefault(key, (SignatureAlgorithm?)null);
@@ -248,16 +219,16 @@ namespace JsonWebToken
 
         /// <summary>
         /// Defines the default signature validation when there is no issuer configuration.
-        /// Use the method <see cref="RequireSignatureByDefault(string, IKeyProvider, SignatureAlgorithm?)"/> for linking the issuer with the signature.
+        /// Use the method <see cref="RequireSignature(string, Jwk, SignatureAlgorithm)"/> for linking the issuer with the signature.
         /// </summary>
         public TokenValidationPolicyBuilder RequireSignatureByDefault(Jwk key, SignatureAlgorithm? algorithm)
             => RequireSignatureByDefault(new Jwks(key), algorithm);
 
         /// <summary>
         /// Defines the default signature validation when there is no issuer configuration.
-        /// Use the method <see cref="RequireSignatureByDefault(string, IKeyProvider, SignatureAlgorithm?)"/> for linking the issuer with the signature.
+        /// Use the method <see cref="RequireSignature(string, Jwk, SignatureAlgorithm)"/> for linking the issuer with the signature.
         /// </summary>
-        public TokenValidationPolicyBuilder RequireSignatureByDefault(Jwk key, string? algorithm)
+        public TokenValidationPolicyBuilder RequireSignatureByDefault(Jwk key, string algorithm)
         {
             if (algorithm is null)
             {
@@ -447,6 +418,14 @@ namespace JsonWebToken
         public TokenValidationPolicyBuilder WithDecryptionKey(Jwk encryptionKey)
              => WithDecryptionKeys(new Jwks(encryptionKey));
 
+        /// <summary>Defines the keys used to decrypt the tokens.</summary>
+        public TokenValidationPolicyBuilder WithDecryptionKeys(string issuer, params Jwk[] decryptionKeys)
+            => WithDecryptionKeys(new Jwks(issuer, decryptionKeys));
+
+        /// <summary>Defines the <see cref="Jwk"/> used to decrypt the tokens.</summary>
+        public TokenValidationPolicyBuilder WithDecryptionKey(string issuer, Jwk encryptionKey)
+             => WithDecryptionKeys(new Jwks(issuer, encryptionKey));
+
         /// <summary>Disable the header cache. This may be useful if the headers are complex.</summary>
         public TokenValidationPolicyBuilder DisableHeaderCache()
         {
@@ -472,7 +451,7 @@ namespace JsonWebToken
             {
                 signaturePolicy = _defaultSignaturePolicy;
             }
-            else if(_signaturePolicies.Count == 1)
+            else if (_signaturePolicies.Count == 1)
             {
                 var first = _signaturePolicies.First();
                 signaturePolicy = SignatureValidationPolicy.Create(first.Key, first.Value);
@@ -501,6 +480,8 @@ namespace JsonWebToken
         private sealed class EmptyKeyProvider : IKeyProvider
         {
             private static readonly Jwk[] Empty = Array.Empty<Jwk>();
+
+            public string Issuer => string.Empty;
 
             public Jwk[] GetKeys(JwtHeaderDocument header)
                 => Empty;

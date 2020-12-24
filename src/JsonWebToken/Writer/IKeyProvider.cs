@@ -8,5 +8,8 @@ namespace JsonWebToken
     {
         /// <summary>Gets a list of <see cref="Jwk"/>.</summary>
         Jwk[] GetKeys(JwtHeaderDocument header);
+
+        /// <summary>Gets the issuer of the <see cref="Jwk"/>s.</summary>
+        public string Issuer { get; }
     }
 }
