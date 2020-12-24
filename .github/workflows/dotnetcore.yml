@@ -51,19 +51,19 @@ jobs:
         with:
           dotnet-version: '5.0.x'
 
-      - name: Fix brew on macOS GitHub runners	
-        # GitHub runners are broken. See:	
-        # https://github.com/actions/virtual-environments/issues/2089
-        if: runner.os == 'macOS'	
-        run: |	  
-          brew tap-new --no-git local/openssl
-          FORMULA_PATH=$(brew extract openssl local/openssl | grep "Homebrew/Library/Taps")
-          brew install $FORMULA_PATH
-          # Set OpenSSL 1.0.2t as default
-          #ln -sf /usr/local/Cellar/openssl@1.0.2t /usr/local/Cellar/openssl
-          #ln -sf /usr/local/Cellar/openssl/1.0.2t/bin/openssl /usr/local/bin/openssl
-          #rm /usr/local/opt/openssl
-          #ln -sf ../Cellar/openssl/1.0.2t /usr/local/opt/openssl   
+     # - name: Fix brew on macOS GitHub runners	
+     #   # GitHub runners are broken. See:	
+     #   # https://github.com/actions/virtual-environments/issues/2089
+     #   if: runner.os == 'macOS'	
+     #   run: |	  
+     #     brew tap-new --no-git local/openssl
+     #     FORMULA_PATH=$(brew extract openssl local/openssl | grep "Homebrew/Library/Taps")
+     #     brew install $FORMULA_PATH
+     #     # Set OpenSSL 1.0.2t as default
+     #     #ln -sf /usr/local/Cellar/openssl@1.0.2t /usr/local/Cellar/openssl
+     #     #ln -sf /usr/local/Cellar/openssl/1.0.2t/bin/openssl /usr/local/bin/openssl
+     #     #rm /usr/local/opt/openssl
+     #     #ln -sf ../Cellar/openssl/1.0.2t /usr/local/opt/openssl   
 
       - name: Build
         run: dotnet build -c ${{ matrix.configuration }}
