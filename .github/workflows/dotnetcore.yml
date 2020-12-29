@@ -33,7 +33,7 @@ jobs:
       DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 1
       NUGET_XMLDOC_MODE: skip
       NUGET_PACKAGES: ${{ github.workspace }}/.nuget/packages
-      CLR_OPENSSL_VERSION_OVERRIDE: '1.0.2' # for macOS OpenSSL issue
+#      CLR_OPENSSL_VERSION_OVERRIDE: '1.0.2' # for macOS OpenSSL issue
 #      COMPlus_EnableAVX: 0
 #      COMPlus_EnableSSE: 0
     steps:
