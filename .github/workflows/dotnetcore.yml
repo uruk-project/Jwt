@@ -19,7 +19,9 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ ubuntu-latest, windows-latest, macos-latest ]
+ # Remove MacOS since there is an issue with OpenSSL   
+ #       os: [ ubuntu-latest, windows-latest, macos-latest ]
+        os: [ ubuntu-latest, windows-latest ]
         configuration: [ Debug, Release ]
         include:
           - os: ubuntu-latest
@@ -33,7 +35,7 @@ jobs:
       DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 1
       NUGET_XMLDOC_MODE: skip
       NUGET_PACKAGES: ${{ github.workspace }}/.nuget/packages
-      CLR_OPENSSL_VERSION_OVERRIDE: '1.0.2t' # for macOS OpenSSL issue
+#      CLR_OPENSSL_VERSION_OVERRIDE: '1.0.2t' # for macOS OpenSSL issue
 #      COMPlus_EnableAVX: 0
 #      COMPlus_EnableSSE: 0
     steps:
