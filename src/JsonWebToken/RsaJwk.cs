@@ -674,11 +674,8 @@ namespace JsonWebToken
             return FromParameters(rsaParameters, algorithm, computeThumbprint);
         }
 
-        /// <summary>
-        /// Converts the current <see cref="RsaJwk"/> key to the public representation. This converted key can be exposed.
-        /// </summary>
-        /// <returns></returns>
-        public RsaJwk AsPublicKey()
+        /// <summary>Converts the current <see cref="RsaJwk"/> key to the public representation. This converted key can be exposed.</summary>
+        public override Jwk AsPublicKey()
         {
             var publicParameters = new RSAParameters
             {

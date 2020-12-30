@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE in the project root for license information.
 
 using System;
+using System.Collections.ObjectModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Security.Cryptography;
 using System.Text.Json;
@@ -105,6 +106,9 @@ namespace JsonWebToken
 
         /// <summary>Gets the <see cref="Sha2"/> algorithm. </summary>
         public Sha2 Sha => _sha;
+
+        /// <summary>The supported <see cref="SignatureAlgorithm"/>.</summary>
+        public static ReadOnlyCollection<SignatureAlgorithm> SupportedAlgorithms => Array.AsReadOnly(_algorithms);
 
         /// <summary>Initializes a new instance of <see cref="SignatureAlgorithm"/>. </summary>
         /// <param name="id"></param>

@@ -622,59 +622,110 @@ namespace JsonWebToken
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.certificate);
             }
 
-            AsymmetricJwk? key = null;
+            AsymmetricJwk? key;
             if (withPrivateKey)
             {
-                using var rsa = certificate.GetRSAPrivateKey();
-                if (!(rsa is null))
+                if (!TryReadPrivateKeyFromX509Certificate(certificate, out key))
                 {
-                    var rsaParameters = rsa.ExportParameters(withPrivateKey);
-                    key = RsaJwk.FromParameters(rsaParameters, false);
+                    ThrowHelper.ThrowInvalidOperationException_InvalidCertificate();
                 }
-#if SUPPORT_ELLIPTIC_CURVE
-                else
-                {
-                    using var ecdsa = certificate.GetECDsaPrivateKey();
-                    if (!(ecdsa is null))
-                    {
-                        var ecParameters = ecdsa.ExportParameters(withPrivateKey);
-                        key = ECJwk.FromParameters(ecParameters, false);
-                    }
-                }
-#endif
             }
             else
             {
-                using var rsa = certificate.GetRSAPublicKey();
-                if (!(rsa is null))
+                if (!TryReadPublicKeyFromX509Certificate(certificate, out key))
                 {
-                    var rsaParameters = rsa.ExportParameters(withPrivateKey);
-                    key = RsaJwk.FromParameters(rsaParameters, false);
+                    ThrowHelper.ThrowInvalidOperationException_InvalidCertificate();
                 }
-#if SUPPORT_ELLIPTIC_CURVE
-                else
-                {
-                    using var ecdsa = certificate.GetECDsaPublicKey();
-                    if (!(ecdsa is null))
-                    {
-                        var ecParameters = ecdsa.ExportParameters(withPrivateKey);
-                        key = ECJwk.FromParameters(ecParameters, false);
-                    }
-                }
-#endif
             }
 
+            return key;
+        }
+
+        /// <summary>Tries to read a public key from a certificate and create new instance of <see cref="AsymmetricJwk"/>.</summary>
+        /// <param name="certificate">A <see cref="X509Certificate2"/> that contains JSON Web Key parameters.</param>
+        /// <param name="key">The key read from the certificate.</param>
+        public static bool TryReadPrivateKeyFromX509Certificate(X509Certificate2 certificate, [NotNullWhen(true)] out AsymmetricJwk? key)
+        {
+            if (certificate is null)
+            {
+                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.certificate);
+            }
+
+            key = null;
+            if (!certificate.HasPrivateKey)
+            {
+                return false;
+            }
+
+            using var rsa = certificate.GetRSAPrivateKey();
+            if (!(rsa is null))
+            {
+                var rsaParameters = rsa.ExportParameters(true);
+                key = RsaJwk.FromParameters(rsaParameters, computeThumbprint: false);
+            }
+#if SUPPORT_ELLIPTIC_CURVE
+            else
+            {
+                using var ecdsa = certificate.GetECDsaPrivateKey();
+                if (!(ecdsa is null))
+                {
+                    var ecParameters = ecdsa.ExportParameters(true);
+                    key = ECJwk.FromParameters(ecParameters, computeThumbprint: false);
+                }
+            }
+#endif
             if (key is null)
             {
-                ThrowHelper.ThrowInvalidOperationException_InvalidCertificate();
+                return false;
             }
 
             key.X5t = certificate.GetCertHash();
             Span<byte> thumbprint = stackalloc byte[43];
             key.ComputeThumbprint(thumbprint);
             key.Kid = JsonEncodedText.Encode(thumbprint, JsonSerializationBehavior.JsonEncoder);
-            return key;
+            return true;
         }
+
+        /// <summary>Tries to read a public key from a certificate and create a new instance of <see cref="AsymmetricJwk"/>.</summary>
+        /// <param name="certificate">A <see cref="X509Certificate2"/> that contains JSON Web Key parameters.</param>
+        /// <param name="key">The key read from the certificate.</param>
+        public static bool TryReadPublicKeyFromX509Certificate(X509Certificate2 certificate, [NotNullWhen(true)] out AsymmetricJwk? key)
+        {
+            if (certificate is null)
+            {
+                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.certificate);
+            }
+
+            key = null;
+            using var rsa = certificate.GetRSAPublicKey();
+            if (!(rsa is null))
+            {
+                var rsaParameters = rsa.ExportParameters(false);
+                key = RsaJwk.FromParameters(rsaParameters, computeThumbprint: false);
+            }
+#if SUPPORT_ELLIPTIC_CURVE
+            else
+            {
+                using var ecdsa = certificate.GetECDsaPublicKey();
+                if (!(ecdsa is null))
+                {
+                    var ecParameters = ecdsa.ExportParameters(false);
+                    key = ECJwk.FromParameters(ecParameters, computeThumbprint: false);
+                }
+            }
+#endif
+            if (key is null)
+            {
+                return false;
+            }
+
+            key.X5t = certificate.GetCertHash();
+            Span<byte> thumbprint = stackalloc byte[43];
+            key.ComputeThumbprint(thumbprint);
+            key.Kid = JsonEncodedText.Encode(thumbprint, JsonSerializationBehavior.JsonEncoder);
+            return true;
+        }
+
 
         /// <summary>Returns a new instance of <see cref="Jwk"/>.</summary>
         /// <param name="json">A string that contains JSON Web Key parameters in JSON format.</param>

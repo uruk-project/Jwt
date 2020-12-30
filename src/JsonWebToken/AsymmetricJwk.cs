@@ -38,5 +38,8 @@ namespace JsonWebToken
         /// </summary>
         /// <return>true if it has a private key; otherwise, false.</return>
         public abstract bool HasPrivateKey { get; }
+
+        /// <summary>Extracts the public part of the <see cref="Jwk"/>.</summary>
+        public abstract Jwk AsPublicKey();
     }
 }
