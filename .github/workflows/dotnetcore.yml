@@ -19,9 +19,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
- # Remove MacOS since there is an issue with OpenSSL   
- #       os: [ ubuntu-latest, windows-latest, macos-latest ]
-        os: [ ubuntu-latest, windows-latest ]
+        os: [ ubuntu-latest, windows-latest, macos-latest ]
         configuration: [ Debug, Release ]
         include:
           - os: ubuntu-latest
