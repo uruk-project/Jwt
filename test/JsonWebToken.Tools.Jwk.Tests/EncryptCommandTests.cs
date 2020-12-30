@@ -23,7 +23,7 @@ namespace JsonWebToken.Tools.Jwk.Tests
         [Theory]
         public void Execute_Success(string? input, string password, uint? iterationCount, uint? saltSize, string? inputPath, string? outputPath)
         {
-            var command = new EncryptCommand(input, password, iterationCount, saltSize, inputPath, outputPath);
+            var command = new EncryptCommand(input, password, iterationCount, saltSize, inputPath, outputPath, true);
 
             TestStore store = new TestStore(input);
             TestReporter reporter = new TestReporter(_output);
@@ -59,12 +59,12 @@ namespace JsonWebToken.Tools.Jwk.Tests
         [Theory]
         public void Execute_Fail(string? input, string password, uint? iterationCount, uint? saltSize, string? inputPath, string? outputPath)
         {
-            var command = new EncryptCommand(input, password, iterationCount, saltSize, inputPath, outputPath);
+            var command = new EncryptCommand(input, password, iterationCount, saltSize, inputPath, outputPath, true);
 
             TestStore store = new TestStore(input);
             TestReporter reporter = new TestReporter(_output);
             TestConsole console = new TestConsole(_output);
-            Assert.Throws< InvalidOperationException>(() => command.Execute(new CommandContext(store, reporter, console)));
+            Assert.Throws<InvalidOperationException>(() => command.Execute(new CommandContext(store, reporter, console)));
         }
     }
 }

@@ -31,7 +31,7 @@ y6T3Y16v8maAqNihK6YdWZI19n2ctNWPF4PTykPnjwpauqYkB5k2wMOp
         [Theory]
         public void Execute(string format, string password, string? data, string inputPath, string? outputPath, string? outputPassword, uint? iterationCount, uint? saltSize)
         {
-            var command = new ConvertCommand(format, password, outputPassword, iterationCount, saltSize, inputPath, outputPath);
+            var command = new ConvertCommand(format, password, outputPassword, iterationCount, saltSize, inputPath, outputPath, true);
 
             TestStore store = new TestStore(data, _certificateRaw);
             TestReporter reporter = new TestReporter(_output);
@@ -59,7 +59,7 @@ y6T3Y16v8maAqNihK6YdWZI19n2ctNWPF4PTykPnjwpauqYkB5k2wMOp
         [Theory]
         public void Execute_Fail(string format, string password, string? data, string inputPath, string? outputPath, string? outputPassword, uint? iterationCount, uint? saltSize)
         {
-            var command = new ConvertCommand(format, password, outputPassword, iterationCount, saltSize, inputPath, outputPath);
+            var command = new ConvertCommand(format, password, outputPassword, iterationCount, saltSize, inputPath, outputPath, true);
 
             TestStore store = new TestStore(data, _certificateRaw);
             TestReporter reporter = new TestReporter(_output);

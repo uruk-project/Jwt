@@ -13,6 +13,11 @@ namespace JsonWebToken.Tools.Jwk
 
         public string Read(string inputPath)
         {
+            if (!File.Exists(inputPath))
+            {
+                throw new InvalidOperationException($"The file {inputPath} does not exist.");
+            }
+
             return File.ReadAllText(inputPath);
         }
 
