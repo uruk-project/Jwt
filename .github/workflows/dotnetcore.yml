@@ -89,7 +89,7 @@ jobs:
             nuget_packed/*.snupkg
 
   publish:
-    name: Publish packages
+    name: Publish packages 
     if: contains(github.ref, 'tags/v')
     needs: [build]
     runs-on: ubuntu-latest
