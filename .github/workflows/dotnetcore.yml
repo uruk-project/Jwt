@@ -73,8 +73,8 @@ jobs:
         run: dotnet build -c ${{ matrix.configuration }} --no-restore
 
       - name: Test
-        run: dotnet test -c ${{ matrix.configuration }} --no-build --collect:"XPlat Code Coverage"
-        # --settings coverlet.runsettings --verbosity diag
+       # run: dotnet test -c ${{ matrix.configuration }} --no-build --collect:"XPlat Code Coverage"
+        run: dotnet test --no-build --collect:"XPlat Code Coverage" --settings coverlet.runsettings
       - name: Upload coverage to Codecov
         if: matrix.is-netfx
         uses: codecov/codecov-action@v1
