@@ -65,11 +65,15 @@ jobs:
      #     #rm /usr/local/opt/openssl
      #     #ln -sf ../Cellar/openssl/1.0.2t /usr/local/opt/openssl   
 
+      - name: Restore dependencies
+        run: dotnet restore
+           
+
       - name: Build
-        run: dotnet build -c ${{ matrix.configuration }}
+        run: dotnet build -c ${{ matrix.configuration }} --no-restore
 
       - name: Test
-        run: dotnet test -c ${{ matrix.configuration }} --no-build --no-restore --collect:"XPlat Code Coverage" --settings coverlet.runsettings --verbosity diag
+        run: dotnet test -c ${{ matrix.configuration }} --no-build --collect:"XPlat Code Coverage" --settings coverlet.runsettings --verbosity diag
       - name: Upload coverage to Codecov
         if: matrix.is-netfx
         uses: codecov/codecov-action@v1
