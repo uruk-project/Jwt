@@ -36,15 +36,17 @@ jobs:
 #      CLR_OPENSSL_VERSION_OVERRIDE: '1.0.2t' # for macOS OpenSSL issue
 #      COMPlus_EnableAVX: 0
 #      COMPlus_EnableSSE: 0
+      DYLD_FALLBACK_LIBRARY_PATH: /usr/local/Cellar/openssl@1.1/
+
     steps:
       - uses: actions/checkout@master
-      - name: Set DYLD env variable
-        if: matrix.os == 'macos-latest'
-        run: |
-          ls /usr/local/Cellar/
-          ls /usr/local/Cellar/openssl@1.1/
-          ls /usr/local/Cellar/openssl@1.1/1.1.1i
-          echo "DYLD_FALLBACK_LIBRARY_PATH=$DYLD_FALLBACK_LIBRARY_PATH:/usr/local/opt/openssl@1.1/lib:/usr/local/Cellar/openssl@1.1/1.1.1i/lib" >> $GITHUB_ENV
+   #   - name: Set DYLD env variable
+   #     if: matrix.os == 'macos-latest'
+   #     run: |
+   #       ls /usr/local/Cellar/
+   #       ls /usr/local/Cellar/openssl@1.1/
+   #       ls /usr/local/Cellar/openssl@1.1/1.1.1i
+   #       echo "DYLD_FALLBACK_LIBRARY_PATH=$DYLD_FALLBACK_LIBRARY_PATH:/usr/local/opt/openssl@1.1/lib:/usr/local/Cellar/openssl@1.1/1.1.1i/lib" >> $GITHUB_ENV
       - name: setup dotnet '2.2.x'
         uses: actions/setup-dotnet@v1
         with:
