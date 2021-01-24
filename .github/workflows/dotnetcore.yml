@@ -41,6 +41,7 @@ jobs:
       - name: Set DYLD env variable
         if: matrix.os == 'macos-latest'
         run: |
+          which openssl
           echo "DYLD_FALLBACK_LIBRARY_PATH=/usr/local/Cellar/openssl@1.1/1.1.1i" >> $GITHUB_ENV
       - name: setup dotnet '2.2.x'
         uses: actions/setup-dotnet@v1
