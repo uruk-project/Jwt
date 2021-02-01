@@ -16,5 +16,8 @@ namespace JsonWebToken
 
         /// <summary>Gets the 'enc' (encryption) value for the 'use' parameter.</summary>
         public static readonly JsonEncodedText Enc = JsonEncodedText.Encode("enc");
+
+        /// <summary>Gets all the well-known 'use'.</summary>
+        public static JsonEncodedText[] All => new[] { Sig, Enc };
     }
 }

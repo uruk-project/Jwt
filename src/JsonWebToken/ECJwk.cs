@@ -14,7 +14,7 @@ using CryptographicOperations = JsonWebToken.Cryptography.CryptographicOperation
 
 namespace JsonWebToken
 {
-//#nullable disable
+    //#nullable disable
     /// <summary>Represents an Elliptic Curve JSON Web Key as defined in https://tools.ietf.org/html/rfc7518#section-6.</summary>
     public sealed class ECJwk : AsymmetricJwk, IJwtSerializable
     {
@@ -501,9 +501,9 @@ namespace JsonWebToken
             return ecdsa.ExportParameters(withPrivateKey);
         }
 
-        /// <summary>Converts the current <see cref="RsaJwk"/> key to the public representation. This converted key can be exposed.</summary>
+        /// <summary>Converts the current <see cref="ECJwk"/> key to the public representation. This converted key can be exposed.</summary>
         /// <returns></returns>
-        public ECJwk AsPublicKey()
+        public override Jwk AsPublicKey()
         {
             var publicParameters = new ECParameters
             {
@@ -539,8 +539,8 @@ namespace JsonWebToken
             // {"crv":"XXXX","kty":"EC","x":"XXXX","y":"XXXX"}
             int offset = StartCanonicalizeValue.Length;
             StartCanonicalizeValue.CopyTo(buffer);
-            Crv.Name.AsSpan().CopyTo(buffer.Slice(offset));
-            offset += Crv.Name.Length;
+            Crv.Name.EncodedUtf8Bytes.CopyTo(buffer.Slice(offset));
+            offset += Crv.Name.EncodedUtf8Bytes.Length;
             Middle1CanonicalizeValue.CopyTo(buffer.Slice(offset));
             offset += Middle1CanonicalizeValue.Length;
             offset += Base64Url.Encode(X, buffer.Slice(offset));
@@ -559,7 +559,7 @@ namespace JsonWebToken
                 + Middle2CanonicalizeValue.Length
                 + EndCanonicalizeValue.Length);
             return 35
-                + Base64Url.GetArraySizeRequiredToEncode(Crv.Name.Length)
+                + Base64Url.GetArraySizeRequiredToEncode(Crv.Name.EncodedUtf8Bytes.Length)
                 + Base64Url.GetArraySizeRequiredToEncode(X!.Length)
                 + Base64Url.GetArraySizeRequiredToEncode(Y!.Length);
         }

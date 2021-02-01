@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE in the project root for license information.
 
 using System;
+using System.Collections.ObjectModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
@@ -52,6 +53,9 @@ namespace JsonWebToken
             A192Gcm,
             A256Gcm
         };
+
+        /// <summary>The supported <see cref="EncryptionAlgorithm"/>.</summary>
+        public static ReadOnlyCollection<EncryptionAlgorithm> SupportedAlgorithms => Array.AsReadOnly(_algorithms);
 
         private readonly AlgorithmId _id;
         private readonly EncryptionType _category;

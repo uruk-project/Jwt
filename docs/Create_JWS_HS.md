@@ -7,14 +7,14 @@ The issuer and audience must previously share a secret key.
 ## Recommandation: 
 Use JWS using HMAC only if the issuer and the recipient are the same. This avoid to share a secret. 
 A common use case would be to represent the OAuth2 state parameter as a JWS. 
-In this case, the JWS is issued by the client application, then retrieved by the same client application. 
+In this case, the JWS is issued by the client application, then retrieved by the same application. 
 
 ## Supported encryption algorithms
  Algorithm | Description        | Key length  
 -----------|--------------------|-----------
-HS256      | HMAC using SHA-256 | 128 bits                               
-HS384      | HMAC using SHA-384 | 192 bits                               
-HS512      | HMAC using SHA-512 | 256 bits  
+HS256      | HMAC using SHA-256 | 256 bits                               
+HS384      | HMAC using SHA-384 | 384 bits                               
+HS512      | HMAC using SHA-512 | 512 bits  
 
 ## Example code
 ```C#
@@ -32,7 +32,7 @@ namespace JwsCreationSample
 
             // Creates the JWE descriptor 
             // The descriptor sets the 'alg' with value 'HS256'
-            Payload = new JwsDescriptor(signatureKey, SignatureAlgorithm.HS256)
+            var descriptor = new JwsDescriptor(signatureKey, SignatureAlgorithm.HS256)
             {
                 Payload = new JwtPayload
                 {

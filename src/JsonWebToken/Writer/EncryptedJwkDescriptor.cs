@@ -29,6 +29,7 @@ namespace JsonWebToken
 
             using var writer = new Utf8JsonWriter(ctx.BufferWriter);
             Payload.WriteTo(writer);
+            writer.Flush();
             EncryptToken(bufferWriter.WrittenSpan, context);
         }
     }

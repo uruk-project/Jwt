@@ -35,5 +35,8 @@ namespace JsonWebToken
         
         /// <summary>Gets the 'deriveBits' (derive bits not to be used as a key) value for the 'key_ops' parameter.</summary>
         public static readonly JsonEncodedText DeriveBits = JsonEncodedText.Encode("deriveBits");
+
+        /// <summary>Gets all the well-known 'kty'.</summary>
+        public static JsonEncodedText[] All => new[] { Sign, Verify, Encrypt, Decrypt, WrapKey, UnwrapKey, DeriveKey, DeriveBits };
     }
 }

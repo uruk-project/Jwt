@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE in the project root for license information.
 
 using System;
+using System.Collections.ObjectModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using JsonWebToken.Cryptography;
@@ -153,6 +154,9 @@ namespace JsonWebToken
             Pbes2HS512A256KW,
             Pbes2HS384A192KW
         };
+
+        /// <summary>The supported <see cref="KeyManagementAlgorithm"/>.</summary>
+        public static ReadOnlyCollection<KeyManagementAlgorithm> SupportedAlgorithms => Array.AsReadOnly(_algorithms);
 
         /// <summary>Initializes a new instance of <see cref="KeyManagementAlgorithm"/>. </summary>
         public KeyManagementAlgorithm(AlgorithmId id, string name, AlgorithmCategory keyType)

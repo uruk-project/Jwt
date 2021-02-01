@@ -19,5 +19,8 @@ namespace JsonWebToken
 
         /// <summary>Octet 'oct'.</summary>
         public static readonly JsonEncodedText Octet = JsonEncodedText.Encode("oct");
+
+        /// <summary>Gets all the well-known 'kty'.</summary>
+        public static JsonEncodedText[] All => new[] { Octet, EllipticCurve, Rsa };
     }
 }
