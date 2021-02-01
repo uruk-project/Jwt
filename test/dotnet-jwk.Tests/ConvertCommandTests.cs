@@ -1,6 +1,8 @@
-﻿using System.Security.Cryptography;
+﻿using System.CommandLine.IO;
+using System.IO;
+using System.Security.Cryptography;
+using System.Threading.Tasks;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace JsonWebToken.Tools.Jwk.Tests
 {
@@ -15,56 +17,76 @@ MIGHAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBG0wawIBAQQgcKEsLbFoRe1W/2jP
 whpHKz8E19aFG/Y0ny19WzRSs4qhRANCAASBAezkdGSm6tcM9ppuK9PYhpGjJi0i
 y6T3Y16v8maAqNihK6YdWZI19n2ctNWPF4PTykPnjwpauqYkB5k2wMOp
 -----END PRIVATE KEY-----";
-        private readonly ITestOutputHelper _output;
 
-        public ConvertCommandTests(ITestOutputHelper output)
-        {
-            _output = output;
-        }
-
-        [InlineData("PEM", null, Pkcs8PemECPrivateKey, "./key.pem", "./output.jwk", null, null, null)]
-        [InlineData("PEM", null, Pkcs8PemECPrivateKey, "./key.pem", "./output.jwk", "password", null, null)]
-        [InlineData("PEM", null, Pkcs8PemECPrivateKey, "./key.pem", "./output.jwk", "password", 4096u, null)]
-        [InlineData("PEM", null, Pkcs8PemECPrivateKey, "./key.pem", "./output.jwk", "password", null, 16u)]
-        [InlineData("PEM", null, Pkcs8PemECPrivateKey, "./key.pem", "./output.jwk", "password", 4096u, 16u)]
-        [InlineData("X509", _certificatePassword, null, "./input.jwk", "./output.jwk", null, null, null)]
+        [InlineData(Pkcs8PemECPrivateKey, "./key.pem", "./output.jwk", null, null, null)]
+        [InlineData(Pkcs8PemECPrivateKey, "./key.pem", "./output.jwk", "password", null, null)]
+        [InlineData(Pkcs8PemECPrivateKey, "./key.pem", "./output.jwk", "password", 4096u, null)]
+        [InlineData(Pkcs8PemECPrivateKey, "./key.pem", "./output.jwk", "password", null, 16u)]
+        [InlineData(Pkcs8PemECPrivateKey, "./key.pem", "./output.jwk", "password", 4096u, 16u)]
+        [InlineData(Pkcs8PemECPrivateKey, "./key.pem", null, null, null, null)]
         [Theory]
-        public void Execute(string format, string password, string? data, string inputPath, string? outputPath, string? outputPassword, uint? iterationCount, uint? saltSize)
+        public async Task Execute_Pem(string? data, string inputPath, string? outputPath, string? password, uint? iterationCount, uint? saltSize)
         {
-            var command = new ConvertCommand(format, password, outputPassword, iterationCount, saltSize, inputPath, outputPath, true);
-
             TestStore store = new TestStore(data, _certificateRaw);
-            TestReporter reporter = new TestReporter(_output);
-            TestConsole console = new TestConsole(_output);
-            command.Execute(new CommandContext(store, reporter, console));
+            var command = new ConvertPemCommand(password, iterationCount, saltSize, new FileInfo(inputPath), outputPath is null ? null : new FileInfo(outputPath), true, store);
+
+            TestConsole console = new TestConsole();
+            await command.InvokeAsync(console);
 
             Assert.True(store.WasRead);
             if (outputPath is null)
             {
                 Assert.Null(store.Output);
                 Assert.False(store.WasWritten);
-                var output = console.GetOutput();
+                var output = console.Out.ToString()!;
                 Assert.NotEqual(0, output.Length);
             }
             else
             {
                 Assert.NotNull(store.Output);
                 Assert.True(store.WasWritten);
-                var output = console.GetOutput();
+                var output = console.Out.ToString()!;
                 Assert.Equal(0, output.Length);
             }
         }
 
-        [InlineData("X509", "BAD P@ssw0rd", null, "./input.jwk", "./output.jwk", null, null, null)]
+        [InlineData(_certificatePassword, null, "./input.jwk", "./output.jwk", null, null, null)]
+        [InlineData(_certificatePassword, "./output.der", "./input.jwk", "./output.jwk", null, null, null)]
         [Theory]
-        public void Execute_Fail(string format, string password, string? data, string inputPath, string? outputPath, string? outputPassword, uint? iterationCount, uint? saltSize)
+        public async Task Execute_X509(string certificatePassword, string? data, string inputPath, string? outputPath, string? password, uint? iterationCount, uint? saltSize)
         {
-            var command = new ConvertCommand(format, password, outputPassword, iterationCount, saltSize, inputPath, outputPath, true);
-
             TestStore store = new TestStore(data, _certificateRaw);
-            TestReporter reporter = new TestReporter(_output);
-            TestConsole console = new TestConsole(_output);
-            Assert.ThrowsAny<CryptographicException>(() => command.Execute(new CommandContext(store, reporter, console)));
+            var command = new ConvertX509Command(certificatePassword, password, iterationCount, saltSize, new FileInfo(inputPath), outputPath is null ? null : new FileInfo(outputPath), true, store);
+
+            TestConsole console = new TestConsole();
+            await command.InvokeAsync(console);
+
+            Assert.True(store.WasRead);
+            if (outputPath is null)
+            {
+                Assert.Null(store.Output);
+                Assert.False(store.WasWritten);
+                var output = console.Out.ToString()!;
+                Assert.NotEqual(0, output.Length);
+            }
+            else
+            {
+                Assert.NotNull(store.Output);
+                Assert.True(store.WasWritten);
+                var output = console.Out.ToString()!;
+                Assert.Equal(0, output.Length);
+            }
+        }
+
+        [InlineData("BAD P@ssw0rd", null, "./input.jwk", "./output.jwk", null, null, null)]
+        [Theory]
+        public void Execute_Fail(string certificatePassword, string? data, string inputPath, string? outputPath, string? password, uint? iterationCount, uint? saltSize)
+        {
+            TestStore store = new TestStore(data, _certificateRaw);
+            var command = new ConvertX509Command(certificatePassword, password, iterationCount, saltSize, new FileInfo(inputPath), outputPath is null ? null : new FileInfo(outputPath), true, store);
+
+            TestConsole console = new TestConsole();
+            Assert.ThrowsAnyAsync<CryptographicException>(() => command.InvokeAsync(console));
         }
     }
 }

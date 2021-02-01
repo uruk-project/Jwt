@@ -75,6 +75,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sandbox", "perf\Sandbox\San
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docs", "docs", "{45F5CD67-CF18-4474-88A1-EDA948AC88FF}"
 	ProjectSection(SolutionItems) = preProject
+		docs\CLI_jwk.md = docs\CLI_jwk.md
 		docs\Create_JWE_AES.md = docs\Create_JWE_AES.md
 		docs\Create_JWE_Binary.md = docs\Create_JWE_Binary.md
 		docs\Create_JWE_Direct.md = docs\Create_JWE_Direct.md
@@ -109,9 +110,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docs", "docs", "{45F5CD67-C
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JwkEncryptionSample", "samples\JwkEncryptionSample\JwkEncryptionSample.csproj", "{20D9A6CF-9AE7-415E-8EC6-C50CB8F32E17}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JsonWebToken.Tools.Jwk", "src\Tools\Jwk\JsonWebToken.Tools.Jwk.csproj", "{0001F464-32BA-4332-B4AA-44BC02C428F4}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "dotnet-jwk", "src\Tools\Jwk\dotnet-jwk.csproj", "{0001F464-32BA-4332-B4AA-44BC02C428F4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JsonWebToken.Tools.Jwk.Tests", "test\JsonWebToken.Tools.Jwk.Tests\JsonWebToken.Tools.Jwk.Tests.csproj", "{529ADF07-9FCF-46C3-AB9C-8EF88A967489}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JsonWebToken.Tools.Jwk.Tests", "test\dotnet-jwk.Tests\dotnet-jwk.Tests.csproj", "{529ADF07-9FCF-46C3-AB9C-8EF88A967489}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

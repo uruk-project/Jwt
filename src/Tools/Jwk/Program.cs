@@ -1,69 +1,43 @@
-﻿using System;
-using Microsoft.Extensions.CommandLineUtils;
+﻿using System.CommandLine;
+using System.CommandLine.Builder;
+using System.CommandLine.Parsing;
+using System.Threading.Tasks;
 
 namespace JsonWebToken.Tools.Jwk
 {
     public class Program
     {
-        private readonly IConsole _console;
+        private static ParseResult? _parseResult;
 
-        public static int Main(string[] args)
+        private static async Task<int> Main(string[] args)
         {
-            DebugHelper.HandleDebugSwitch(ref args);
+            var rootCommand = new RootCommand("Manages JSON Web Keys")
+            {
+                NewCommand.Create(),
+                EncryptCommand.Create(),
+                DecryptCommand.Create(),
+                ConvertCommand.Create(),
+                CheckCommand.Create()
+            };
+            Parser parser = BuildParser(rootCommand);
 
-           return new Program(PhysicalConsole.Singleton).TryRun(args);
+            // Parse the incoming args so we can give warnings when deprecated options are used.
+            _parseResult = parser.Parse(args);
+            ConsoleExtensions.IsVerbose = _parseResult.HasOption("--verbose");
+
+            return await parser.InvokeAsync(args);
         }
 
-        public Program(IConsole console)
+        private static Parser BuildParser(RootCommand command)
         {
-            _console = console;
+            var commandLineBuilder = new CommandLineBuilder(command);
+
+            commandLineBuilder.UseMiddleware(ctx =>
+            {
+                ctx.BindingContext.AddService<IStore>(p => new FileStore());
+            });
+
+            return commandLineBuilder.UseDefaults().Build();
         }
-
-        public int TryRun(string[] args)
-        {
-            try
-            {
-                return Run(args);
-            }
-            catch (Exception exception)
-            {
-                var reporter = CreateReporter(verbose: true);
-                reporter.Verbose(exception.ToString());
-                reporter.Error(exception.Message);
-                return 1;
-            }
-        }
-
-        internal int Run(params string[] args)
-        {
-            CommandLineOptions? options;
-            try
-            {
-                options = CommandLineOptions.Parse(args, _console);
-            }
-            catch (CommandParsingException ex)
-            {
-                CreateReporter(verbose: false).Error(ex.Message);
-                return 1;
-            }
-
-            if (options == null)
-            {
-                return 1;
-            }
-
-            if (options.IsHelp)
-            {
-                return 2;
-            }
-
-            var reporter = CreateReporter(options.IsVerbose);
-            var context = new CommandContext(new FileStore(), reporter, _console);
-            options.Command?.Execute(context);
-            return 0;
-        }
-
-        private IReporter CreateReporter(bool verbose)
-            => new ConsoleReporter(_console, verbose, quiet: false);
     }
 }

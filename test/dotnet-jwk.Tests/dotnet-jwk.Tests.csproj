@@ -24,7 +24,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Tools\Jwk\JsonWebToken.Tools.Jwk.csproj" />
+    <ProjectReference Include="..\..\src\Tools\Jwk\dotnet-jwk.csproj" />
   </ItemGroup>
 
 </Project>

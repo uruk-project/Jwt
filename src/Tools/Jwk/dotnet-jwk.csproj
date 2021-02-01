@@ -5,7 +5,7 @@
     <TargetFrameworks>net5.0;netcoreapp3.1</TargetFrameworks>
 
     <PackAsTool>true</PackAsTool>
-    <ToolCommandName>jwt</ToolCommandName>
+    <ToolCommandName>dotnet-jwk</ToolCommandName>
     <PackageOutputPath>./nupkg</PackageOutputPath>
     <Nullable>enable</Nullable>
    
@@ -16,6 +16,7 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.CommandLineUtils" Version="1.1.1" />
+    <PackageReference Include="System.CommandLine" Version="2.0.0-beta1.20574.7" />
   </ItemGroup>
 
   <ItemGroup>

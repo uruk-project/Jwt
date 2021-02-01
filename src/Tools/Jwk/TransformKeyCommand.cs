@@ -1,59 +1,70 @@
 ﻿using System;
+using System.CommandLine;
+using System.CommandLine.Invocation;
+using System.IO;
+using System.Threading.Tasks;
 
 namespace JsonWebToken.Tools.Jwk
 {
-    public abstract class TransformKeyCommand : ICommand
+    public abstract class TransformKeyCommand : ICommandHandler
     {
-        protected string? _value;
+        protected string? _key;
         protected string _password;
         protected readonly uint _iterationCount;
         protected readonly uint _saltSize;
-        protected readonly string? _inputPath;
-        protected string? _outputPath;
+        protected readonly FileInfo? _inputPath;
+        protected FileInfo? _outputPath;
         private readonly bool _force;
+        private readonly IStore _store;
 
-        protected TransformKeyCommand(string? value, string password, uint? iterationCount, uint? saltSize, string? inputPath, string? outputPath, bool force)
+        protected TransformKeyCommand(string? key, string password, uint? iterationCount, uint? saltSize, FileInfo? inputPath, FileInfo? outputPath, bool force, IStore store)
         {
-            _value = value;
+            _key = key;
             _password = password;
             _iterationCount = iterationCount ?? 1000;
             _saltSize = saltSize ?? 8;
             _inputPath = inputPath;
             _outputPath = outputPath;
             _force = force;
+            _store = store;
         }
 
-        public void Execute(CommandContext context)
+        public virtual Task<int> InvokeAsync(InvocationContext context)
+            => InvokeAsync(context.Console);
+
+        internal async Task<int> InvokeAsync(IConsole console)
         {
             string value;
             if (!(_inputPath is null))
             {
-                context.Reporter.Verbose($"Reading JWK from {_inputPath} file...");
-                value = context.Store.Read(_inputPath);
-                context.Reporter.Verbose("JWK successfully read.");
+                console.Verbose($"Reading JWK from {_inputPath} file...");
+                value = await _store.Read(_inputPath.FullName);
+                console.Verbose("JWK successfully read.");
             }
-            else if (_value != null)
+            else if (_key != null)
             {
-                value = _value;
+                value = _key;
             }
             else
             {
                 throw new InvalidOperationException("No data to decrypt.");
             }
 
-            var key = Transform(context, value);
+            var key = Transform(console, value);
             if (_outputPath is null)
             {
-                context.Console.Out.Write(key);
+                console.Write(key);
             }
             else
             {
-                context.Reporter.Verbose($"Writing JWK into file {_outputPath}.");
-                context.Store.Write(_outputPath, key, _force);
-                context.Reporter.Verbose("Done.");
+                console.Verbose($"Writing JWK into file {_outputPath}.");
+                await _store.Write(_outputPath.FullName, key, _force);
+                console.Verbose("Done.");
             }
+
+            return 0;
         }
 
-        public abstract string Transform(CommandContext context, string data);
+        public abstract string Transform(IConsole console, string data);
     }
 }

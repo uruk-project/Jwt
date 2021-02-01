@@ -1,4 +1,8 @@
 ﻿using System;
+using System.CommandLine.IO;
+using System.CommandLine.Parsing;
+using System.IO;
+using System.Threading.Tasks;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -22,14 +26,14 @@ namespace JsonWebToken.Tools.Jwk.Tests
         [InlineData(_encryptedJwk, "P@ssw0rd", 100u, 8u, "./input.jwk", null)]
         [InlineData(_encryptedJwk, "P@ssw0rd", 100u, 8u, null, null)]
         [Theory]
-        public void Execute(string? input, string password, uint? iterationCount, uint? saltSize, string? inputPath, string? outputPath)
+        public async Task Execute(string? input, string password, uint? iterationCount, uint? saltSize, string? inputPath, string? outputPath)
         {
-            var command = new DecryptCommand(input, password, iterationCount, saltSize, inputPath, outputPath, true);
-
             TestStore store = new TestStore(input);
-            TestReporter reporter = new TestReporter(_output);
-            TestConsole console = new TestConsole(_output);
-            command.Execute(new CommandContext(store, reporter, console));
+            var command = new DecryptCommand(input, password, iterationCount, saltSize, inputPath is null ? null : new FileInfo(inputPath), outputPath is null ? null : new FileInfo(outputPath), true, store);
+
+            TestConsole console = new TestConsole();
+            new Parser();
+            await command.InvokeAsync(console);
 
             if (inputPath is null)
             {
@@ -44,14 +48,14 @@ namespace JsonWebToken.Tools.Jwk.Tests
             {
                 Assert.Null(store.Output);
                 Assert.False(store.WasWritten);
-                var output = console.GetOutput();
+                var output = console.Out.ToString()!;
                 Assert.NotEqual(0, output.Length);
             }
             else
             {
                 Assert.NotNull(store.Output);
                 Assert.True(store.WasWritten);
-                var output = console.GetOutput();
+                var output = console.Out.ToString()!;
                 Assert.Equal(0, output.Length);
             }
         }
@@ -60,12 +64,11 @@ namespace JsonWebToken.Tools.Jwk.Tests
         [Theory]
         public void Execute_Fail(string? input, string password, uint? iterationCount, uint? saltSize, string? inputPath, string? outputPath)
         {
-            var command = new DecryptCommand(input, password, iterationCount, saltSize, inputPath, outputPath, true);
-
             TestStore store = new TestStore(input);
-            TestReporter reporter = new TestReporter(_output);
-            TestConsole console = new TestConsole(_output);
-            Assert.Throws<InvalidOperationException>(() => command.Execute(new CommandContext(store, reporter, console)));
+            var command = new DecryptCommand(input, password, iterationCount, saltSize, inputPath is null ? null : new FileInfo(inputPath), outputPath is null ? null : new FileInfo(outputPath), true, store);
+
+            TestConsole console = new TestConsole();
+            Assert.ThrowsAsync<InvalidOperationException>(() => command.InvokeAsync(console));
         }
     }
 }

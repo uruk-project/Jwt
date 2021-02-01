@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Threading.Tasks;
 using Xunit;
 
 namespace JsonWebToken.Tools.Jwk.Tests
@@ -7,14 +8,14 @@ namespace JsonWebToken.Tools.Jwk.Tests
     public class FileStoreTests
     {
         [Fact]
-        public void Read_FileExists_ReturnsData()
+        public async Task Read_FileExists_ReturnsData()
         {
             FileStore store = new FileStore();
             var filename = Path.GetTempFileName();
             File.WriteAllText(filename, "Hello world");
             try
             {
-                var data = store.Read(filename);
+                var data = await store.Read(filename);
                 Assert.Equal("Hello world", data);
             }
             finally
@@ -29,7 +30,7 @@ namespace JsonWebToken.Tools.Jwk.Tests
             FileStore store = new FileStore();
             var filename = Path.GetTempFileName();
             File.Delete(filename);
-            Assert.Throws<InvalidOperationException>(() => store.Read(filename));
+            Assert.ThrowsAsync<InvalidOperationException>(() => store.Read(filename));
         }
 
         [Fact]
@@ -56,7 +57,7 @@ namespace JsonWebToken.Tools.Jwk.Tests
             var filename = Path.GetTempFileName();
             try
             {
-                Assert.Throws<InvalidOperationException>(() => store.Write(filename, "Hello world", false));
+                Assert.ThrowsAsync<InvalidOperationException>(() => store.Write(filename, "Hello world", false));
             }
             finally
             {

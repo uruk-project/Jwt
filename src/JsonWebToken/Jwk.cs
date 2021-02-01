@@ -6,6 +6,7 @@ using System.Buffers;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Security.Cryptography.X509Certificates;
 using System.Text.Json;
@@ -726,7 +727,6 @@ namespace JsonWebToken
             return true;
         }
 
-
         /// <summary>Returns a new instance of <see cref="Jwk"/>.</summary>
         /// <param name="json">A string that contains JSON Web Key parameters in JSON format.</param>
         /// <returns><see cref="Jwk"/></returns>
@@ -755,6 +755,460 @@ namespace JsonWebToken
                 if (jsonToReturn != null)
                 {
                     ArrayPool<byte>.Shared.Return(jsonToReturn);
+                }
+            }
+        }
+
+        /// <summary>Checks the validity of a JSON representing a <see cref="Jwk"/>.</summary>
+        /// <param name="json">A string that may contains JSON Web Key parameters in JSON format.</param>
+        /// <param name="checkSupporteValues">Defines whether the member values are supported.</param>
+        /// <remarks>
+        /// Verify: 
+        /// <list type="bullet">
+        ///   <item>JSON structure</item>
+        ///   <item>'kty' validity</item>
+        ///   <item>Required parameters</item>
+        ///   <item>Data type of required and optional parameters</item>
+        ///   <item>Consistency between 'alg' and 'kty'</item>
+        ///   <item>Consistency between 'alg' and 'use'</item>
+        ///   <item>Consistency between 'alg' and 'key_ops'</item>
+        ///   <item>Consistency between 'use' and 'key_ops'</item>
+        ///   <item>RSA parameters length</item>
+        ///   <item>EC key length</item>
+        ///   <item>x5t &amp; x5t#S256 length</item>
+        /// </list>
+        /// </remarks>
+        public static void Check(string json, bool checkSupporteValues = true)
+        {
+            try
+            {
+                var document = JsonDocument.Parse(json);
+                CheckRequiredStringMember(document, JwkParameterNames.Kty, out JsonElement kty);
+
+                if (kty.ValueEquals(JwkTypeNames.Octet.EncodedUtf8Bytes))
+                {
+                    CheckRequiredBase64UrlMember(document, JwkParameterNames.K);
+                }
+                else if (kty.ValueEquals(JwkTypeNames.Rsa.EncodedUtf8Bytes))
+                {
+                    int keyLength = 0;
+                    if (TryCheckRequiredBase64UrlMember(document, JwkParameterNames.N, out var n))
+                    {
+                        keyLength = Base64Url.GetArraySizeRequiredToDecode(n.GetString()!.Length) * 8;
+                    }
+
+                    if (keyLength % 256 != 0 || keyLength < 512)
+                    {
+                        throw new JwkCheckException(@$"Invalid key length. Must be a multiple of 256 bits, and at least 512 bits. Current key length is {keyLength}");
+                    }
+
+                    CheckRequiredBase64UrlMember(document, JwkParameterNames.E);
+
+                    int privateRsaMembers = CheckOptionalBase64UrlMember(document, JwkParameterNames.D, keyLength);
+                    privateRsaMembers |= CheckOptionalBase64UrlMember(document, JwkParameterNames.P, keyLength / 2) << 1;
+                    privateRsaMembers |= CheckOptionalBase64UrlMember(document, JwkParameterNames.Q, keyLength / 2) << 2;
+                    privateRsaMembers |= CheckOptionalBase64UrlMember(document, JwkParameterNames.DP, keyLength / 2) << 3;
+                    privateRsaMembers |= CheckOptionalBase64UrlMember(document, JwkParameterNames.DQ, keyLength / 2) << 4;
+                    privateRsaMembers |= CheckOptionalBase64UrlMember(document, JwkParameterNames.QI, keyLength / 2) << 5;
+                    if (privateRsaMembers != 0 && privateRsaMembers != (1 | 2 | 4 | 8 | 16 | 32))
+                    {
+                        if ((privateRsaMembers & 1) == 0)
+                        {
+                            throw new JwkCheckException(@$"Missing '{JwkParameterNames.D}' member.");
+                        }
+
+                        if ((privateRsaMembers & 2) == 0)
+                        {
+                            throw new JwkCheckException(@$"Missing '{JwkParameterNames.P}' member.");
+                        }
+
+                        if ((privateRsaMembers & 4) == 0)
+                        {
+                            throw new JwkCheckException(@$"Missing '{JwkParameterNames.Q}' member.");
+                        }
+
+                        if ((privateRsaMembers & 8) == 0)
+                        {
+                            throw new JwkCheckException(@$"Missing '{JwkParameterNames.DP}' member.");
+                        }
+
+                        if ((privateRsaMembers & 16) == 0)
+                        {
+                            throw new JwkCheckException(@$"Missing '{JwkParameterNames.DQ}' member.");
+                        }
+
+                        if ((privateRsaMembers & 32) == 0)
+                        {
+                            throw new JwkCheckException(@$"Missing '{JwkParameterNames.QI}' member.");
+                        }
+                    }
+                }
+#if SUPPORT_ELLIPTIC_CURVE
+                else if (kty.ValueEquals(JwkTypeNames.EllipticCurve.EncodedUtf8Bytes))
+                {
+                    CheckRequiredStringMember(document, JwkParameterNames.Crv, out JsonElement crv);
+                    if (!EllipticalCurve.TryParse(crv.GetString()!, out var c))
+                    {
+                        throw new JwkCheckException(@$"Invalid '{JwkParameterNames.Crv}' member. Supported values are {string.Join(",", EllipticalCurveNames.All)}.");
+                    }
+
+                    CheckRequiredBase64UrlMember(document, JwkParameterNames.X);
+                    CheckRequiredBase64UrlMember(document, JwkParameterNames.Y);
+                    int keySize = Math.DivRem(c.KeySizeInBits, 8, out int reminder);
+                    if (reminder != 0)
+                    {
+                        keySize++;
+                    }
+
+                    CheckOptionalBase64UrlMember(document, JwkParameterNames.D, keySize * 8);
+                }
+#endif
+                else
+                {
+                    throw new JwkCheckException($"Invalid '{JwkParameterNames.Kty}' member. Value '{kty.GetString()}' is not supported. Supported values are {string.Join(",", JwkTypeNames.All)}.");
+                }
+
+                bool hasUse = false;
+                if (TryCheckOptionalStringMember(document, JwkParameterNames.Use, out var use))
+                {
+                    if (!use.ValueEquals(JwkUseValues.Sig.EncodedUtf8Bytes)
+                        && !use.ValueEquals(JwkUseValues.Enc.EncodedUtf8Bytes))
+                    {
+                        throw new JwkCheckException($"Invalid '{JwkParameterNames.Use}' member.  Value '{use.GetString()}' is not supported. Supported values are {string.Join(",", JwkUseValues.All)}.");
+                    }
+
+                    hasUse = true;
+                }
+
+                bool hasKeyOps = false;
+                bool hasEncryptionKeyOps = false;
+                bool hasSignatureKeyOps = false;
+                if (TryCheckOptionalArrayMember(document, JwkParameterNames.KeyOps, out var keyOps))
+                {
+                    foreach (var item in keyOps.EnumerateArray())
+                    {
+                        hasKeyOps = true;
+                        if (item.ValueKind != JsonValueKind.String)
+                        {
+                            throw new JwkCheckException($"Invalid '{JwkParameterNames.KeyOps}' item. Must be of type 'String'. Value '{item.GetRawText()}' is of type '{item.ValueKind}'.");
+                        }
+
+                        if (!item.ValueEquals(JwkKeyOpsValues.Sign.EncodedUtf8Bytes)
+                            && !item.ValueEquals(JwkKeyOpsValues.Verify.EncodedUtf8Bytes)
+                            && !item.ValueEquals(JwkKeyOpsValues.WrapKey.EncodedUtf8Bytes)
+                            && !item.ValueEquals(JwkKeyOpsValues.UnwrapKey.EncodedUtf8Bytes)
+                            && !item.ValueEquals(JwkKeyOpsValues.DeriveBits.EncodedUtf8Bytes)
+                            && !item.ValueEquals(JwkKeyOpsValues.DeriveKey.EncodedUtf8Bytes)
+                            && !item.ValueEquals(JwkKeyOpsValues.Encrypt.EncodedUtf8Bytes)
+                            && !item.ValueEquals(JwkKeyOpsValues.Decrypt.EncodedUtf8Bytes))
+                        {
+                            throw new JwkCheckException(@$"Invalid '{JwkParameterNames.KeyOps}' member. Supported values are {string.Join(",", JwkKeyOpsValues.All)}.");
+                        }
+
+                        if (item.ValueEquals(JwkKeyOpsValues.Sign.EncodedUtf8Bytes)
+                            || item.ValueEquals(JwkKeyOpsValues.Verify.EncodedUtf8Bytes))
+                        {
+                            if (hasUse && !use.ValueEquals(JwkUseValues.Sig.EncodedUtf8Bytes))
+                            {
+                                throw new JwkCheckException(@$"'{JwkParameterNames.KeyOps}' value '{item.GetString()}' and '{JwkParameterNames.Use}' value '{use.GetString()}' are inconsistent.");
+                            }
+
+                            hasSignatureKeyOps = true;
+                        }
+
+                        if (item.ValueEquals(JwkKeyOpsValues.WrapKey.EncodedUtf8Bytes)
+                            || item.ValueEquals(JwkKeyOpsValues.UnwrapKey.EncodedUtf8Bytes)
+                            || item.ValueEquals(JwkKeyOpsValues.Encrypt.EncodedUtf8Bytes)
+                            || item.ValueEquals(JwkKeyOpsValues.Decrypt.EncodedUtf8Bytes))
+                        {
+                            if (hasUse && !use.ValueEquals(JwkUseValues.Enc.EncodedUtf8Bytes))
+                            {
+                                throw new JwkCheckException(@$"'{JwkParameterNames.KeyOps}' value '{item.GetString()}' and '{JwkParameterNames.Use}' value '{use.GetString()}' are inconsistent.");
+                            }
+
+                            hasEncryptionKeyOps = true;
+                        }
+                    }
+                }
+
+                if (TryCheckOptionalStringMember(document, JwkParameterNames.Alg, out var alg))
+                {
+                    if (SignatureAlgorithm.TryParse(alg, out var signatureAlgorithm))
+                    {
+                        if (kty.ValueEquals(JwkTypeNames.Octet.EncodedUtf8Bytes) && signatureAlgorithm.Category != AlgorithmCategory.Hmac
+                            || kty.ValueEquals(JwkTypeNames.Rsa.EncodedUtf8Bytes) && signatureAlgorithm.Category != AlgorithmCategory.Rsa
+                            || kty.ValueEquals(JwkTypeNames.EllipticCurve.EncodedUtf8Bytes) && signatureAlgorithm.Category != AlgorithmCategory.EllipticCurve)
+                        {
+                            throw new JwkCheckException(@$"'{JwkParameterNames.Kty}' value '{kty.GetString()}' and '{JwkParameterNames.Alg}' value '{alg.GetString()}' are inconsistent.");
+                        }
+
+                        if (hasUse && !use.ValueEquals(JwkUseValues.Sig.EncodedUtf8Bytes))
+                        {
+                            throw new JwkCheckException(@$"'{JwkParameterNames.Use}' value '{use.GetString()}' and '{JwkParameterNames.Alg}' value '{alg.GetString()}' are inconsistent.");
+                        }
+
+                        if (hasKeyOps && !hasSignatureKeyOps)
+                        {
+                            throw new JwkCheckException(@$"'{JwkParameterNames.KeyOps}' value and '{JwkParameterNames.Alg}' value '{alg.GetString()}' are inconsistent.");
+                        }
+                    }
+                    else
+                    {
+                        if (KeyManagementAlgorithm.TryParse(alg, out var keyManagementAlgorithm))
+                        {
+                            if (kty.ValueEquals(JwkTypeNames.Octet.EncodedUtf8Bytes) && (keyManagementAlgorithm.Category != AlgorithmCategory.Aes && keyManagementAlgorithm.Category != AlgorithmCategory.AesGcm && keyManagementAlgorithm.Category != AlgorithmCategory.Direct)
+                              || kty.ValueEquals(JwkTypeNames.Rsa.EncodedUtf8Bytes) && keyManagementAlgorithm.Category != AlgorithmCategory.Rsa
+                              || kty.ValueEquals(JwkTypeNames.EllipticCurve.EncodedUtf8Bytes) && keyManagementAlgorithm.Category != AlgorithmCategory.EllipticCurve)
+                            {
+                                throw new JwkCheckException(@$"'{JwkParameterNames.Kty}' value '{kty.GetString()}' and '{JwkParameterNames.Alg}' value '{alg.GetString()}' are inconsistent.");
+                            }
+
+                            if (hasUse && !use.ValueEquals(JwkUseValues.Enc.EncodedUtf8Bytes))
+                            {
+                                throw new JwkCheckException(@$"'{JwkParameterNames.Use}' value '{use.GetString()}' and '{JwkParameterNames.Alg}' value '{alg.GetString()}' are inconsistent.");
+                            }
+
+                            if (hasKeyOps && !hasEncryptionKeyOps)
+                            {
+                                throw new JwkCheckException(@$"'{JwkParameterNames.KeyOps}' value and '{JwkParameterNames.Alg}' value '{alg.GetString()}' are inconsistent.");
+                            }
+                        }
+                        else
+                        {
+                            throw new JwkCheckException($"Invalid '{JwkParameterNames.Alg}' member.  Value '{alg.GetString()}' is not supported. Supported values are {string.Join(",", SignatureAlgorithm.SupportedAlgorithms.Select(a => a.Name))} for signature and  {string.Join(",", KeyManagementAlgorithm.SupportedAlgorithms.Select(a => a.Name))} for key management.");
+                        }
+                    }
+                }
+
+                CheckOptionalStringMember(document, JwkParameterNames.Kid);
+                if (TryCheckOptionalArrayMember(document, JwkParameterNames.X5c, out var x5c))
+                {
+                    foreach (var item in x5c.EnumerateArray())
+                    {
+                        if (item.ValueKind != JsonValueKind.String)
+                        {
+                            throw new JwkCheckException($"Invalid '{JwkParameterNames.X5c}' item. Must be of type 'String'. Value '{item.GetRawText()}' is of type '{item.ValueKind}'.");
+                        }
+
+                        if (IsBase64UrlString(item.GetString()!))
+                        {
+                            throw new JwkCheckException($"Invalid '{JwkParameterNames.X5c}' value '{item.GetString()}'. Must be a valid base64 encoded string.");
+                        }
+                    }
+                }
+
+                CheckOptionalBase64UrlMember(document, JwkParameterNames.X5t, 160);
+                CheckOptionalBase64UrlMember(document, JwkParameterNames.X5tS256, 256);
+                CheckOptionalStringMember(document, JwkParameterNames.X5u);
+
+            }
+            catch (JsonException e)
+            {
+                throw new JwkCheckException("Malformed JSON. See inner exception for details.", e);
+            }
+
+            static void CheckRequiredBase64UrlMember(JsonDocument document, JsonEncodedText memberName)
+            {
+                if (!document.RootElement.TryGetProperty(memberName.EncodedUtf8Bytes, out var value))
+                {
+                    throw new JwkCheckException($"Missing '{memberName}' member.");
+                }
+                if (value.ValueKind != JsonValueKind.String)
+                {
+                    throw new JwkCheckException($"Invalid '{memberName}' member. Must be of type 'String'. Value '{value.GetRawText()}' is of type '{value.ValueKind}'.");
+                }
+                else if (!IsBase64String(value.GetString()!))
+                {
+                    throw new JwkCheckException($"Invalid '{memberName}' member. Must be a base64-URL encoded string.");
+                }
+            }
+
+            static bool TryCheckRequiredBase64UrlMember(JsonDocument document, JsonEncodedText memberName, out JsonElement value)
+            {
+                if (document.RootElement.TryGetProperty(memberName.EncodedUtf8Bytes, out value))
+                {
+                    if (value.ValueKind != JsonValueKind.String)
+                    {
+                        throw new JwkCheckException($"Invalid '{memberName}' member. Must be of type 'String'. Value '{value.GetRawText()}' is of type '{value.ValueKind}'.");
+                    }
+                    else if (!IsBase64UrlString(value.GetString()!))
+                    {
+                        throw new JwkCheckException($"Invalid '{memberName}' member. Must be a base64-URL encoded string.");
+                    }
+
+                    return true;
+                }
+
+                value = default;
+                return false;
+            }
+
+            static unsafe bool IsBase64UrlString(string value)
+            {
+                int length = value.Length;
+                for (int i = 0; i < length; i++)
+                {
+                    if (!IsValidChar(value[i]))
+                    {
+                        return false;
+                    }
+                }
+
+                return true;
+
+                static bool IsValidChar(char value)
+                {
+                    if (value > byte.MaxValue)
+                    {
+                        return false;
+                    }
+
+                    byte byteValue = (byte)value;
+
+                    // 1-9
+                    if (byteValue >= 48 && byteValue <= 57)
+                    {
+                        return true;
+                    }
+
+                    // + or /
+                    if (byteValue == 45 || byteValue == 95)
+                    {
+                        return true;
+                    }
+
+                    // a-z or A-Z
+                    byteValue |= 0x20;
+                    if (byteValue >= 97 && byteValue <= 122)
+                    {
+                        return true;
+                    }
+
+                    return false;
+                }
+            }
+
+            static unsafe bool IsBase64String(string value)
+            {
+                int length = value.Length;
+                for (int i = 0; i < length; i++)
+                {
+                    char c = value[i];
+                    if (!IsValidChar(c))
+                    {
+                        if (c != '=' || i < length - 2)
+                        {
+                            return false;
+                        }
+                    }
+                }
+
+                return true;
+
+                static bool IsValidChar(char value)
+                {
+                    if (value > byte.MaxValue)
+                    {
+                        return false;
+                    }
+
+                    byte byteValue = (byte)value;
+
+                    // 1-9
+                    if (byteValue >= 48 && byteValue <= 57)
+                    {
+                        return true;
+                    }
+
+                    // + or /
+                    if (byteValue == 43 || byteValue == 47)
+                    {
+                        return true;
+                    }
+
+                    // a-z or A-Z
+                    byteValue |= 0x20;
+                    if (byteValue >= 97 && byteValue <= 122)
+                    {
+                        return true;
+                    }
+
+                    return false;
+                }
+            }
+
+            static int CheckOptionalBase64UrlMember(JsonDocument document, JsonEncodedText memberName, int length)
+            {
+                if (document.RootElement.TryGetProperty(memberName.EncodedUtf8Bytes, out var value))
+                {
+                    if (value.ValueKind != JsonValueKind.String)
+                    {
+                        throw new JwkCheckException($"Invalid '{memberName}' member. Must be of type 'String'. Value '{value.GetRawText()}' is of type '{value.ValueKind}'.");
+                    }
+
+                    string s = value.GetString()!;
+                    if (!IsBase64UrlString(s))
+                    {
+                        throw new JwkCheckException($"Invalid '{memberName}' member. Must be a base64-URL encoded string.");
+                    }
+
+                    int currentLength = Base64Url.GetArraySizeRequiredToDecode(s.Length) * 8;
+                    if (length != 0 && length != currentLength)
+                    {
+                        throw new JwkCheckException($"Invalid '{memberName}' member. Must be a base64-URL encoded string with a length of {length}. Current length is {currentLength}.");
+                    }
+
+                    return 1;
+                }
+
+                return 0;
+            }
+
+            static void CheckRequiredStringMember(JsonDocument document, JsonEncodedText memberName, out JsonElement value)
+            {
+                if (!document.RootElement.TryGetProperty(memberName.EncodedUtf8Bytes, out value))
+                {
+                    throw new JwkCheckException($"Missing '{memberName}' member.");
+                }
+
+                if (value.ValueKind != JsonValueKind.String)
+                {
+                    throw new JwkCheckException($"Invalid '{memberName}' member. Must be of type 'String'. Value '{value.GetRawText()}' is of type '{value.ValueKind}'.");
+                }
+            }
+
+            static void CheckOptionalStringMember(JsonDocument document, JsonEncodedText memberName)
+                => CheckOptionalMember(document, memberName, JsonValueKind.String);
+
+            static bool TryCheckOptionalArrayMember(JsonDocument document, JsonEncodedText memberName, out JsonElement value)
+                => TryCheckOptionalMember(document, memberName, JsonValueKind.Array, out value);
+
+            static bool TryCheckOptionalStringMember(JsonDocument document, JsonEncodedText memberName, out JsonElement value)
+                => TryCheckOptionalMember(document, memberName, JsonValueKind.String, out value);
+
+            static bool TryCheckOptionalMember(JsonDocument document, JsonEncodedText memberName, JsonValueKind type, out JsonElement value)
+            {
+                if (document.RootElement.TryGetProperty(memberName.EncodedUtf8Bytes, out value))
+                {
+                    if (value.ValueKind != type)
+                    {
+                        throw new JwkCheckException($"Invalid '{memberName}' member. Must be of type '{type}'. Value '{value.GetRawText()}' is of type '{value.ValueKind}'.");
+                    }
+
+                    return true;
+                }
+
+                return false;
+            }
+
+            static void CheckOptionalMember(JsonDocument document, JsonEncodedText memberName, JsonValueKind type)
+            {
+                if (document.RootElement.TryGetProperty(memberName.EncodedUtf8Bytes, out var value))
+                {
+                    if (value.ValueKind != type)
+                    {
+                        throw new JwkCheckException($"Invalid '{memberName}' member. Must be of type '{type}'. Value '{value.GetRawText()}' is of type '{value.ValueKind}'.");
+                    }
                 }
             }
         }

@@ -134,7 +134,7 @@ namespace JsonWebToken.Tests
             Assert.Equal("1", jwk.Kid.ToString());
             Assert.True(JwkUseValues.Enc.Equals(jwk.Use));
 
-            Assert.Equal(Encoding.UTF8.GetBytes(crvName), jwk.Crv.Name);
+            Assert.Equal(crvName, jwk.Crv.Name.ToString());
             Assert.Equal(jwk.X.ToArray(), Base64Url.Decode("MKBCTNIcKUSDii11ySs3526iDZ8AiTo7Tu6KPAqv7D4"));
             Assert.Equal(jwk.Y.ToArray(), Base64Url.Decode("4Etl6SRW2YiLUrN5vfvVHuhp7x8PxltmWWlbbM4IFyM"));
         }
