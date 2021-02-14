@@ -27,7 +27,7 @@ namespace JsonWebToken.Tests
 
             o.Add("A", false);
             Assert.True(o.TryGetValue("A", out var vF) && vF.Value.Equals(false));
-            Assert.True(o.Count == initialMemberCount + 1);
+            Assert.Equal(initialMemberCount + 1, o.Count);
         }
     }
 }
