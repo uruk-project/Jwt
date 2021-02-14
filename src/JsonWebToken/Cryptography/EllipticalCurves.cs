@@ -63,7 +63,7 @@ namespace JsonWebToken
         /// <summary>The supported <see cref="EllipticalCurve"/>s.</summary>
         public static ReadOnlyCollection<EllipticalCurve> SupportedCurves => Array.AsReadOnly(_supportedCurves);
 
-        private static readonly EllipticalCurve[] _supportedCurves = RuntimeInformation.IsOSPlatform(OSPlatform.OSX)
+        private static readonly EllipticalCurve[] _supportedCurves = !RuntimeInformation.IsOSPlatform(OSPlatform.OSX)
         ? new[]
             {
                 P256,
