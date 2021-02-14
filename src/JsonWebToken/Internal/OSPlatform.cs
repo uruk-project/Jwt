@@ -6,7 +6,8 @@ namespace JsonWebToken
 {
     internal enum OSPlatform
     {
-        OSX
+        OSX,
+        Windows
     }
 }
 #endif

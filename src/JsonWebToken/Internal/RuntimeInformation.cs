@@ -6,8 +6,9 @@ namespace JsonWebToken
 {
     internal class RuntimeInformation
     {
+        // NET47 is only available on Windows
         internal static bool IsOSPlatform(OSPlatform os)
-            => false;
+            => os == OSPlatform.Windows;
     }
 }
 #endif
