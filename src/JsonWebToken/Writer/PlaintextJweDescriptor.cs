@@ -3,7 +3,6 @@
 
 using System;
 using System.Buffers;
-using JsonWebToken.Cryptography;
 
 namespace JsonWebToken
 {
@@ -17,7 +16,7 @@ namespace JsonWebToken
         }
 
         /// <inheritsdoc />
-        public override string? Payload { get; set; }
+        public override string? Payload { get; init; }
 
         /// <inheritsdoc />
         public override void Encode(EncodingContext context)

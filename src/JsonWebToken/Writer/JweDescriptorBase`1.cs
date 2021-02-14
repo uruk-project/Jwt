@@ -18,7 +18,7 @@ namespace JsonWebToken
         public override TDescriptor? Payload
         {
             get => _payload;
-            set => _payload = value;
+            init => _payload = value;
         }
 
         /// <inheritsdoc />
