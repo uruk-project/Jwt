@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Security.Cryptography;
 using Xunit;
 using JsonWebToken.Cryptography;
+using System.Runtime.InteropServices;
 
 namespace JsonWebToken.Tests
 {
@@ -29,14 +30,20 @@ namespace JsonWebToken.Tests
 
         public static IEnumerable<object[]> GetRsaWrappingAlgorithms()
         {
-            foreach (var enc in new[] {
+            var algorithms = new List<EncryptionAlgorithm>   
+            {
                 EncryptionAlgorithm.A128CbcHS256,
                 EncryptionAlgorithm.A192CbcHS384,
-                EncryptionAlgorithm.A256CbcHS512,
-                EncryptionAlgorithm.A128Gcm,
-                EncryptionAlgorithm.A192Gcm,
-                EncryptionAlgorithm.A256Gcm
-            })
+                EncryptionAlgorithm.A256CbcHS512
+            };
+            if (!RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            {
+                algorithms.Add(EncryptionAlgorithm.A128Gcm);
+                algorithms.Add(EncryptionAlgorithm.A192Gcm);
+                algorithms.Add(EncryptionAlgorithm.A256Gcm);
+            }
+
+            foreach (var enc in algorithms)
             {
                 yield return new object[] { enc, KeyManagementAlgorithm.Rsa1_5 };
                 yield return new object[] { enc, KeyManagementAlgorithm.RsaOaep };

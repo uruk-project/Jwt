@@ -40,13 +40,6 @@ jobs:
 
     steps:
       - uses: actions/checkout@master
-   #   - name: Set DYLD env variable
-   #     if: matrix.os == 'macos-latest'
-   #     run: |
-   #       ls /usr/local/Cellar/
-   #       ls /usr/local/Cellar/openssl@1.1/
-   #       ls /usr/local/Cellar/openssl@1.1/1.1.1i
-   #       echo "DYLD_FALLBACK_LIBRARY_PATH=$DYLD_FALLBACK_LIBRARY_PATH:/usr/local/opt/openssl@1.1/lib:/usr/local/Cellar/openssl@1.1/1.1.1i/lib" >> $GITHUB_ENV
       - name: setup dotnet '2.2.x'
         uses: actions/setup-dotnet@v1
         with:
@@ -60,29 +53,13 @@ jobs:
         with:
           dotnet-version: '5.0.x'
 
-     # - name: Fix brew on macOS GitHub runners	
-     #   # GitHub runners are broken. See:	
-     #   # https://github.com/actions/virtual-environments/issues/2089
-     #   if: runner.os == 'macOS'	
-     #   run: |	  
-     #     brew tap-new --no-git local/openssl
-     #     FORMULA_PATH=$(brew extract openssl local/openssl | grep "Homebrew/Library/Taps")
-     #     brew install $FORMULA_PATH
-     #     # Set OpenSSL 1.0.2t as default
-     #     #ln -sf /usr/local/Cellar/openssl@1.0.2t /usr/local/Cellar/openssl
-     #     #ln -sf /usr/local/Cellar/openssl/1.0.2t/bin/openssl /usr/local/bin/openssl
-     #     #rm /usr/local/opt/openssl
-     #     #ln -sf ../Cellar/openssl/1.0.2t /usr/local/opt/openssl   
-
       - name: Restore dependencies
         run: dotnet restore
-           
 
       - name: Build
         run: dotnet build -c ${{ matrix.configuration }} --no-restore
 
       - name: Test
-   #  run: dotnet test --no-build --collect:"XPlat Code Coverage" --settings coverlet.runsettings
         run: dotnet test -c ${{ matrix.configuration }} --no-build --collect:"XPlat Code Coverage" --settings coverlet.runsettings
 
       - name: Upload coverage to Codecov
@@ -104,7 +81,7 @@ jobs:
             nuget_packed/*.snupkg
 
   publish:
-    name: Publish packages 
+    name: Publish packages
     if: contains(github.ref, 'tags/v')
     needs: [build]
     runs-on: ubuntu-latest
