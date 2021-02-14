@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using Xunit;
 using JsonWebToken.Cryptography;
+using System.Runtime.InteropServices;
 
 namespace JsonWebToken.Tests
 {
@@ -23,9 +24,12 @@ namespace JsonWebToken.Tests
             yield return new object[] { EncryptionAlgorithm.A128CbcHS256, KeyManagementAlgorithm.Dir };
             yield return new object[] { EncryptionAlgorithm.A192CbcHS384, KeyManagementAlgorithm.Dir };
             yield return new object[] { EncryptionAlgorithm.A256CbcHS512, KeyManagementAlgorithm.Dir };
-            yield return new object[] { EncryptionAlgorithm.A128Gcm, KeyManagementAlgorithm.Dir };
-            yield return new object[] { EncryptionAlgorithm.A192Gcm, KeyManagementAlgorithm.Dir };
-            yield return new object[] { EncryptionAlgorithm.A256Gcm, KeyManagementAlgorithm.Dir };
+            if (!RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            {
+                yield return new object[] { EncryptionAlgorithm.A128Gcm, KeyManagementAlgorithm.Dir };
+                yield return new object[] { EncryptionAlgorithm.A192Gcm, KeyManagementAlgorithm.Dir };
+                yield return new object[] { EncryptionAlgorithm.A256Gcm, KeyManagementAlgorithm.Dir };
+            }
         }
 
         [Theory]

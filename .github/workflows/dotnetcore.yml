@@ -19,9 +19,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
- # Remove MacOS since there is an issue with OpenSSL   
- #       os: [ ubuntu-latest, windows-latest, macos-latest ]
-        os: [ ubuntu-latest, windows-latest ]
+        os: [ ubuntu-latest, windows-latest, macos-latest ]
         configuration: [ Debug, Release ]
         include:
           - os: ubuntu-latest
@@ -35,11 +33,12 @@ jobs:
       DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 1
       NUGET_XMLDOC_MODE: skip
       NUGET_PACKAGES: ${{ github.workspace }}/.nuget/packages
-#      CLR_OPENSSL_VERSION_OVERRIDE: '1.0.2t' # for macOS OpenSSL issue
 #      COMPlus_EnableAVX: 0
 #      COMPlus_EnableSSE: 0
+      DYLD_FALLBACK_LIBRARY_PATH: /usr/local/Cellar/openssl@1.1/
+
     steps:
-      - uses: actions/checkout@master
+      - uses: actions/checkout@v2
       - name: setup dotnet '2.2.x'
         uses: actions/setup-dotnet@v1
         with:
@@ -53,25 +52,15 @@ jobs:
         with:
           dotnet-version: '5.0.x'
 
-     # - name: Fix brew on macOS GitHub runners	
-     #   # GitHub runners are broken. See:	
-     #   # https://github.com/actions/virtual-environments/issues/2089
-     #   if: runner.os == 'macOS'	
-     #   run: |	  
-     #     brew tap-new --no-git local/openssl
-     #     FORMULA_PATH=$(brew extract openssl local/openssl | grep "Homebrew/Library/Taps")
-     #     brew install $FORMULA_PATH
-     #     # Set OpenSSL 1.0.2t as default
-     #     #ln -sf /usr/local/Cellar/openssl@1.0.2t /usr/local/Cellar/openssl
-     #     #ln -sf /usr/local/Cellar/openssl/1.0.2t/bin/openssl /usr/local/bin/openssl
-     #     #rm /usr/local/opt/openssl
-     #     #ln -sf ../Cellar/openssl/1.0.2t /usr/local/opt/openssl   
+      - name: Restore dependencies
+        run: dotnet restore
 
       - name: Build
-        run: dotnet build -c ${{ matrix.configuration }}
+        run: dotnet build -c ${{ matrix.configuration }} --no-restore
 
       - name: Test
-        run: dotnet test -c ${{ matrix.configuration }} --no-restore --collect:"XPlat Code Coverage" --settings coverlet.runsettings
+        run: dotnet test -c ${{ matrix.configuration }} --no-build --collect:"XPlat Code Coverage" --settings coverlet.runsettings
+
       - name: Upload coverage to Codecov
         if: matrix.is-netfx
         uses: codecov/codecov-action@v1

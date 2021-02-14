@@ -4,7 +4,15 @@ JSON Web Token  for .Net
 Provides support for JWT. 
 This library aims to propose performant JWT primitives. 
 
-![.NET Core CI/CD](https://github.com/uruk-project/Jwt/workflows/.NET%20Core%20CI/CD/badge.svg) [![NuGet](https://img.shields.io/nuget/v/JsonWebToken.svg?style=flat)](https://www.nuget.org/packages/JsonWebToken/)
+![.NET Core CI/CD](https://github.com/uruk-project/Jwt/workflows/.NET%20Core%20CI/CD/badge.svg) 
+
+## Packages
+Package	| Version | 	Description
+--|--|--
+JsonWebToken |   [![NuGet](https://img.shields.io/nuget/v/JsonWebToken.svg?style=flat)](https://www.nuget.org/packages/JsonWebToken/) |	Nuget	package with JWT primitives. Use this package for common JWT usages.
+JsonWebToken.OAuth2 |   [![NuGet](https://img.shields.io/nuget/v/JsonWebToken.OAuth2.svg?style=flat)](https://www.nuget.org/packages/JsonWebToken.OAuth2/) |	Nuget	package with [OAuth2](https://datatracker.ietf.org/wg/oauth/documents/) & [OIDC](https://openid.net/developers/specs/) primitives. Use this package for more specifics usages like [ID tokens](https://openid.net/specs/openid-connect-core-1_0.html#IDToken), [access tokens](https://tools.ietf.org/html/draft-ietf-oauth-access-token-jwt-11), [state parameter](https://tools.ietf.org/html/draft-bradley-oauth-jwt-encoded-state-09), [software statement](https://tools.ietf.org/html/rfc7591#section-2.3), [vector of trust](https://tools.ietf.org/html/rfc8485) or [client assertion](https://tools.ietf.org/html/rfc7523#section-2.2).
+JsonWebToken.SecurityEventTokens |   [![NuGet](https://img.shields.io/nuget/v/JsonWebToken.SecurityEventTokens](https://tools.ietf.org/html/rfc8485)2.svg?style=flat)](https://www.nuget.org/packages/JsonWebToken.SecurityEventTokens/) |	Nuget	package with specifics [SecEvents](https://tools.ietf.org/html/rfc8417) primitives.
+JsonWebToken.KeyVault | [![NuGet](https://img.shields.io/nuget/v/JsonWebToken.KeyVault.svg?style=flat)](https://www.nuget.org/packages/JsonWebToken.KeyVault/) |	Nuget	package with Key Vault support. Use this package if your keys are stored into an Azure KeyVault.
 
 ## Installation
 Install the [JsonWebToken NuGet Package](https://www.nuget.org/packages/JsonWebToken/).
@@ -20,10 +28,15 @@ dotnet add package JsonWebToken
 ## Usage
 See the [samples](https://github.com/ycrumeyrolle/Jwt/tree/master/samples) for more details.
 
-The `JwtReader` class is used for reading and validating tokens:
+The `Jwt` class is used for reading and validating tokens:
 ```
-var reader = new JwtReader();
-var result = reader.TryReadToken("eyJhbGc[...]sWBedk", policy);
+if(Jwt.TryParse("eyJhbGc[...]sWBedk", policy, out var jwt)
+{
+  // Use the JWT
+  // ...
+  // Then dispose the object
+  jwt.Dispose();
+}
 ```
 
 The `JwtWriter` is used for writing tokens:
@@ -39,8 +52,7 @@ var policy = new TokenValidationPolicyBuilder()
                 .RequireAudience("636C69656E745F6964")
                 .Build();
 
-var result = Jwt.TryParse("eyJhbGciOiJIUzI1NiJ9.eyJleHAiOjE1MDAwMDcyMDAsImlhdCI6MjAwMDAwNzIwMCwiaXNzIjoiaHR0cHM6Ly9pZHAuZXhhbXBsZS5jb20vIiwiYXVkIjoiNjM2QzY5NjU2RTc0NUY2OTY0In0.YrrT1Ddp1ampsDd2GwYZoTz_bUnLt_h--f16wsWBedk", policy, out Jwt jwt);
-if (result)
+if (Jwt.TryParse("eyJhbGciOiJIUzI1NiJ9.eyJleHAiOjE1MDAwMDcyMDAsImlhdCI6MjAwMDAwNzIwMCwiaXNzIjoiaHR0cHM6Ly9pZHAuZXhhbXBsZS5jb20vIiwiYXVkIjoiNjM2QzY5NjU2RTc0NUY2OTY0In0.YrrT1Ddp1ampsDd2GwYZoTz_bUnLt_h--f16wsWBedk", policy, out Jwt jwt))
 {
     Console.WriteLine("The token is " + jwt);
 }

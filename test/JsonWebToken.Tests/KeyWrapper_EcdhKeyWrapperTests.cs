@@ -32,9 +32,9 @@ namespace JsonWebToken.Tests
 
         public static IEnumerable<object[]> GetEcdhWrappingAlgorithms()
         {
-            yield return new object[] { EncryptionAlgorithm.A128Gcm, KeyManagementAlgorithm.EcdhEsA128KW };
-            yield return new object[] { EncryptionAlgorithm.A192Gcm, KeyManagementAlgorithm.EcdhEsA192KW };
-            yield return new object[] { EncryptionAlgorithm.A256Gcm, KeyManagementAlgorithm.EcdhEsA256KW };
+            yield return new object[] { EncryptionAlgorithm.A128CbcHS256, KeyManagementAlgorithm.EcdhEsA128KW };
+            yield return new object[] { EncryptionAlgorithm.A192CbcHS384, KeyManagementAlgorithm.EcdhEsA192KW };
+            yield return new object[] { EncryptionAlgorithm.A256CbcHS512, KeyManagementAlgorithm.EcdhEsA256KW };
         }
 
         [Theory]
