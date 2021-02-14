@@ -69,7 +69,7 @@ namespace JsonWebToken
         }
 
         /// <inheritdoc/>
-        public override JwtPayload? Payload
+        public override JwtPayload Payload
         {
             get => _payload;
             set
@@ -78,8 +78,6 @@ namespace JsonWebToken
                 {
                     ThrowHelper.ThrowArgumentNullException(ExceptionArgument.value);
                 }
-
-                _payload.CopyTo(value);
                 _payload = value;
             }
         }

@@ -18,17 +18,16 @@ namespace JsonWebToken
             _header = new JwtHeader();
         }
 
-        /// <summary>Gets the parameters header.</summary>
+        /// <summary>Gets or initializes the parameters header.</summary>
         public JwtHeader Header
         {
             get => _header;
-            set
+            init
             {
                 if (value is null)
                 {
                     ThrowHelper.ThrowArgumentNullException(ExceptionArgument.value);
                 }
-
                 _header.CopyTo(value);
                 _header = value;
             }
