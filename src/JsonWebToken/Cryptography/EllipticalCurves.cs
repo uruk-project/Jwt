@@ -63,13 +63,21 @@ namespace JsonWebToken
         /// <summary>The supported <see cref="EllipticalCurve"/>s.</summary>
         public static ReadOnlyCollection<EllipticalCurve> SupportedCurves => Array.AsReadOnly(_supportedCurves);
 
-        private static readonly EllipticalCurve[] _supportedCurves = new[]
-        {
-            P256,
-            P384,
-            P521,
-            Secp256k1
-        };
+        private static readonly EllipticalCurve[] _supportedCurves = RuntimeInformation.IsOSPlatform(OSPlatform.OSX)
+        ? new[]
+            {
+                P256,
+                P384,
+                P521,
+                Secp256k1
+            }
+        // MacOS does not support other curves than secp256r1, secp384r1 and secp521r1
+        : new[]
+            {
+                P256,
+                P384,
+                P521
+            };
 
         /// <summary>Returns the <see cref="EllipticalCurve"/> corresponding to the <paramref name="crv"/>.</summary>
         public static EllipticalCurve FromString(string crv)
