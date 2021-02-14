@@ -21,12 +21,13 @@ namespace JsonWebToken.Tests
                 o.Add(i.ToString(), "Padding");
             }
             o.Add("A", true);
-            Assert.True(o.TryGetValue("A", out var vT) && vT.Value.Equals(true));
-            Assert.True(o.Count == initialMemberCount + 1);
+            Assert.True(o.TryGetValue("A", out var vT));
+            Assert.True((bool)vT.Value);
+            Assert.Equal(initialMemberCount + 1, o.Count);
 
             o.Add("A", false);
             Assert.True(o.TryGetValue("A", out var vF) && vF.Value.Equals(false));
-            Assert.True(o.Count == initialMemberCount + 1);
+            Assert.Equal(initialMemberCount + 1, o.Count);
         }
     }
 }

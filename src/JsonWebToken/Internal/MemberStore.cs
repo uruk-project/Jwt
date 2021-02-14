@@ -263,8 +263,16 @@ namespace JsonWebToken
             public int Count => 1;
 
             public IMap Add(JwtMember value)
-                => new TwoElementMap(_value1, value);
-
+            {
+                if (value.Name.Equals(_value1.Name))
+                {
+                    return new OneElementMap(value);
+                }
+                else
+                {
+                    return new TwoElementMap(_value1, value);
+                }
+            }
             public bool TryGetValue(JsonEncodedText key, out JwtMember value)
             {
                 if (key.Equals(_value1.Name))
