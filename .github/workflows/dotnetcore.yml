@@ -33,13 +33,12 @@ jobs:
       DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 1
       NUGET_XMLDOC_MODE: skip
       NUGET_PACKAGES: ${{ github.workspace }}/.nuget/packages
-#      CLR_OPENSSL_VERSION_OVERRIDE: '1.0.2t' # for macOS OpenSSL issue
 #      COMPlus_EnableAVX: 0
 #      COMPlus_EnableSSE: 0
       DYLD_FALLBACK_LIBRARY_PATH: /usr/local/Cellar/openssl@1.1/
 
     steps:
-      - uses: actions/checkout@master
+      - uses: actions/checkout@v2
       - name: setup dotnet '2.2.x'
         uses: actions/setup-dotnet@v1
         with:
