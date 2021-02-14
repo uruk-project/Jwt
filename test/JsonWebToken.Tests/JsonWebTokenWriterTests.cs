@@ -73,8 +73,10 @@ namespace JsonWebToken.Tests
         {
             var plaintext = "Live long and prosper.";
 
-            var descriptor = new PlaintextJweDescriptor(RsaKey, KeyManagementAlgorithm.Rsa1_5, EncryptionAlgorithm.A128CbcHS256);
-            descriptor.Payload = plaintext;
+            var descriptor = new PlaintextJweDescriptor(RsaKey, KeyManagementAlgorithm.Rsa1_5, EncryptionAlgorithm.A128CbcHS256)
+            {
+                Payload = plaintext
+            };
 
             JwtWriter writer = new JwtWriter();
             var value = writer.WriteToken(descriptor);
@@ -95,8 +97,10 @@ namespace JsonWebToken.Tests
         {
             var plaintext = "Live long and prosper!€";
 
-            var descriptor = new PlaintextJweDescriptor(RsaKey, KeyManagementAlgorithm.Rsa1_5, EncryptionAlgorithm.A128CbcHS256);
-            descriptor.Payload = plaintext;
+            var descriptor = new PlaintextJweDescriptor(RsaKey, KeyManagementAlgorithm.Rsa1_5, EncryptionAlgorithm.A128CbcHS256)
+            {
+                Payload = plaintext
+            };
 
             JwtWriter writer = new JwtWriter();
             var value = writer.WriteToken(descriptor);
@@ -130,8 +134,10 @@ namespace JsonWebToken.Tests
                  alg: KeyManagementAlgorithm.Rsa1_5
             );
 
-            var descriptor = new BinaryJweDescriptor(key, KeyManagementAlgorithm.Rsa1_5, EncryptionAlgorithm.A128CbcHS256);
-            descriptor.Payload = data;
+            var descriptor = new BinaryJweDescriptor(key, KeyManagementAlgorithm.Rsa1_5, EncryptionAlgorithm.A128CbcHS256)
+            {
+                Payload = data
+            };
 
             JwtWriter writer = new JwtWriter();
             var value = writer.WriteToken(descriptor);
@@ -163,8 +169,10 @@ namespace JsonWebToken.Tests
         {
             var plaintext = "Live long and prosper.".PadRight(992 * 100, 'X');
 
-            var descriptor = new PlaintextJweDescriptor(RsaKey, KeyManagementAlgorithm.Rsa1_5, EncryptionAlgorithm.A128CbcHS256, CompressionAlgorithm.Def);
-            descriptor.Payload = plaintext;
+            var descriptor = new PlaintextJweDescriptor(RsaKey, KeyManagementAlgorithm.Rsa1_5, EncryptionAlgorithm.A128CbcHS256, CompressionAlgorithm.Def)
+            {
+                Payload = plaintext
+            };
 
             JwtWriter writer = new JwtWriter();
             var value = writer.WriteToken(descriptor);

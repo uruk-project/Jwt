@@ -22,7 +22,7 @@ namespace JsonWebToken
         public JwtHeader Header
         {
             get => _header;
-            set
+            init
             {
                 if (value is null)
                 {

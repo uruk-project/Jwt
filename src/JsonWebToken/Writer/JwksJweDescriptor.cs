@@ -6,16 +6,16 @@ using System.Text.Json;
 namespace JsonWebToken
 {
     /// <summary>Defines an encrypted JWK contains witin a JWT.</summary>
-    public sealed class JwkJweDescriptor : JweDescriptor<Jwk>
+    public sealed class JwksJweDescriptor : JweDescriptor<Jwks>
     {
         /// <summary>Initializes a new instance of the <see cref="JwkJweDescriptor"/> class.</summary>
-        public JwkJweDescriptor(Jwk encryptionKey, KeyManagementAlgorithm alg, EncryptionAlgorithm enc, CompressionAlgorithm? zip = null, string? typ = null, string? cty = JwtContentTypeValues.Jwk)
+        public JwksJweDescriptor(Jwk encryptionKey, KeyManagementAlgorithm alg, EncryptionAlgorithm enc, CompressionAlgorithm? zip = null, string? typ = null, string? cty = JwtContentTypeValues.Jwks)
             : base(encryptionKey, alg, enc, zip, typ, cty)
         {
         }
 
         /// <inheritdoc/>
-        public override Jwk? Payload { get; init; }
+        public override Jwks? Payload { get; init; }
 
         /// <inheritdoc/>
         public override void Encode(EncodingContext context)
@@ -29,7 +29,6 @@ namespace JsonWebToken
 
             using var writer = new Utf8JsonWriter(ctx.BufferWriter);
             Payload.WriteTo(writer);
-            writer.Flush();
             EncryptToken(bufferWriter.WrittenSpan, context);
         }
     }

@@ -338,8 +338,10 @@ namespace JsonWebToken.Performance
                 }
             }
 
-            var d = new JwsDescriptor(signingKey, SignatureAlgorithm.HS256);
-            d.Payload = payload;
+            var d = new JwsDescriptor(signingKey, SignatureAlgorithm.HS256)
+            {
+                Payload = payload
+            };
             return d;
         }
 

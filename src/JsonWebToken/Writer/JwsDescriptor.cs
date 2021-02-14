@@ -3,7 +3,6 @@
 
 using System;
 using System.Buffers;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text.Json;
 
@@ -72,7 +71,7 @@ namespace JsonWebToken
         public override JwtPayload? Payload
         {
             get => _payload;
-            set
+            init
             {
                 if (value is null)
                 {

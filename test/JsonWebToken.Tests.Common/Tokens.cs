@@ -347,8 +347,10 @@ namespace JsonWebToken.Tests
                 payload.Add(kvp.Key, kvp.Value);
             }
 
-            var d = new JwsDescriptor(signingKey, signingKey.SignatureAlgorithm);
-            d.Payload = payload;
+            var d = new JwsDescriptor(signingKey, signingKey.SignatureAlgorithm)
+            {
+                Payload = payload
+            };
             return d;
         }
 
