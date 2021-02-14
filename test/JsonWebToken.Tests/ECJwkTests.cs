@@ -1,6 +1,7 @@
 ﻿#if !NET461
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Text;
@@ -13,6 +14,16 @@ namespace JsonWebToken.Tests
 {
     public class ECJwkTests : JwkTestsBase
     {
+        [MemberData(nameof(SupportedCurves))]
+        [Theory]
+        public void GenerateKey(EllipticalCurve crv)
+        {
+            var key = ECJwk.GeneratePrivateKey(crv);
+            Assert.NotNull(key);
+        }
+
+        public static IEnumerable<object[]> SupportedCurves => EllipticalCurve.SupportedCurves.Select(c => new object[] { c }).ToArray();
+
         [Theory]
         [MemberData(nameof(GetWrappingKeys))]
         public override KeyWrapper CreateKeyWrapper_Succeed(Jwk key, EncryptionAlgorithm enc, KeyManagementAlgorithm alg)
@@ -87,7 +98,7 @@ namespace JsonWebToken.Tests
             yield return new object[] { PublicEcc384Key, SignatureAlgorithm.ES384 };
 
             yield return new object[] { PublicEcc521Key, SignatureAlgorithm.ES512 };
-            
+
             yield return new object[] { PublicEcc256XKey, SignatureAlgorithm.ES256X };
 
             yield return new object[] { PrivateEcc256Key, SignatureAlgorithm.ES256 };
@@ -95,7 +106,7 @@ namespace JsonWebToken.Tests
             yield return new object[] { PrivateEcc384Key, SignatureAlgorithm.ES384 };
 
             yield return new object[] { PrivateEcc521Key, SignatureAlgorithm.ES512 };
-            
+
             yield return new object[] { PrivateEcc256XKey, SignatureAlgorithm.ES256X };
         }
 
@@ -373,7 +384,7 @@ MEgCQQC3P1n17ovVXiS3/wKa0WqFQ8ltJT5UMZuTUyxBw8FHe4nbLS8z17modFhI
             x: "weNJy2HscCSM6AEDTDg04biOvhFhyyWvOHQfeF_PxMQ",
             y: "e8lnCO-AlStT-NJVX-crhB7QRYhiix03illJOVAOyck"
         );
-        
+
 
         private static ECJwk PublicEcc256XKey => ECJwk.FromBase64Url
         (
