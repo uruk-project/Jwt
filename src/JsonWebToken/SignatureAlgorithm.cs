@@ -17,7 +17,7 @@ namespace JsonWebToken
         private const uint _S384 = 876098387u;
         private const uint _S512 = 842085715u;
         private const uint _none = 1701736302u;
-        private const ulong _ES256X = 96989843968837ul;
+        private const ulong _ES256K = 82696192807749u;
 
 #if DEBUG
 #pragma warning disable CS8618
@@ -27,7 +27,7 @@ namespace JsonWebToken
             Utf8.AssertMagicNumber(_S384, "S384");
             Utf8.AssertMagicNumber(_S512, "S512");
             Utf8.AssertMagicNumber(_none, "none");
-            Utf8.AssertMagicNumber(_ES256X, "ES256X");
+            Utf8.AssertMagicNumber(_ES256K, "ES256K");
         }
 #pragma warning restore CS8618 
 #endif
@@ -53,8 +53,8 @@ namespace JsonWebToken
         /// <summary>'RS512'</summary>
         public static readonly SignatureAlgorithm RS512 = new SignatureAlgorithm(id: AlgorithmId.RS512, "RS512", AlgorithmCategory.Rsa, requiredKeySizeInBits: 2048/*?*/, HashAlgorithmName.SHA512);
 
-        /// <summary>'ES256X'</summary>
-        public static readonly SignatureAlgorithm ES256X = new SignatureAlgorithm(id: AlgorithmId.ES256X, "ES256X", AlgorithmCategory.EllipticCurve, requiredKeySizeInBits: 256, HashAlgorithmName.SHA256);
+        /// <summary>'ES256K'</summary>
+        public static readonly SignatureAlgorithm ES256K = new SignatureAlgorithm(id: AlgorithmId.ES256K, "ES256K", AlgorithmCategory.EllipticCurve, requiredKeySizeInBits: 256, HashAlgorithmName.SHA256);
 
         /// <summary>'ES256'</summary>
         public static readonly SignatureAlgorithm ES256 = new SignatureAlgorithm(id: AlgorithmId.ES256, "ES256", AlgorithmCategory.EllipticCurve, requiredKeySizeInBits: 256, HashAlgorithmName.SHA256);
@@ -88,7 +88,7 @@ namespace JsonWebToken
             RS256,
             PS256,
             HS512,
-            ES256X,
+            ES256K,
             ES512,
             RS512,
             PS512,
@@ -314,9 +314,9 @@ namespace JsonWebToken
                 algorithm = None;
                 goto Found;
             }
-            else if (value.Length == 6 && IntegerMarshal.ReadUInt48(value) == _ES256X)
+            else if (value.Length == 6 && IntegerMarshal.ReadUInt48(value) == _ES256K)
             {
-                algorithm = ES256X;
+                algorithm = ES256K;
                 goto Found;
             }
 
@@ -372,8 +372,8 @@ namespace JsonWebToken
                 case "none":
                     algorithm = None;
                     goto Found;
-                case "ES256X":
-                    algorithm = ES256X;
+                case "ES256K":
+                    algorithm = ES256K;
                     goto Found;
             }
 
@@ -448,9 +448,9 @@ namespace JsonWebToken
                 algorithm = PS384;
                 goto Found;
             }
-            else if (value.ValueEquals(ES256X._name.EncodedUtf8Bytes))
+            else if (value.ValueEquals(ES256K._name.EncodedUtf8Bytes))
             {
-                algorithm = ES256X;
+                algorithm = ES256K;
                 goto Found;
             }
             else if (value.ValueEquals(None._name.EncodedUtf8Bytes))

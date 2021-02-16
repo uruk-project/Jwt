@@ -475,7 +475,7 @@ namespace JsonWebToken
             {
                 curve = EllipticalCurve.P521;
             }
-            else if (algorithm == SignatureAlgorithm.ES256X)
+            else if (algorithm == SignatureAlgorithm.ES256K)
             {
                 curve = EllipticalCurve.Secp256k1;
             }
