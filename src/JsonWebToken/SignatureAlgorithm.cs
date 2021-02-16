@@ -19,6 +19,19 @@ namespace JsonWebToken
         private const uint _none = 1701736302u;
         private const ulong _ES256X = 96989843968837ul;
 
+#if DEBUG
+#pragma warning disable CS8618
+        static SignatureAlgorithm()
+        {
+            Utf8.AssertMagicNumber(_S256, "S256");
+            Utf8.AssertMagicNumber(_S384, "S384");
+            Utf8.AssertMagicNumber(_S512, "S512");
+            Utf8.AssertMagicNumber(_none, "none");
+            Utf8.AssertMagicNumber(_ES256X, "ES256X");
+        }
+#pragma warning restore CS8618 
+#endif
+
         /// <summary>'none'</summary>
         public static readonly SignatureAlgorithm None = new SignatureAlgorithm(id: AlgorithmId.None, "none", AlgorithmCategory.None, requiredKeySizeInBits: 0, new HashAlgorithmName());
 

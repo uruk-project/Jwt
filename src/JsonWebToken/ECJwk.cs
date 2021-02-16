@@ -24,6 +24,13 @@ namespace JsonWebToken
         private ECDiffieHellman? _ecdhKey;
 #endif
 
+#if DEBUG
+        static ECJwk()
+        {
+            Utf8.AssertMagicNumber(crv, "crv");
+        }
+#endif
+
         /// <summary>Initializes a new instance of <see cref="ECJwk"/>.</summary>
         /// <param name="parameters"></param>
         private ECJwk(ECParameters parameters)
@@ -326,7 +333,7 @@ namespace JsonWebToken
         /// <inheritdoc />
         public override bool SupportSignature(SignatureAlgorithm algorithm)
 #if SUPPORT_ELLIPTIC_CURVE_SIGNATURE
-            =>  Crv.SupportedSignatureAlgorithm == algorithm;
+            => Crv.SupportedSignatureAlgorithm == algorithm;
 #else
             => false;
 #endif
@@ -335,7 +342,7 @@ namespace JsonWebToken
         /// <inheritdoc />
         public override bool SupportKeyManagement(KeyManagementAlgorithm algorithm)
 #if SUPPORT_ELLIPTIC_CURVE_KEYWRAPPING
-            =>  (algorithm.Category & AlgorithmCategory.EllipticCurve) != 0;
+            => (algorithm.Category & AlgorithmCategory.EllipticCurve) != 0;
 #else
             => false;
 #endif
@@ -343,7 +350,7 @@ namespace JsonWebToken
 
         /// <inheritdoc />
         public override bool SupportEncryption(EncryptionAlgorithm algorithm)
-            =>  false;
+            => false;
 
         /// <inheritdoc />
         protected override Signer CreateSigner(SignatureAlgorithm algorithm)
@@ -397,7 +404,7 @@ namespace JsonWebToken
         /// <param name="curve"></param>
         /// <param name="computeThumbprint"></param>
         /// <returns></returns>
-        public static ECJwk GeneratePrivateKey( EllipticalCurve curve, bool computeThumbprint = true)
+        public static ECJwk GeneratePrivateKey(EllipticalCurve curve, bool computeThumbprint = true)
             => GenerateKey(curve, withPrivateKey: true, computeThumbprint: computeThumbprint);
 
         /// <summary>Generates a private <see cref="ECJwk"/>.</summary>

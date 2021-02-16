@@ -22,6 +22,15 @@ namespace JsonWebToken
         private const ushort dp = (ushort)28772u;
         private const ushort dq = (ushort)29028u;
 
+#if DEBUG
+        static RsaJwk()
+        {
+            Utf8.AssertMagicNumber(qi, "qi");
+            Utf8.AssertMagicNumber(dp, "dp");
+            Utf8.AssertMagicNumber(dq, "dq");
+        }
+#endif
+
         private RSAParameters _parameters;
 
 #nullable disable
