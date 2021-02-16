@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE in the project root for license information.
 
 using System;
+using System.Diagnostics;
 using System.Text;
 
 namespace JsonWebToken
@@ -30,5 +31,37 @@ namespace JsonWebToken
 
         public static int GetChars(ReadOnlySpan<byte> bytes, Span<char> chars)
             => Encoder.GetChars(bytes, chars);
+
+#if DEBUG
+        internal static void AssertMagicNumber(ushort magicNumber, string value)
+        {
+            if (value.Length < sizeof(ushort))
+            {
+                value = value.PadRight(sizeof(ushort), '\0');
+            }
+
+            Debug.Assert(magicNumber == BitConverter.ToUInt16(Encoding.UTF8.GetBytes(value), 0));
+        }
+
+        internal static void AssertMagicNumber(uint magicNumber, string value)
+        {
+            if (value.Length < sizeof(uint))
+            {
+                value = value.PadRight(sizeof(uint), '\0');
+            }
+
+            Debug.Assert(magicNumber == BitConverter.ToUInt32(Encoding.UTF8.GetBytes(value), 0));
+        }
+
+        internal static void AssertMagicNumber(ulong magicNumber, string value)
+        {
+            if (value.Length < sizeof(ulong))
+            {
+                value = value.PadRight(sizeof(ulong), '\0');
+            }
+
+            Debug.Assert(magicNumber == BitConverter.ToUInt64(Encoding.UTF8.GetBytes(value), 0));
+        }
+#endif
     }
 }

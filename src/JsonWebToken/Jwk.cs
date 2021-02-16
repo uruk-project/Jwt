@@ -19,9 +19,7 @@ namespace JsonWebToken
     [DebuggerDisplay("{" + nameof(GetDebuggerDisplay) + "(),nq}")]
     public abstract class Jwk : IDisposable
     {
-#if SUPPORT_ELLIPTIC_CURVE
         private const uint EC = 17221u;
-#endif
         private const uint RSA = 4281170u;
         private const uint oct = 7627631u;
         private const uint alg = 6777953u;
@@ -32,6 +30,23 @@ namespace JsonWebToken
         private const uint x5c = 6501752u;
         private const uint x5u = 7681400u;
         private const ulong key_ops = 32493245967197547u;
+
+#if DEBUG
+        static Jwk()
+        {
+            Utf8.AssertMagicNumber(EC, "EC");
+            Utf8.AssertMagicNumber(RSA, "RSA");
+            Utf8.AssertMagicNumber(oct, "oct");
+            Utf8.AssertMagicNumber(alg, "alg");
+            Utf8.AssertMagicNumber(use, "use");
+            Utf8.AssertMagicNumber(x5t, "x5t");
+            Utf8.AssertMagicNumber(kid, "kid");
+            Utf8.AssertMagicNumber(x5t_S256, "x5t#S256");
+            Utf8.AssertMagicNumber(x5c, "x5c");
+            Utf8.AssertMagicNumber(x5u, "x5u");
+            Utf8.AssertMagicNumber(key_ops, "key_ops");
+        }
+#endif
 
         /// <summary>An empty <see cref="Jwk"/>.</summary>
         public static readonly Jwk None = new NullJwk();

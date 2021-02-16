@@ -13,14 +13,14 @@ namespace JsonWebToken
     public sealed partial class KeyManagementAlgorithm : IEquatable<KeyManagementAlgorithm>, IAlgorithm
     {
         private const uint _dir = 7498084u;
-        private const uint _KW = 22347u;
+        private const ushort _KW = 22347;
         private const uint _A128 = 942813505u;
         private const uint _A192 = 842608961u;
         private const uint _A256 = 909455937u;
         private const ulong _ECDH_ES = 23438483855262533u;
         private const ulong _RSA_OAEP = 5784101104744747858u;
         private const uint _RSA1 = 826364754u;
-        private const uint __5 = 13663u;
+        private const ushort __5 = 13663;
         private const ulong __128GCMKW = 6290206255906042417u;
         private const ulong __192GCMKW = 6290206255905650993u;
         private const ulong __256GCMKW = 6290206255905912114u;
@@ -39,6 +39,40 @@ namespace JsonWebToken
         private const ulong _u002bA25 = 3833198122850332789u;
         private const uint __56KW = 1464546869u;
         private const ulong u002bUpperMask = 137438953504u;
+
+#if DEBUG
+#pragma warning disable CS8618
+        static KeyManagementAlgorithm()
+        {
+            Utf8.AssertMagicNumber(_dir, "dir");
+            Utf8.AssertMagicNumber(_KW, "KW");
+            Utf8.AssertMagicNumber(_A128, "A128");
+            Utf8.AssertMagicNumber(_A192, "A192");
+            Utf8.AssertMagicNumber(_A256, "A256");
+            Utf8.AssertMagicNumber(_ECDH_ES, "ECDH-ES");
+            Utf8.AssertMagicNumber(_RSA_OAEP, "RSA-OAEP");
+            Utf8.AssertMagicNumber(_RSA1, "RSA1");
+            Utf8.AssertMagicNumber(__5, "_5");
+            Utf8.AssertMagicNumber(__128GCMKW, "128GCMKW");
+            Utf8.AssertMagicNumber(__192GCMKW, "192GCMKW");
+            Utf8.AssertMagicNumber(__256GCMKW, "256GCMKW");
+            Utf8.AssertMagicNumber(__256, "-256");
+            Utf8.AssertMagicNumber(__384, "-384");
+            Utf8.AssertMagicNumber(__512, "-512");
+            Utf8.AssertMagicNumber(_ECDH_ES_, "ECDH-ES+");
+            Utf8.AssertMagicNumber(_S_A128KW, "S+A128KW");
+            Utf8.AssertMagicNumber(_S_A192KW, "S+A192KW");
+            Utf8.AssertMagicNumber(_S_A256KW, "S+A256KW");
+            Utf8.AssertMagicNumber(_ECDH_ES_UTF8, "ECDH-ES\\\\");
+            Utf8.AssertMagicNumber(_u002bA12, "u002bA12");
+            Utf8.AssertMagicNumber(_u002bA19, "u002bA19");
+            Utf8.AssertMagicNumber(_u002bA25, "u002bA25");
+            Utf8.AssertMagicNumber(__28KW, "28KW");
+            Utf8.AssertMagicNumber(__92KW, "92KW");
+            Utf8.AssertMagicNumber(__56KW, "56KW");
+        }
+#pragma warning restore CS8618 
+#endif
 
         /// <summary>Empty</summary>
         internal static readonly KeyManagementAlgorithm Empty = new KeyManagementAlgorithm(id: 0, "Empty", AlgorithmCategory.None, produceEncryptedKey: false);

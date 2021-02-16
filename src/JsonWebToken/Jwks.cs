@@ -22,6 +22,13 @@ namespace JsonWebToken
 
         private KeyValuePair<JsonEncodedText, Jwk[]>[]? _identifiedKeys;
 
+#if DEBUG
+        static Jwks()
+        {
+            Utf8.AssertMagicNumber(keys, "keys");
+        }
+#endif
+
         /// <summary>Initializes an new instance of <see cref="Jwks"/>.</summary>
         public Jwks()
         {
@@ -57,7 +64,7 @@ namespace JsonWebToken
                     _keys.Add(key);
                 }
             }
-    
+
             Issuer = string.Empty;
         }
 
