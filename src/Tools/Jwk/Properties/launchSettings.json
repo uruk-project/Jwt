@@ -1,8 +1,0 @@
-{
-  "profiles": {
-    "JsonWebToken.Tools.Jwk": {
-      "commandName": "Project",
-      "commandLineArgs": "dotnet-jwk new RSA -l 512"
-    }
-  }
-}
