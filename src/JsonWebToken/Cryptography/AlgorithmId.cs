@@ -51,10 +51,10 @@ namespace JsonWebToken.Cryptography
         RS512 = -259,
 
         /// <summary>
-        /// 'ES256X'
+        /// 'ES256K'
         /// https://tools.ietf.org/html/draft-ietf-cose-webauthn-algorithms-05
         /// </summary>
-        ES256X = -46,
+        ES256K = -46,
 
         /// <summary>
         /// 'ES256'

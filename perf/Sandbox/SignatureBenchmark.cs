@@ -58,7 +58,7 @@ namespace JsonWebToken.Performance
             yield return CreateDescriptor(SignatureAlgorithm.PS256);
             yield return CreateDescriptor(SignatureAlgorithm.PS384);
             yield return CreateDescriptor(SignatureAlgorithm.PS512);
-            yield return CreateDescriptor(SignatureAlgorithm.ES256X);
+            yield return CreateDescriptor(SignatureAlgorithm.ES256K);
             yield return CreateDescriptor(SignatureAlgorithm.ES256);
             yield return CreateDescriptor(SignatureAlgorithm.ES384);
             yield return CreateDescriptor(SignatureAlgorithm.ES512);
@@ -134,7 +134,7 @@ namespace JsonWebToken.Performance
             yield return CreateDescriptor(SignatureAlgorithm.PS256);
             yield return CreateDescriptor(SignatureAlgorithm.PS384);
             yield return CreateDescriptor(SignatureAlgorithm.PS512);
-            yield return CreateDescriptor(SignatureAlgorithm.ES256X);
+            yield return CreateDescriptor(SignatureAlgorithm.ES256K);
             yield return CreateDescriptor(SignatureAlgorithm.ES256);
             yield return CreateDescriptor(SignatureAlgorithm.ES384);
             yield return CreateDescriptor(SignatureAlgorithm.ES512);

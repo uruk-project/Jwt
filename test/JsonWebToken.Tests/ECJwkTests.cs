@@ -99,7 +99,7 @@ namespace JsonWebToken.Tests
 
             yield return new object[] { PublicEcc521Key, SignatureAlgorithm.ES512 };
 
-            yield return new object[] { PublicEcc256XKey, SignatureAlgorithm.ES256X };
+            yield return new object[] { PublicEcc256KKey, SignatureAlgorithm.ES256K };
 
             yield return new object[] { PrivateEcc256Key, SignatureAlgorithm.ES256 };
 
@@ -107,26 +107,26 @@ namespace JsonWebToken.Tests
 
             yield return new object[] { PrivateEcc521Key, SignatureAlgorithm.ES512 };
 
-            yield return new object[] { PrivateEcc256XKey, SignatureAlgorithm.ES256X };
+            yield return new object[] { PrivateEcc256KKey, SignatureAlgorithm.ES256K };
         }
 
         public static IEnumerable<object[]> GetInvalidKeys()
         {
             yield return new object[] { PrivateEcc256Key, SignatureAlgorithm.ES384 };
             yield return new object[] { PrivateEcc256Key, SignatureAlgorithm.ES512 };
-            yield return new object[] { PrivateEcc256Key, SignatureAlgorithm.ES256X };
+            yield return new object[] { PrivateEcc256Key, SignatureAlgorithm.ES256K };
 
             yield return new object[] { PrivateEcc384Key, SignatureAlgorithm.ES256 };
             yield return new object[] { PrivateEcc384Key, SignatureAlgorithm.ES512 };
-            yield return new object[] { PrivateEcc384Key, SignatureAlgorithm.ES256X };
+            yield return new object[] { PrivateEcc384Key, SignatureAlgorithm.ES256K };
 
             yield return new object[] { PrivateEcc521Key, SignatureAlgorithm.ES256 };
             yield return new object[] { PrivateEcc521Key, SignatureAlgorithm.ES384 };
-            yield return new object[] { PrivateEcc521Key, SignatureAlgorithm.ES256X };
+            yield return new object[] { PrivateEcc521Key, SignatureAlgorithm.ES256K };
 
-            yield return new object[] { PrivateEcc256XKey, SignatureAlgorithm.ES256 };
-            yield return new object[] { PrivateEcc256XKey, SignatureAlgorithm.ES384 };
-            yield return new object[] { PrivateEcc256XKey, SignatureAlgorithm.ES512 };
+            yield return new object[] { PrivateEcc256KKey, SignatureAlgorithm.ES256 };
+            yield return new object[] { PrivateEcc256KKey, SignatureAlgorithm.ES384 };
+            yield return new object[] { PrivateEcc256KKey, SignatureAlgorithm.ES512 };
         }
 
         [Theory]
@@ -370,7 +370,7 @@ MEgCQQC3P1n17ovVXiS3/wKa0WqFQ8ltJT5UMZuTUyxBw8FHe4nbLS8z17modFhI
             d: "VEmDZpDXXK8p8N0Cndsxs924q6nS1RXFASRl6BfUqdw"
         );
 
-        private static ECJwk PrivateEcc256XKey => ECJwk.FromBase64Url
+        private static ECJwk PrivateEcc256KKey => ECJwk.FromBase64Url
         (
             crv: EllipticalCurve.Secp256k1,
             x: "weNJy2HscCSM6AEDTDg04biOvhFhyyWvOHQfeF_PxMQ",
@@ -386,7 +386,7 @@ MEgCQQC3P1n17ovVXiS3/wKa0WqFQ8ltJT5UMZuTUyxBw8FHe4nbLS8z17modFhI
         );
 
 
-        private static ECJwk PublicEcc256XKey => ECJwk.FromBase64Url
+        private static ECJwk PublicEcc256KKey => ECJwk.FromBase64Url
         (
             crv: EllipticalCurve.Secp256k1,
             x: "weNJy2HscCSM6AEDTDg04biOvhFhyyWvOHQfeF_PxMQ",

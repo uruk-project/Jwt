@@ -39,8 +39,8 @@ namespace JsonWebToken
         [EditorBrowsable(EditorBrowsableState.Never)]
         public static readonly SignatureAlgorithm RsaSha512;
 
-        /// <summary>'ES256X'</summary>
-        [Obsolete("This property is obsolete. Use property " + nameof(ES256X) + " instead.", error: true)]
+        /// <summary>'ES256K'</summary>
+        [Obsolete("This property is obsolete. Use property " + nameof(ES256K) + " instead.", error: true)]
         [EditorBrowsable(EditorBrowsableState.Never)]
         public static readonly SignatureAlgorithm EcdsaSha256X;
 

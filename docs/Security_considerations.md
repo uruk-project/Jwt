@@ -86,7 +86,7 @@ There is no link between the asymmetric signature algorithm and the asymmetric k
 | PS384               | dir                     | A128CBC-HS256        |
 | PS512               | dir                     | A128CBC-HS256        |
 | ES256               | dir                     | A128CBC-HS256        |
-| ES256X              | dir                     | A128CBC-HS256        |
+| ES256K              | dir                     | A128CBC-HS256        |
 | ES384               | dir                     | A128CBC-HS256        |
 | ES512               | dir                     | A128CBC-HS256        |
 |--------------------:|------------------------:|---------------------:|
@@ -109,7 +109,7 @@ TBD
 | PS384               | Yes*                            | Yes                                        |
 | PS512               | Yes*                            | Yes                                        |
 | ES256               | Yes*                            | Yes                                        |
-| ES256X              | Yes*                            | Yes                                        |
+| ES256K              | Yes*                            | Yes                                        |
 | ES384               | Yes*                            | Yes                                        |
 | ES512               | Yes*                            | Yes                                        |
 

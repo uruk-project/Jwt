@@ -29,7 +29,7 @@ namespace JsonWebToken
         public static readonly EllipticalCurve P521 = new EllipticalCurve(3, ECCurve.NamedCurves.nistP521, EllipticalCurveNames.P521, 521, 132, SignatureAlgorithm.ES512);
 
         /// <summary>'secp256k1'.</summary>    
-        public static readonly EllipticalCurve Secp256k1 = new EllipticalCurve(8, ECCurve.CreateFromValue("1.3.132.0.10"), EllipticalCurveNames.Secp256k1, 256, 64, SignatureAlgorithm.ES256X);
+        public static readonly EllipticalCurve Secp256k1 = new EllipticalCurve(8, ECCurve.CreateFromValue("1.3.132.0.10"), EllipticalCurveNames.Secp256k1, 256, 64, SignatureAlgorithm.ES256K);
 
         /// <summary>Initializes a new instance of the <see cref="EllipticalCurve"/> struct.</summary>
         public EllipticalCurve(byte id, ECCurve namedCurve, JsonEncodedText name, int keySizeInBits, int hashSize, SignatureAlgorithm supportedSignatureAlgorithm)
