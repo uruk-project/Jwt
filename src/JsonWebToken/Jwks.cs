@@ -194,7 +194,8 @@ namespace JsonWebToken
             return Utf8.GetString(input);
         }
 
-        internal void WriteTo(Utf8JsonWriter writer)
+        /// <summary>Writes the current <see cref="Jwk"/> into the <paramref name="writer"/>.</summary>
+        public void WriteTo(Utf8JsonWriter writer)
         {
             writer.WriteStartObject();
             writer.WriteStartArray(JwksParameterNames.Keys);
