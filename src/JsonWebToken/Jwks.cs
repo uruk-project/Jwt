@@ -134,16 +134,19 @@ namespace JsonWebToken
             return Utf8.GetString(input);
         }
 
-        internal void WriteTo(Utf8JsonWriter writer)
+        /// <summary>Writes the current <see cref="Jwks"/> into a <see cref="Utf8JsonWriter"/>.</summary>
+        /// <param name="writer"></param>
+        public void WriteTo(Utf8JsonWriter writer)
         {
             writer.WriteStartObject();
-            writer.WriteStartObject(JwksParameterNames.KeysUtf8);
+            writer.WriteStartArray(JwksParameterNames.KeysUtf8);
             var keys = _keys;
             for (int i = 0; i < keys.Count; i++)
             {
                 keys[i].WriteTo(writer);
             }
 
+            writer.WriteEndArray();
             writer.WriteEndObject();
         }
 

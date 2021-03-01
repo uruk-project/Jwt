@@ -891,6 +891,7 @@ namespace JsonWebToken
         /// <inheritsdoc />
         public override void WriteTo(Utf8JsonWriter writer)
         {
+            writer.WriteStartObject(); 
             base.WriteTo(writer);
 
             // the modulus N is always the biggest field
@@ -919,6 +920,8 @@ namespace JsonWebToken
                     ArrayPool<byte>.Shared.Return(arrayToReturn);
                 }
             }
+
+            writer.WriteEndObject();
         }
 
         /// <inheritsdoc />

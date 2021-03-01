@@ -710,6 +710,7 @@ namespace JsonWebToken
         /// <inheritsdoc />
         public override void WriteTo(Utf8JsonWriter writer)
         {
+            writer.WriteStartObject();
             base.WriteTo(writer);
             writer.WriteString(JwkParameterNames.CrvUtf8, Crv.Name);
 
@@ -720,6 +721,7 @@ namespace JsonWebToken
             WriteBase64UrlProperty(writer, buffer, _y, JwkParameterNames.YUtf8);
 
             WriteOptionalBase64UrlProperty(writer, buffer, _d, JwkParameterNames.DUtf8);
+            writer.WriteEndObject();
         }
 
         /// <inheritsdoc />
