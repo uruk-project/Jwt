@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 using Xunit;
 
 namespace JsonWebToken.Tests
@@ -8,12 +9,19 @@ namespace JsonWebToken.Tests
     public class JwksTests
     {
         [Theory]
-        [MemberData(nameof(GetJwks))]
+        [MemberData(nameof(GetJwksJson))]
         public void ReadJwks_Valid(string issuer, string json, int count)
         {
             var jwks = Jwks.FromJson(issuer, json);
 
             Assert.Equal(count, jwks.Count);
+        }
+
+        [Theory]
+        [MemberData(nameof(GetJwks))]
+        public void Tostring(Jwks jwks, string json)
+        {
+            Assert.Equal(json, jwks.ToString());
         }
 
         [Theory]
@@ -43,7 +51,7 @@ namespace JsonWebToken.Tests
                                 .GroupBy(k => k.Kid)
                                 .Where(k => !k.Key.EncodedUtf8Bytes.IsEmpty)
                                 .ToDictionary(k => k.Key, k => k.Concat(unidentifiedKeys).ToArray()).ToArray();
-           
+
             Assert.Equal(identifiedKeys.Length, jwks.GetIdentifiedKeys().Length);
             foreach (var item in identifiedKeys)
             {
@@ -167,12 +175,80 @@ namespace JsonWebToken.Tests
                     ""SkipUnresolvedJsonWebKeys"": true
                 }";
 #endif
-
         public static IEnumerable<object[]> GetJwks()
         {
             yield return new object[]
            {
-               "", 
+               new Jwks(),
+@"{
+  ""keys"": []
+}"
+           };
+
+            // https://login.salesforce.com/id/keys
+            var sfdcKey1 = RsaJwk.FromBase64Url
+                    (n: "zZ6iZhgNHEgGA_U2ipme9C9qDJRTxSzTwjAE0g2-zZg7KBsTcJ7zNKcCS9b-9J-l5y500_75IAsnC-c7qUHw46SYqPWBZKosg5cEGyC_pB1coQzPq1NNbmSfg4gRwThCmmyp_bypK22-F5hdJp3dRZn7_moQ71hPstTc9MTZgyD5xi9l-PFuD5iDhtAqXKP9yE8ktVAvU8FRcf2DeA1DD3EzjtV-to23_rbynXfY3Bv42lLEstMIbZ0tQ_K4XxCSoc0GP4tp1JAXEIpPXNY6Zt2a0wk5MSmZkvQk9ty-r94SA-0rYmXQ6VOt_WaWufIynJBhKqKn_CvQl4EDXBbEBhG16dgs8vYhj_JAP83syY5XDVWAkHs05nMZoE4rfAw3meb-AyDwOCi-MV11GBslRIfJPmxVitIdHnO2_6YzXAu53fIuC5i7eqBxqOju7GNaceaQDSFDSxr4pUR5DuskDiNrQ3YmoSLgdGITIfzdYsbWj2QdeO9nPy9SlngPZYv73rvXF7eghCNvOo8hptG_h4G5ScmJ8wPUDH2VuLtdIbyg476oY3elAWu3YtTT3SGos-Mk4rxwAjWbddoOrMFnK6ShWahZwxEyBA9xPddAM7hJXq8FuJenANg2waKqhIFuWre7JylezAFOXKZW0rzhF6jurCYui7p79YyZqHugEiE",
+                     e: "AQAB",
+                     alg: SignatureAlgorithm.RS256);
+            sfdcKey1.Kid = JsonEncodedText.Encode("216");
+            sfdcKey1.Use = JwkUseValues.Sig;
+            var sfdcKey2 = RsaJwk.FromBase64Url
+                 (n: "yb3JETE4C4THs29DLZlysUhv1Ftwqck7-WBEPNqFEy5UmwP26DZ3spSjY0iG7Zp9-gTfMLF1ygLUqT-7FBSjx1nJkx3rda8xJUUsqLmrZok7K623dvd6E8kbAyGnpgRsqTL-KTketHv-aDy8Sg9DvITLrp9_5oYqp4i_7jLQuJyHrFwgP7U7HJzPaNdgu1wQ4UkZobc4qt2aw4ux7F0cLw8gmUBzCLos1xe8_RzxkYYQv3j5Q3aNxlpDGFLZlFGJLSwbV3aNLMacAEDHrZNyyE_DvHj8VingSXLl68C3iRR2vGKIxoyG1MWn7a2E0ruwnr9djMHyFD97l85OHNk_wx_uHBisX44KRnW24qQSptgk4g_5ZEI-Mjwk0_MyAoaEhoFplarhMm87bFZTlEb0UvWr6oQN4ZqYIriRDEQwHFk17P2YzD5OvmihyyfsBHURYKYTEOVgSgQZIhmfmrf8DXbAXuvQz0rSfu2gGq2li4Y0sPUR9pnuRyCeZGJ3N4iYSTiTFhLXvq3Xjv4TUReDICoxpQLRnX2wFBC5erts0bmscMt15w1ZqyRtSN77hkKwRpcCSH_Frd1MP5GduyUyfZGsCp45D-9LEhnLSMSNDtQj0mqx3F7opyphqz6675P99qQALF0tQBN4mUYVapuNWvWgDtrYOHIswx3fPHYmBi8",
+                  e: "AQAB",
+                  alg: SignatureAlgorithm.RS256);
+            sfdcKey2.Kid = JsonEncodedText.Encode("220");
+            sfdcKey2.Use = JwkUseValues.Sig;
+            var sfdcKey3 = RsaJwk.FromBase64Url
+                 (n: "oDkKtNtFuHrGXiQOZmeKJvFot5NggosQf37wpxM5Mwem575SyI4y8aZsZB5W9-5fIdWwANljYEKbRYscIG2F8v6Cp4CHSMdx4e6U26zY-6aJ9msyefghlgnGegPgEYqS8oPBgWBQ7C6D8tmfvr9OZ6UpD7BoKgmhELlxUiR-3wmBfhBW_OZQIJ6l4dk5lyf1I9bCWY7rLkg8VSpkihAwewPhN3FvP-zngxkUgUG-ayuwP77VSSu3dwfs4wTbjrL0juXINXOU0CwHp49JpIr184ofWY6UfrsfvIMXenCBkuzAUaGSSKSixNM-bXFq3lxGbJINZ-GiF0wNGKXTRQmGQYWTHdIJkEvYxFUo90Mqcd_IHJpPfb3_9vM1jbB5DWl1YgrAoXR3U1bIEZ3AAaqP5XynhbKu-XJI4YwC0pvhICEjs3lSxKN9Wt1Ivl33K-Tlgg6ukqpgB2yqSb3TRRYD4c98N0zGEP_Wt7RHKtf7vdeo2i7WYk-hI8Lh1ljxVJKruZoIRpDJYIwpvar89UEe3F1q_oqFE0o1SYBM3zW_mkgeUx4e1Ijerd5fKYStJ4he9pn8pIb-e9kBKG9RjzwbbDkar5DiqGIj_C77ezlewLw4Cr5zoDp7l4lANmG4mYMdCvilthB3dQVftrJdPq8gHUALD3oheBvCpRw0-D3VYxc",
+                  e: "AQAB",
+                  alg: SignatureAlgorithm.RS256);
+            sfdcKey3.Kid = JsonEncodedText.Encode("218");
+            sfdcKey3.Use = JwkUseValues.Sig;
+
+            yield return new object[]
+            {
+                new Jwks
+                {
+                   sfdcKey1,
+                   sfdcKey2,
+                   sfdcKey3
+                },
+@"{
+  ""keys"": [
+    {
+      ""kty"": ""RSA"",
+      ""kid"": ""216"",
+      ""use"": ""sig"",
+      ""alg"": ""RS256"",
+      ""e"": ""AQAB"",
+      ""n"": ""zZ6iZhgNHEgGA_U2ipme9C9qDJRTxSzTwjAE0g2-zZg7KBsTcJ7zNKcCS9b-9J-l5y500_75IAsnC-c7qUHw46SYqPWBZKosg5cEGyC_pB1coQzPq1NNbmSfg4gRwThCmmyp_bypK22-F5hdJp3dRZn7_moQ71hPstTc9MTZgyD5xi9l-PFuD5iDhtAqXKP9yE8ktVAvU8FRcf2DeA1DD3EzjtV-to23_rbynXfY3Bv42lLEstMIbZ0tQ_K4XxCSoc0GP4tp1JAXEIpPXNY6Zt2a0wk5MSmZkvQk9ty-r94SA-0rYmXQ6VOt_WaWufIynJBhKqKn_CvQl4EDXBbEBhG16dgs8vYhj_JAP83syY5XDVWAkHs05nMZoE4rfAw3meb-AyDwOCi-MV11GBslRIfJPmxVitIdHnO2_6YzXAu53fIuC5i7eqBxqOju7GNaceaQDSFDSxr4pUR5DuskDiNrQ3YmoSLgdGITIfzdYsbWj2QdeO9nPy9SlngPZYv73rvXF7eghCNvOo8hptG_h4G5ScmJ8wPUDH2VuLtdIbyg476oY3elAWu3YtTT3SGos-Mk4rxwAjWbddoOrMFnK6ShWahZwxEyBA9xPddAM7hJXq8FuJenANg2waKqhIFuWre7JylezAFOXKZW0rzhF6jurCYui7p79YyZqHugEiE""
+    },
+    {
+      ""kty"": ""RSA"",
+      ""kid"": ""220"",
+      ""use"": ""sig"",
+      ""alg"": ""RS256"",
+      ""e"": ""AQAB"",
+      ""n"": ""yb3JETE4C4THs29DLZlysUhv1Ftwqck7-WBEPNqFEy5UmwP26DZ3spSjY0iG7Zp9-gTfMLF1ygLUqT-7FBSjx1nJkx3rda8xJUUsqLmrZok7K623dvd6E8kbAyGnpgRsqTL-KTketHv-aDy8Sg9DvITLrp9_5oYqp4i_7jLQuJyHrFwgP7U7HJzPaNdgu1wQ4UkZobc4qt2aw4ux7F0cLw8gmUBzCLos1xe8_RzxkYYQv3j5Q3aNxlpDGFLZlFGJLSwbV3aNLMacAEDHrZNyyE_DvHj8VingSXLl68C3iRR2vGKIxoyG1MWn7a2E0ruwnr9djMHyFD97l85OHNk_wx_uHBisX44KRnW24qQSptgk4g_5ZEI-Mjwk0_MyAoaEhoFplarhMm87bFZTlEb0UvWr6oQN4ZqYIriRDEQwHFk17P2YzD5OvmihyyfsBHURYKYTEOVgSgQZIhmfmrf8DXbAXuvQz0rSfu2gGq2li4Y0sPUR9pnuRyCeZGJ3N4iYSTiTFhLXvq3Xjv4TUReDICoxpQLRnX2wFBC5erts0bmscMt15w1ZqyRtSN77hkKwRpcCSH_Frd1MP5GduyUyfZGsCp45D-9LEhnLSMSNDtQj0mqx3F7opyphqz6675P99qQALF0tQBN4mUYVapuNWvWgDtrYOHIswx3fPHYmBi8""
+    },
+    {
+      ""kty"": ""RSA"",
+      ""kid"": ""218"",
+      ""use"": ""sig"",
+      ""alg"": ""RS256"",
+      ""e"": ""AQAB"",
+      ""n"": ""oDkKtNtFuHrGXiQOZmeKJvFot5NggosQf37wpxM5Mwem575SyI4y8aZsZB5W9-5fIdWwANljYEKbRYscIG2F8v6Cp4CHSMdx4e6U26zY-6aJ9msyefghlgnGegPgEYqS8oPBgWBQ7C6D8tmfvr9OZ6UpD7BoKgmhELlxUiR-3wmBfhBW_OZQIJ6l4dk5lyf1I9bCWY7rLkg8VSpkihAwewPhN3FvP-zngxkUgUG-ayuwP77VSSu3dwfs4wTbjrL0juXINXOU0CwHp49JpIr184ofWY6UfrsfvIMXenCBkuzAUaGSSKSixNM-bXFq3lxGbJINZ-GiF0wNGKXTRQmGQYWTHdIJkEvYxFUo90Mqcd_IHJpPfb3_9vM1jbB5DWl1YgrAoXR3U1bIEZ3AAaqP5XynhbKu-XJI4YwC0pvhICEjs3lSxKN9Wt1Ivl33K-Tlgg6ukqpgB2yqSb3TRRYD4c98N0zGEP_Wt7RHKtf7vdeo2i7WYk-hI8Lh1ljxVJKruZoIRpDJYIwpvar89UEe3F1q_oqFE0o1SYBM3zW_mkgeUx4e1Ijerd5fKYStJ4he9pn8pIb-e9kBKG9RjzwbbDkar5DiqGIj_C77ezlewLw4Cr5zoDp7l4lANmG4mYMdCvilthB3dQVftrJdPq8gHUALD3oheBvCpRw0-D3VYxc""
+    }
+  ]
+}"
+            };
+        }
+
+        public static IEnumerable<object[]> GetJwksJson()
+        {
+            yield return new object[]
+           {
+               "",
                EmptyJwks, 0
            };
 
@@ -327,7 +403,7 @@ namespace JsonWebToken.Tests
 
             yield return new object[]
             {
-                "1 key, with kid", 
+                "1 key, with kid",
                 @"{
                     ""keys"": [
                         {
@@ -337,7 +413,7 @@ namespace JsonWebToken.Tests
                     ]
                 }"
             };
-            
+
             yield return new object[]
             {
                 "2 keys, without kid",
@@ -354,7 +430,7 @@ namespace JsonWebToken.Tests
                     ]
                 }"
             };
-            
+
             yield return new object[]
             {
                 "2 keys, without kid for 1st",
@@ -372,7 +448,7 @@ namespace JsonWebToken.Tests
                     ]
                 }"
             };
-            
+
             yield return new object[]
             {
                 "2 keys, without kid for 2nd",
@@ -390,7 +466,7 @@ namespace JsonWebToken.Tests
                     ]
                 }"
             };
-            
+
             yield return new object[]
             {
                 "2 keys, with kid",
