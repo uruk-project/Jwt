@@ -9,72 +9,64 @@ using System.Threading;
 namespace JsonWebToken
 {
     /// <summary>Represents a <see cref="IKeyProvider"/> that retrieve the key set from an HTTP resource as JWKS.</summary>
-    public sealed class JwksHttpKeyProvider : IKeyProvider, IDisposable
+    public sealed class JwksHttpKeyProvider : CachedKeyProvider
     {
         private static ReadOnlySpan<byte> _issuerName => new byte[6] { (byte)'i', (byte)'s', (byte)'s', (byte)'u', (byte)'e', (byte)'r' };
         private static ReadOnlySpan<byte> _jwksUriName => new byte[8] { (byte)'j', (byte)'w', (byte)'k', (byte)'s', (byte)'_', (byte)'u', (byte)'r', (byte)'i' };
 
-        private readonly string _jwksAddress;
-        private readonly SemaphoreSlim _refreshLock = new SemaphoreSlim(1);
-        private readonly HttpDocumentRetriever _documentRetriever;
-        private long _syncAfter;
-        private Jwks? _currentJwks;
-        private bool _disposed;
-
-        /// <summary>1 day is the default time interval that afterwards, <see cref="GetKeys(JwtHeaderDocument, string)"/> will obtain new configuration.</summary>
-        public static readonly long DefaultAutomaticRefreshInterval = 60 * 60 * 24;
-
-        /// <summary>30 seconds is the default time interval to obtain a new key set.</summary>
-        public static readonly long DefaultRefreshInterval = 30;
         private readonly string _issuer;
-
-        /// <summary>Time interval to obtain a new key set.</summary>  
-        public long RefreshInterval { get; set; } = DefaultRefreshInterval;
-
-        /// <summary>Time interval that afterwards, <see cref="GetKeys(JwtHeaderDocument, string)"/> will obtain new configuration.</summary>
-        public long AutomaticRefreshInterval { get; set; } = DefaultAutomaticRefreshInterval;
-
-        /// <summary>Gets the http document retriever.</summary>
-        private HttpDocumentRetriever DocumentRetriever => _documentRetriever;
+        private readonly Func<HttpDocumentRetriever> _documentRetrieverFactory;
+        private readonly string _jwksAddress;
 
         /// <inheritdoc/>
-        public string Issuer => _issuer;
+        public override string Issuer => _issuer;
 
         /// <summary>Initializes a new instance of <see cref="JwksHttpKeyProvider"/>.y</summary>
-        public JwksHttpKeyProvider(string issuer, string jwksAddress, HttpDocumentRetriever documentRetriever)
+        public JwksHttpKeyProvider(string issuer, string jwksAddress, Func<HttpDocumentRetriever> documentRetrieverFactory, long minimumRefreshInterval = DefaultMinimumRefreshInterval, long automaticRefreshInterval = DefaultAutomaticRefreshInterval)
+            : base(minimumRefreshInterval, automaticRefreshInterval)
         {
             _issuer = issuer ?? throw new ArgumentNullException(nameof(issuer));
-            _documentRetriever = documentRetriever ?? throw new ArgumentNullException(nameof(documentRetriever));
+            _documentRetrieverFactory = documentRetrieverFactory ?? throw new ArgumentNullException(nameof(documentRetrieverFactory));
             _jwksAddress = jwksAddress ?? throw new ArgumentNullException(nameof(jwksAddress));
         }
 
-        /// <summary>Initializes a new instance of <see cref="JwksHttpKeyProvider"/>.</summary>
-        public JwksHttpKeyProvider(string issuer, string jwksAddress, HttpMessageHandler? handler)
-            : this(issuer, jwksAddress, new HttpDocumentRetriever(handler))
+        /// <summary>Initializes a new instance of <see cref="JwksHttpKeyProvider"/> class.</summary>
+        public JwksHttpKeyProvider(string issuer, string jwksAddress, HttpMessageHandler? handler, long minimumRefreshInterval = DefaultMinimumRefreshInterval, long automaticRefreshInterval = DefaultAutomaticRefreshInterval)
+            : this(issuer, jwksAddress, () => new HttpDocumentRetriever(handler), minimumRefreshInterval, automaticRefreshInterval)
         {
         }
 
-        /// <summary>Initializes a new instance of <see cref="JwksHttpKeyProvider"/>.y</summary>
-        public JwksHttpKeyProvider(string metadataConfiguration, HttpDocumentRetriever documentRetriever)
+        /// <summary>Initializes a new instance of <see cref="JwksHttpKeyProvider"/> class.</summary>
+        public JwksHttpKeyProvider(string metadataConfiguration, Func<HttpDocumentRetriever> documentRetrieverFactory, long minimumRefreshInterval = DefaultMinimumRefreshInterval, long automaticRefreshInterval = DefaultAutomaticRefreshInterval)
+            : base(minimumRefreshInterval, automaticRefreshInterval)
         {
             if (metadataConfiguration is null)
             {
                 throw new ArgumentNullException(nameof(metadataConfiguration));
             }
 
-            if (documentRetriever is null)
+            if (documentRetrieverFactory is null)
             {
-                throw new ArgumentNullException(nameof(documentRetriever));
+                throw new ArgumentNullException(nameof(documentRetrieverFactory));
             }
 
-            _documentRetriever = documentRetriever ?? throw new ArgumentNullException(nameof(documentRetriever));
-            (_issuer, _jwksAddress) = GetMetadataConfiguration(DocumentRetriever, metadataConfiguration);
+            _documentRetrieverFactory = documentRetrieverFactory ?? throw new ArgumentNullException(nameof(documentRetrieverFactory));
+            using var retriever = _documentRetrieverFactory();
+            (_issuer, _jwksAddress) = GetMetadataConfiguration(retriever, metadataConfiguration);
         }
 
         /// <summary>Initializes a new instance of <see cref="JwksHttpKeyProvider"/>.</summary>
-        public JwksHttpKeyProvider(string metadataConfiguration, HttpMessageHandler? handler)
-            : this(metadataConfiguration, new HttpDocumentRetriever(handler))
+        public JwksHttpKeyProvider(string metadataConfiguration, HttpMessageHandler? handler, long minimumRefreshInterval = DefaultMinimumRefreshInterval, long automaticRefreshInterval = DefaultAutomaticRefreshInterval)
+            : this(metadataConfiguration, () => new HttpDocumentRetriever(handler), minimumRefreshInterval, automaticRefreshInterval)
         {
+        }
+
+        /// <inheritdoc/>
+        protected override Jwks GetKeysFromSource()
+        {
+            using var retriever = _documentRetrieverFactory();
+            var value = retriever.GetDocument(_jwksAddress, CancellationToken.None);
+            return Jwks.FromJson(Issuer, value);
         }
 
         private static (string, string) GetMetadataConfiguration(HttpDocumentRetriever documentRetriever, string metadataAddress)
@@ -130,79 +122,15 @@ namespace JsonWebToken
         }
 
         /// <summary>Initializes a new instance of <see cref="JwksHttpKeyProvider"/>.</summary>
-        public JwksHttpKeyProvider(string metadataAddress)
-            : this(metadataAddress, new HttpDocumentRetriever())
+        public JwksHttpKeyProvider(string metadataAddress, long minimumRefreshInterval = DefaultMinimumRefreshInterval, long automaticRefreshInterval = DefaultAutomaticRefreshInterval)
+            : this(metadataAddress, () => new HttpDocumentRetriever(), minimumRefreshInterval, automaticRefreshInterval)
         {
         }
 
         /// <summary>Initializes a new instance of <see cref="JwksHttpKeyProvider"/>.</summary>
-        public JwksHttpKeyProvider(string issuer, string jwksAddress)
-            : this(issuer, jwksAddress, new HttpDocumentRetriever())
+        public JwksHttpKeyProvider(string issuer, string jwksAddress, long minimumRefreshInterval = DefaultMinimumRefreshInterval, long automaticRefreshInterval = DefaultAutomaticRefreshInterval)
+            : this(issuer, jwksAddress, () => new HttpDocumentRetriever(), minimumRefreshInterval, automaticRefreshInterval)
         {
-        }
-
-        /// <inheritsdoc />
-        public Jwk[] GetKeys(JwtHeaderDocument header)
-        {
-            return GetKeys(header, _jwksAddress);
-        }
-
-        /// <inheritsdoc />
-        private Jwk[] GetKeys(JwtHeaderDocument header, string metadataAddress)
-        {
-            if (_disposed)
-            {
-                ThrowHelper.ThrowObjectDisposedException(typeof(JwksHttpKeyProvider));
-            }
-
-            var kid = header.Kid;
-            long now = EpochTime.UtcNow;
-            if (_currentJwks != null && _syncAfter > now)
-            {
-                return _currentJwks.GetKeys(kid);
-            }
-
-            if (_syncAfter <= now)
-            {
-                _refreshLock.Wait();
-                try
-                {
-                    var value = _documentRetriever.GetDocument(metadataAddress, CancellationToken.None);
-                    var refreshedJwks = Jwks.FromJson(Issuer, value);
-                    Jwks.PublishJwksRefreshed(refreshedJwks);
-                    _currentJwks = refreshedJwks;
-                    _syncAfter = now + AutomaticRefreshInterval;
-                }
-                catch
-                {
-                    _syncAfter = now + (AutomaticRefreshInterval < RefreshInterval ? AutomaticRefreshInterval : RefreshInterval);
-                    throw;
-                }
-                finally
-                {
-                    _refreshLock.Release();
-                }
-            }
-
-            if (_currentJwks != null)
-            {
-                return _currentJwks.GetKeys(kid);
-            }
-
-            ThrowHelper.ThrowInvalidOperationException_UnableToObtainKeysException(metadataAddress);
-            return Array.Empty<Jwk>();
-        }
-
-        /// <summary>Disposes the managed resources.</summary>
-        public void Dispose()
-        {
-            if (!_disposed)
-            {
-                _refreshLock.Dispose();
-                _documentRetriever.Dispose();
-                _currentJwks?.Dispose();
-                _disposed = true;
-            }
         }
     }
 }

@@ -5,43 +5,40 @@ using System;
 using System.Collections.Generic;
 using System.Security.Cryptography;
 using System.Text.Json;
-using System.Threading.Tasks;
 using Azure.Core;
 using Azure.Identity;
 using Azure.Security.KeyVault.Keys;
 
 namespace JsonWebToken.KeyVault
 {
-    public sealed class KeyVaultKeyProvider : IKeyProvider
+    public sealed class KeyVaultKeyProvider : CachedKeyProvider
     {
-        private readonly string _issuer;
         private readonly KeyClient _client;
 
-        public int MaxResults { get; set; } = 10;
-
-        public string Issuer => _issuer;
+        public override string Issuer => _client.VaultUri.ToString();
 
         /// <summary>Initializes a new instance of the <see cref="KeyVaultKeyProvider"/> class.</summary>
-        public KeyVaultKeyProvider(string issuer, KeyClient client)
+        public KeyVaultKeyProvider(KeyClient client, long minimumRefreshInterval = DefaultMinimumRefreshInterval, long automaticRefreshInterval = DefaultAutomaticRefreshInterval)
+            : base(minimumRefreshInterval, automaticRefreshInterval)
         {
-            _issuer = issuer ?? throw new ArgumentNullException(nameof(issuer));
             _client = client ?? throw new ArgumentNullException(nameof(client));
         }
 
         /// <summary>Initializes a new instance of the <see cref="KeyVaultKeyProvider"/> class with default credentials. See <see cref="DefaultAzureCredential"/>.</summary>
-        public KeyVaultKeyProvider(string issuer, string vaultUri)
+        public KeyVaultKeyProvider(string vaultUri, long minimumRefreshInterval = DefaultMinimumRefreshInterval, long automaticRefreshInterval = DefaultAutomaticRefreshInterval)
+            : base(minimumRefreshInterval, automaticRefreshInterval)
         {
             if (vaultUri is null)
             {
                 throw new ArgumentNullException(nameof(vaultUri));
             }
 
-            _issuer = issuer ?? throw new ArgumentNullException(nameof(issuer));
             _client = new KeyClient(new Uri(vaultUri), new DefaultAzureCredential());
         }
 
         /// <summary>Initializes a new instance of the <see cref="KeyVaultKeyProvider"/> class.</summary>
-        public KeyVaultKeyProvider(string issuer, string vaultUri, TokenCredential credential)
+        public KeyVaultKeyProvider(string vaultUri, TokenCredential credential, long minimumRefreshInterval = DefaultMinimumRefreshInterval, long automaticRefreshInterval = DefaultAutomaticRefreshInterval)
+            : base(minimumRefreshInterval, automaticRefreshInterval)
         {
             if (vaultUri is null)
             {
@@ -53,28 +50,22 @@ namespace JsonWebToken.KeyVault
                 throw new ArgumentNullException(nameof(credential));
             }
 
-            _issuer = issuer ?? throw new ArgumentNullException(nameof(issuer));
             _client = new KeyClient(new Uri(vaultUri), credential);
         }
 
-        public Jwk[] GetKeys(JwtHeaderDocument header)
-        {
-            return GetKeysAsync().GetAwaiter().GetResult();
-        }
-
-        private async Task<Jwk[]> GetKeysAsync()
+        protected override Jwks GetKeysFromSource()
         {
             var keys = new List<Jwk>();
-            
-            await foreach (var keyProperties in _client.GetPropertiesOfKeysAsync())
+
+            foreach (var keyProperties in _client.GetPropertiesOfKeys())
             {
-                var kvKey = await _client.GetKeyAsync(keyProperties.Name);
+                var kvKey = _client.GetKey(keyProperties.Name);
                 Jwk? key = null;
                 if (kvKey.Value.KeyType == KeyType.Oct)
                 {
                     key = SymmetricJwk.FromByteArray(kvKey.Value.Key.K, false);
                 }
-                else if(kvKey.Value.KeyType == KeyType.Rsa || kvKey.Value.KeyType == KeyType.RsaHsm)
+                else if (kvKey.Value.KeyType == KeyType.Rsa || kvKey.Value.KeyType == KeyType.RsaHsm)
                 {
                     key = RsaJwk.FromParameters(kvKey.Value.Key.ToRSA(true).ExportParameters(true), false);
                 }
@@ -101,7 +92,7 @@ namespace JsonWebToken.KeyVault
                 }
             }
 
-            return keys.ToArray();
+            return new Jwks(_client.VaultUri.ToString(), keys);
         }
 
 #if !NETFRAMEWORK
@@ -111,7 +102,7 @@ namespace JsonWebToken.KeyVault
             if (key.Key.CurveName == KeyCurveName.P256)
             {
                 curve = ECCurve.NamedCurves.nistP256;
-            } 
+            }
             else if (key.Key.CurveName == KeyCurveName.P384)
             {
                 curve = ECCurve.NamedCurves.nistP384;

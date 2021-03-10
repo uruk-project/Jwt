@@ -53,7 +53,11 @@ namespace JsonWebToken
             }
 
             using HttpResponseMessage response = _httpClient.GetAsync(address, cancellationToken).ConfigureAwait(false).GetAwaiter().GetResult().EnsureSuccessStatusCode();
+#if NET5_0
+            return response.Content.ReadAsByteArrayAsync(cancellationToken).ConfigureAwait(false).GetAwaiter().GetResult();
+#else
             return response.Content.ReadAsByteArrayAsync().ConfigureAwait(false).GetAwaiter().GetResult();
+#endif
         }
 
         /// <summary>Release managed resources.</summary>
@@ -68,25 +72,15 @@ namespace JsonWebToken
 
         private static bool IsHttps(string address)
         {
-            if (string.IsNullOrEmpty(address))
-            {
-                return false;
-            }
-
             try
             {
                 Uri uri = new Uri(address);
-                return IsHttps(uri);
+                return uri.Scheme.Equals("https", StringComparison.OrdinalIgnoreCase);
             }
             catch (UriFormatException)
             {
                 return false;
             }
-        }
-
-        private static bool IsHttps(Uri uri)
-        {
-            return uri.Scheme.Equals("https", StringComparison.OrdinalIgnoreCase);
         }
     }
 }
