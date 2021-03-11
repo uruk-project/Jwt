@@ -11,7 +11,7 @@
     <OutputType>Exe</OutputType>
     <GenerateDocumentationFile>false</GenerateDocumentationFile>
     <PlatformTarget>AnyCPU</PlatformTarget>
-    <LangVersion>8.0</LangVersion>
+    <LangVersion>9.0</LangVersion>
     <Nullable>enable</Nullable>
     <SignAssembly>true</SignAssembly>
     <AssemblyOriginatorKeyFile>../../jwt.snk</AssemblyOriginatorKeyFile>

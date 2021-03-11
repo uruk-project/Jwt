@@ -1,9 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks Condition="'$(OS)' == 'Windows_NT'">net5.0;netcoreapp3.1;netcoreapp2.1;net461;net47</TargetFrameworks>
-    <TargetFrameworks Condition="'$(OS)' != 'Windows_NT'">net5.0;netcoreapp3.1;netcoreapp2.1</TargetFrameworks>
+    <TargetFrameworks>net5.0;netcoreapp3.1</TargetFrameworks>
+    <TargetFrameworks Condition="'$(OS)' == 'Windows_NT'">$(TargetFrameworks);netcoreapp2.1;net461;net47</TargetFrameworks>
 
+    <LangVersion>9.0</LangVersion>
     <SignAssembly>true</SignAssembly>
     <AssemblyOriginatorKeyFile>../../jwt.snk</AssemblyOriginatorKeyFile>
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
