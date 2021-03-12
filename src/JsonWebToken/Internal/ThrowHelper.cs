@@ -25,11 +25,6 @@ namespace JsonWebToken
         }
 
         [DoesNotReturn]
-        internal static void ThrowInvalidOperationException_UnableToObtainKeysException(string address) => throw CreateInvalidOperationException_UnableToObtainKeysException(address);
-        [MethodImpl(MethodImplOptions.NoInlining)]
-        private static Exception CreateInvalidOperationException_UnableToObtainKeysException(string address) => new InvalidOperationException($"Unable to obtain keys from: '{address}'");
-
-        [DoesNotReturn]
         internal static void ThrowArgumentException_RequireHttpsException(string address) => throw CreateArgumentException_RequireHttpsException(address);
         [MethodImpl(MethodImplOptions.NoInlining)]
         private static Exception CreateArgumentException_RequireHttpsException(string address) => new ArgumentException($"The address specified '{address}' is not valid as per HTTPS scheme.", nameof(address));

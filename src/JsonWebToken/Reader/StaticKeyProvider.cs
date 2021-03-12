@@ -22,6 +22,12 @@ namespace JsonWebToken
         /// <inheritdoc/>
         public string Issuer => _jwks.Issuer;
 
+        /// <inheritdoc/>
+        public void ForceRefresh()
+        {
+            // static JWKS refreshment is a no-op.
+        }
+
         /// <summary>Gets the list of <see cref="Jwk"/>.</summary>
         public Jwk[] GetKeys(JwtHeaderDocument header)
         {

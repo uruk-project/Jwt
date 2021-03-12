@@ -9,6 +9,10 @@ namespace JsonWebToken
         /// <summary>Gets a list of <see cref="Jwk"/>.</summary>
         Jwk[] GetKeys(JwtHeaderDocument header);
 
+        /// <summary>Force the next call to <see cref="GetKeys(JwtHeaderDocument)"/>
+        /// to be refreshed when not successful.</summary>
+        void ForceRefresh();
+
         /// <summary>Gets the issuer of the <see cref="Jwk"/>s.</summary>
         public string Issuer { get; }
     }
