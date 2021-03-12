@@ -11,8 +11,8 @@ namespace JsonWebToken
     /// <summary>Represents a <see cref="IKeyProvider"/> that retrieve the key set from an HTTP resource as JWKS.</summary>
     public sealed class JwksHttpKeyProvider : CachedKeyProvider
     {
-        private static ReadOnlySpan<byte> _issuerName => new byte[6] { (byte)'i', (byte)'s', (byte)'s', (byte)'u', (byte)'e', (byte)'r' };
-        private static ReadOnlySpan<byte> _jwksUriName => new byte[8] { (byte)'j', (byte)'w', (byte)'k', (byte)'s', (byte)'_', (byte)'u', (byte)'r', (byte)'i' };
+        private static ReadOnlySpan<byte> IssuerName => new byte[6] { (byte)'i', (byte)'s', (byte)'s', (byte)'u', (byte)'e', (byte)'r' };
+        private static ReadOnlySpan<byte> JwksUriName => new byte[8] { (byte)'j', (byte)'w', (byte)'k', (byte)'s', (byte)'_', (byte)'u', (byte)'r', (byte)'i' };
 
         private readonly string _issuer;
         private readonly Func<HttpDocumentRetriever> _documentRetrieverFactory;
@@ -82,7 +82,7 @@ namespace JsonWebToken
 
             while (reader.Read() && reader.TokenType == JsonTokenType.PropertyName)
             {
-                if (reader.ValueTextEquals(_issuerName))
+                if (reader.ValueTextEquals(IssuerName))
                 {
                     reader.Read();
                     issuer = reader.GetString();
@@ -91,7 +91,7 @@ namespace JsonWebToken
                         break;
                     }
                 }
-                else if (reader.ValueTextEquals(_jwksUriName))
+                else if (reader.ValueTextEquals(JwksUriName))
                 {
                     reader.Read();
                     jwksUri = reader.GetString();

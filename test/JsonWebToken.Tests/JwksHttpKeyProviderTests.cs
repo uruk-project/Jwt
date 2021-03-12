@@ -262,14 +262,15 @@ namespace JsonWebToken.Tests
 
         public class TestHttpMessageHandler : HttpMessageHandler
         {
-            private int index = 0;
+            private int _index = 0;
+
             public HttpResponseMessage[] Responses { get; set; }
 
             protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
             {
                 if (Responses != null)
                 {
-                    return Task.FromResult(Responses[index++ % Responses.Length]);
+                    return Task.FromResult(Responses[_index++ % Responses.Length]);
                 }
 
                 return Task.FromResult<HttpResponseMessage>(null);

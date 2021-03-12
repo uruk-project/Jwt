@@ -92,24 +92,35 @@ namespace JsonWebToken
         }
 
         /// <summary>Gets the keys from its source.</summary>
-        /// <returns></returns>
         protected abstract Jwks GetKeysFromSource();
-
-        /// <summary>Disposes the managed resources.</summary>
-        public virtual void Dispose()
-        {
-            if (!_disposed)
-            {
-                _refreshLock.Dispose();
-                _currentJwks.Dispose();
-                _disposed = true;
-            }
-        }
 
         /// <inheritdoc />
         public virtual void ForceRefresh()
         {
             _syncAfter = 0;
+        }
+
+        /// <summary>Disposes the managed resources.</summary>
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!_disposed)
+            {
+                if (disposing)
+                {
+                    _refreshLock.Dispose();
+                    _currentJwks.Dispose();
+                    _disposed = true;
+                }
+
+                _disposed = true;
+            }
+        }
+
+        /// <inheritdoc />
+        public void Dispose()
+        {
+            Dispose(disposing: true);
+            GC.SuppressFinalize(this);
         }
     }
 }
