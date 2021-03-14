@@ -7,9 +7,6 @@ namespace JsonWebToken
     public interface ICriticalHeaderHandler
     {
         /// <summary>Tries to handle a 'crit' header parameter.</summary>
-        /// <param name="header"></param>
-        /// <param name="headerName"></param>
-        /// <returns></returns>
         bool TryHandle(JwtHeaderDocument header, string headerName);
     }
 }

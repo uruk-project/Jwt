@@ -71,7 +71,6 @@ namespace JsonWebToken
         }
 
         /// <summary>Initializes a new instance of the <see cref="Jwk"/> class.</summary>
-        /// <param name="alg"></param>
         protected Jwk(SignatureAlgorithm alg)
         {
             if (alg is null)
@@ -84,7 +83,6 @@ namespace JsonWebToken
         }
 
         /// <summary>Initializes a new instance of the <see cref="Jwk"/> class.</summary>
-        /// <param name="alg"></param>
         protected Jwk(KeyManagementAlgorithm alg)
         {
             if (alg is null)
@@ -563,7 +561,6 @@ namespace JsonWebToken
         protected abstract KeyUnwrapper CreateKeyUnwrapper(EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm algorithm);
 
         /// <summary>Returns a new <see cref="Jwk"/> in its normal form, as defined by https://tools.ietf.org/html/rfc7638#section-3.2</summary>
-        /// <returns></returns>
         public byte[] Canonicalize()
         {
             int size = GetCanonicalizeSize();
@@ -586,15 +583,12 @@ namespace JsonWebToken
         }
 
         /// <summary>Compute the normal form, as defined by https://tools.ietf.org/html/rfc7638#section-3.2, and writes it to the <paramref name="buffer"/>.</summary>
-        /// <returns></returns>
         protected internal abstract void Canonicalize(Span<byte> buffer);
 
         /// <summary>Returns the required size for representing a canonicalized key.</summary>
-        /// <returns></returns>
         protected internal abstract int GetCanonicalizeSize();
 
         /// <summary>Compute a hash as defined by https://tools.ietf.org/html/rfc7638.</summary>
-        /// <returns></returns>
         public byte[] ComputeThumbprint()
         {
             var thumbprint = new byte[43];
@@ -603,7 +597,6 @@ namespace JsonWebToken
         }
 
         /// <summary>Compute a hash as defined by https://tools.ietf.org/html/rfc7638.</summary>
-        /// <returns></returns>
         public void ComputeThumbprint(Span<byte> destination)
         {
             Debug.Assert(destination.Length == 43); // 43 => Base64Url.GetArraySizeRequiredToEncode(32)
@@ -744,7 +737,6 @@ namespace JsonWebToken
 
         /// <summary>Returns a new instance of <see cref="Jwk"/>.</summary>
         /// <param name="json">A string that contains JSON Web Key parameters in JSON format.</param>
-        /// <returns><see cref="Jwk"/></returns>
         public static Jwk FromJson(string json)
         {
             byte[]? jsonToReturn = null;
@@ -1329,7 +1321,6 @@ namespace JsonWebToken
         }
 
         /// <summary>Writes the current <see cref="Jwk"/> into the <paramref name="writer"/>.</summary>
-        /// <param name="writer"></param>
         public virtual void WriteTo(Utf8JsonWriter writer)
         {
             // Write the 'kty' first as it easier to recognize the JWK
@@ -1392,7 +1383,6 @@ namespace JsonWebToken
         }
 
         /// <summary>Compute the 'kid' header parameter based on the JWK thumbprint.</summary>
-        /// <param name="key"></param>
         protected static void ComputeKid(Jwk key)
         {
             Span<byte> thumbprint = stackalloc byte[43];

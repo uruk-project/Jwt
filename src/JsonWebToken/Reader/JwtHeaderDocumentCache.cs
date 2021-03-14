@@ -168,7 +168,6 @@ namespace JsonWebToken
         }
 
         /// <summary>Validate the integrity of the cache.</summary>
-        /// <returns></returns>
         public bool Validate()
         {
             var head = _head;

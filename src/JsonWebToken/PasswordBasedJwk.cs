@@ -26,6 +26,7 @@ namespace JsonWebToken
             _saltSizeInBytes = saltSizeInBytes;
             Kid = key.Kid;
         }
+
         private PasswordBasedJwk(SymmetricJwk key, uint iterationCount, uint saltSizeInBytes, KeyManagementAlgorithm algorithm)
             : base(algorithm)
         {

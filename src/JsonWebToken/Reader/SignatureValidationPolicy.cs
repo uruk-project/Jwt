@@ -10,9 +10,7 @@ using System.Linq;
 
 namespace JsonWebToken
 {
-    /// <summary>
-    /// Validates a token signature.
-    /// </summary>
+    /// <summary>Validates a token signature.</summary>
     public abstract class SignatureValidationPolicy
     {
         /// <summary>Allows to support the unsecure 'none' algorithm that require no signature.</summary>

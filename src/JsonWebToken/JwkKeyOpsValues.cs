@@ -6,7 +6,7 @@ using System.Text.Json;
 namespace JsonWebToken
 {
     /// <summary>
-    /// Constants for the 'key_ops' parameter (sec 4.3)
+    /// Constants for the 'key_ops' parameter (sec 4.3) 
     /// http://tools.ietf.org/html/rfc7517#section-4
     /// </summary>
     public static class JwkKeyOpsValues

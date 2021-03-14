@@ -9,14 +9,14 @@ namespace JsonWebToken
     public interface ITokenReplayCache
     {
         /// <summary>Try to add a token.</summary>
-        /// <param name="jwtToken">the token to add.</param>
-        /// <param name="expiresOn">the time when token expires.</param>
+        /// <param name="jwtToken">The token to add.</param>
+        /// <param name="expiresOn">The time when token expires.</param>
         /// <returns>true if the token was successfully added.</returns>
         bool TryAdd(Jwt jwtToken, DateTime expiresOn);
 
         /// <summary>Try to add a token.</summary>
-        /// <param name="jwtId">the token to add.</param>
-        /// <param name="expiresOn">the time when token expires.</param>
+        /// <param name="jwtId">The token to add.</param>
+        /// <param name="expiresOn">The time when token expires.</param>
         /// <returns>true if the token was successfully added.</returns>
         bool TryAdd(string? jwtId, long? expiresOn);
     }

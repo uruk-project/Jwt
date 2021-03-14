@@ -9,8 +9,7 @@ using gfoidl.Base64;
 namespace JsonWebToken
 {
     /// <summary>Encodes and Decodes strings as Base64Url.</summary>
-    /// <remarks>Issued from https://github.com/aspnet/.
-    /// </remarks>
+    /// <remarks>Issued from https://github.com/aspnet/. </remarks>
     public static class Base64Url
     {
         /// <summary>Decodes a string of UTF-8 base64url-encoded text.</summary>

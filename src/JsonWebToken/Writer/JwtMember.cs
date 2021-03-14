@@ -20,8 +20,6 @@ namespace JsonWebToken
         public readonly JsonEncodedText Name;
         
         /// <summary>Initializes a new instance of the <see cref="JwtMember"/> class.</summary>
-        /// <param name="memberName"></param>
-        /// <param name="value"></param>
         public JwtMember(JsonEncodedText memberName, string?[] value)
         {
             Type = JwtValueKind.Array;
@@ -30,8 +28,6 @@ namespace JsonWebToken
         }
         
         /// <summary>Initializes a new instance of the <see cref="JwtMember"/> class.</summary>
-        /// <param name="memberName"></param>
-        /// <param name="value"></param>
         public JwtMember(JsonEncodedText memberName, object?[] value)
         {
             Type = JwtValueKind.Array;
@@ -40,8 +36,6 @@ namespace JsonWebToken
         }
 
         /// <summary>Initializes a new instance of the <see cref="JwtMember"/> class.</summary>
-        /// <param name="memberName"></param>
-        /// <param name="value"></param>
         public JwtMember(JsonEncodedText memberName, object value)
         {
             if (value == null)
@@ -55,8 +49,6 @@ namespace JsonWebToken
         }
 
         /// <summary>Initializes a new instance of the <see cref="JwtMember"/> class.</summary>
-        /// <param name="memberName"></param>
-        /// <param name="value"></param>
         public JwtMember(JsonEncodedText memberName, JsonEncodedText value)
         {
             Type = JwtValueKind.JsonEncodedString;
@@ -65,8 +57,6 @@ namespace JsonWebToken
         }
 
         /// <summary>Initializes a new instance of the <see cref="JwtMember"/> class.</summary>
-        /// <param name="memberName"></param>
-        /// <param name="value"></param>
         public JwtMember(JsonEncodedText memberName, string value)
         {
             if (value == null)
@@ -80,8 +70,6 @@ namespace JsonWebToken
         }
 
         /// <summary>Initializes a new instance of the <see cref="JwtMember"/> class.</summary>
-        /// <param name="memberName"></param>
-        /// <param name="value"></param>
         public JwtMember(JsonEncodedText memberName, long value)
         {
             Type = JwtValueKind.Int64;
@@ -90,8 +78,6 @@ namespace JsonWebToken
         }
 
         /// <summary>Initializes a new instance of the <see cref="JwtMember"/> class.</summary>
-        /// <param name="memberName"></param>
-        /// <param name="value"></param>
         public JwtMember(JsonEncodedText memberName, int value)
         {
             Type = JwtValueKind.Int32;
@@ -99,11 +85,7 @@ namespace JsonWebToken
             Name = memberName;
         }
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="JwtMember"/> class.
-        /// </summary>
-        /// <param name="memberName"></param>
-        /// <param name="value"></param>
+        /// <summary>Initializes a new instance of the <see cref="JwtMember"/> class.</summary>
         public JwtMember(JsonEncodedText memberName, uint value)
         {
             Type = JwtValueKind.UInt32;
@@ -111,11 +93,7 @@ namespace JsonWebToken
             Name = memberName;
         }
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="JwtMember"/> class.
-        /// </summary>
-        /// <param name="memberName"></param>
-        /// <param name="value"></param>
+        /// <summary>Initializes a new instance of the <see cref="JwtMember"/> class.</summary>
         public JwtMember(JsonEncodedText memberName, ulong value)
         {
             Type = JwtValueKind.UInt64;
@@ -124,8 +102,6 @@ namespace JsonWebToken
         }
 
         /// <summary>Initializes a new instance of the <see cref="JwtMember"/> class.</summary>
-        /// <param name="memberName"></param>
-        /// <param name="value"></param>
         public JwtMember(JsonEncodedText memberName, double value)
         {
             Type = JwtValueKind.Double;
@@ -134,8 +110,6 @@ namespace JsonWebToken
         }
 
         /// <summary>Initializes a new instance of the <see cref="JwtMember"/> class.</summary>
-        /// <param name="memberName"></param>
-        /// <param name="value"></param>
         public JwtMember(JsonEncodedText memberName, float value)
         {
             Type = JwtValueKind.Float;
@@ -144,8 +118,6 @@ namespace JsonWebToken
         }
 
         /// <summary>Initializes a new instance of the <see cref="JwtMember"/> class.</summary>
-        /// <param name="memberName"></param>
-        /// <param name="value"></param>
         public JwtMember(JsonEncodedText memberName, bool value)
         {
             Type = value ? JwtValueKind.True : JwtValueKind.False;

@@ -29,12 +29,6 @@ namespace JsonWebToken
         public int Count => _jwsCache.Count + _jweCache.Count;
 
         /// <summary>Try to get the header.</summary>
-        /// <param name="header"></param>
-        /// <param name="alg"></param>
-        /// <param name="kid"></param>
-        /// <param name="typ"></param>
-        /// <param name="base64UrlHeader"></param>
-        /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool TryGetHeader(JwtHeader header, SignatureAlgorithm alg, JsonEncodedText kid, string? typ, [NotNullWhen(true)] out byte[]? base64UrlHeader)
         {
@@ -42,21 +36,13 @@ namespace JsonWebToken
         }
 
         /// <summary>Adds a base64-url encoded header to the cache.</summary>
-        /// <param name="header"></param>
-        /// <param name="alg"></param>
-        /// <param name="kid"></param>
-        /// <param name="typ"></param>
-        /// <param name="base64UrlHeader"></param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void AddHeader(JwtHeader header, SignatureAlgorithm alg, JsonEncodedText kid, string? typ, ReadOnlySpan<byte> base64UrlHeader)
         {
             _jwsCache.AddHeader(header, alg, kid, typ, base64UrlHeader);
         }
 
-        /// <summary>
-        /// Validate the integrity of the cache.
-        /// </summary>
-        /// <returns></returns>
+        /// <summary>Validate the integrity of the cache.</summary>
         public bool Validate()
         {
             return _jwsCache.Validate() && _jweCache.Validate();
@@ -95,10 +81,7 @@ namespace JsonWebToken
             private Bucket? _tail = null;
             private WrappedHeader _firstHeader;
 
-            /// <summary>
-            /// Validate the integrity of the cache.
-            /// </summary>
-            /// <returns></returns>
+            /// <summary>Validate the integrity of the cache.</summary>
             public bool Validate()
             {
                 var head = _head;

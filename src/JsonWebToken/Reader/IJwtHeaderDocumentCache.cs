@@ -13,14 +13,9 @@ namespace JsonWebToken
         bool Enabled { get; }
 
         /// <summary>Adds the <see cref="JwtHeader"/> to the cache.</summary>
-        /// <param name="rawHeader"></param>
-        /// <param name="header"></param>
         void AddHeader(ReadOnlySpan<byte> rawHeader, JwtHeaderDocument header);
         
         /// <summary>Try to get the <see cref="JwtHeader"/>.</summary>
-        /// <param name="buffer"></param>
-        /// <param name="header"></param>
-        /// <returns></returns>
         bool TryGetHeader(ReadOnlySpan<byte> buffer, [NotNullWhen(true)] out JwtHeaderDocument? header);
     }
 }

@@ -13,9 +13,7 @@ using CryptographicOperations = JsonWebToken.Cryptography.CryptographicOperation
 
 namespace JsonWebToken
 {
-    /// <summary>
-    /// Represents a RSA JSON Web Key as defined in https://tools.ietf.org/html/rfc7518#section-6.
-    /// </summary>
+    /// <summary>Represents a RSA JSON Web Key as defined in https://tools.ietf.org/html/rfc7518#section-6.</summary>
     public sealed class RsaJwk : AsymmetricJwk
     {
         private const ushort qi = (ushort)26993u;
@@ -34,18 +32,14 @@ namespace JsonWebToken
         private RSAParameters _parameters;
 
 #nullable disable
-        /// <summary>
-        /// Initializes a new instance of <see cref="RsaJwk"/>.
-        /// </summary>
+        /// <summary>Initializes a new instance of <see cref="RsaJwk"/>.</summary>
         private RsaJwk(RSAParameters rsaParameters)
         {
             Verify(rsaParameters);
             _parameters = rsaParameters;
         }
 
-        /// <summary>
-        /// Initializes a new instance of <see cref="RsaJwk"/>.
-        /// </summary>
+        /// <summary>Initializes a new instance of <see cref="RsaJwk"/>.</summary>
         private RsaJwk(RSAParameters rsaParameters, KeyManagementAlgorithm alg)
             : base(alg)
         {
@@ -58,9 +52,7 @@ namespace JsonWebToken
             _parameters = rsaParameters;
         }
 
-        /// <summary>
-        /// Initializes a new instance of <see cref="RsaJwk"/>.
-        /// </summary>
+        /// <summary>Initializes a new instance of <see cref="RsaJwk"/>.</summary>
         private RsaJwk(RSAParameters rsaParameters, SignatureAlgorithm alg)
             : base(alg)
         {
@@ -73,9 +65,7 @@ namespace JsonWebToken
             _parameters = rsaParameters;
         }
 
-        /// <summary>
-        /// Initializes a new instance of <see cref="RsaJwk"/>.
-        /// </summary>
+        /// <summary>Initializes a new instance of <see cref="RsaJwk"/>.</summary>
         private RsaJwk(
             string n,
             string e,
@@ -89,9 +79,7 @@ namespace JsonWebToken
             Initialize(n: n, e: e, d: d, p: p, q: q, dp: dp, dq: dq, qi: qi);
         }
 
-        /// <summary>
-        /// Initializes a new instance of <see cref="RsaJwk"/>.
-        /// </summary>
+        /// <summary>Initializes a new instance of <see cref="RsaJwk"/>.</summary>
         private RsaJwk(string n, string e, SignatureAlgorithm algorithm)
             : base(algorithm)
         {
@@ -102,9 +90,7 @@ namespace JsonWebToken
             }
         }
 
-        /// <summary>
-        /// Initializes a new instance of <see cref="RsaJwk"/>.
-        /// </summary>
+        /// <summary>Initializes a new instance of <see cref="RsaJwk"/>.</summary>
         private RsaJwk(string n, string e, KeyManagementAlgorithm algorithm)
             : base(algorithm)
         {
@@ -115,17 +101,13 @@ namespace JsonWebToken
             }
         }
 
-        /// <summary>
-        /// Initializes a new instance of <see cref="RsaJwk"/>.
-        /// </summary>
+        /// <summary>Initializes a new instance of <see cref="RsaJwk"/>.</summary>
         private RsaJwk(string n, string e)
         {
             Initialize(n: n, e: e);
         }
 
-        /// <summary>
-        /// Initializes a new instance of <see cref="RsaJwk"/>.
-        /// </summary>
+        /// <summary>Initializes a new instance of <see cref="RsaJwk"/>.</summary>
         private RsaJwk(
             string n,
             string e,
@@ -145,9 +127,7 @@ namespace JsonWebToken
             }
         }
 
-        /// <summary>
-        /// Initializes a new instance of <see cref="RsaJwk"/>.
-        /// </summary>
+        /// <summary>Initializes a new instance of <see cref="RsaJwk"/>.</summary>
         private RsaJwk(
             string n,
             string e,
@@ -167,9 +147,7 @@ namespace JsonWebToken
             }
         }
 
-        /// <summary>
-        /// Initializes a new instance of <see cref="RsaJwk"/>.
-        /// </summary>
+        /// <summary>Initializes a new instance of <see cref="RsaJwk"/>.</summary>
         private RsaJwk(
             byte[] n,
             byte[] e,
@@ -183,9 +161,7 @@ namespace JsonWebToken
             Initialize(n: n, e: e, d: d, p: p, q: q, dp: dp, dq: dq, qi: qi);
         }
 
-        /// <summary>
-        /// Initializes a new instance of <see cref="RsaJwk"/>.
-        /// </summary>
+        /// <summary>Initializes a new instance of <see cref="RsaJwk"/>.</summary>
         private RsaJwk(byte[] n, byte[] e, SignatureAlgorithm algorithm)
             : base(algorithm)
         {
@@ -196,9 +172,7 @@ namespace JsonWebToken
             }
         }
 
-        /// <summary>
-        /// Initializes a new instance of <see cref="RsaJwk"/>.
-        /// </summary>
+        /// <summary>Initializes a new instance of <see cref="RsaJwk"/>.</summary>
         private RsaJwk(byte[] n, byte[] e, KeyManagementAlgorithm algorithm)
             : base(algorithm)
         {
@@ -209,17 +183,13 @@ namespace JsonWebToken
             }
         }
 
-        /// <summary>
-        /// Initializes a new instance of <see cref="RsaJwk"/>.
-        /// </summary>
+        /// <summary>Initializes a new instance of <see cref="RsaJwk"/>.</summary>
         private RsaJwk(byte[] n, byte[] e)
         {
             Initialize(n: n, e: e);
         }
 
-        /// <summary>
-        /// Initializes a new instance of <see cref="RsaJwk"/>.
-        /// </summary>
+        /// <summary>Initializes a new instance of <see cref="RsaJwk"/>.</summary>
         private RsaJwk(
             byte[] n,
             byte[] e,
@@ -239,9 +209,7 @@ namespace JsonWebToken
             }
         }
 
-        /// <summary>
-        /// Initializes a new instance of <see cref="RsaJwk"/>.
-        /// </summary>
+        /// <summary>Initializes a new instance of <see cref="RsaJwk"/>.</summary>
         private RsaJwk(
             byte[] n,
             byte[] e,
@@ -261,9 +229,7 @@ namespace JsonWebToken
             }
         }
 
-        /// <summary>
-        /// Initializes a new instance of <see cref="RsaJwk"/>.
-        /// </summary>
+        /// <summary>Initializes a new instance of <see cref="RsaJwk"/>.</summary>
         private RsaJwk()
         {
         }
@@ -319,7 +285,6 @@ namespace JsonWebToken
             _parameters.Q = q;
             _parameters.Modulus = n;
             _parameters.Exponent = e;
-
         }
 
         private void Initialize(string n, string e, string d, string p, string q, string dp, string dq, string qi)
@@ -421,10 +386,7 @@ namespace JsonWebToken
         /// <inheritsdoc />
         public override JsonEncodedText Kty => JwkTypeNames.Rsa;
 
-        /// <summary>
-        /// Exports the RSA parameters from the <see cref="RsaJwk"/>.
-        /// </summary>
-        /// <returns></returns>
+        /// <summary>Exports the RSA parameters from the <see cref="RsaJwk"/>.</summary>
         public RSAParameters ExportParameters()
         {
             return _parameters;
@@ -475,147 +437,72 @@ namespace JsonWebToken
         /// <inheritsdoc />
         public override int KeySizeInBits => _parameters.Modulus!.Length << 3;
 
-        /// <summary>
-        /// Gets the 'd' (RSA - Private Exponent).
-        /// </summary>
+        /// <summary>Gets the private exponent.</summary>
         public ReadOnlySpan<byte> D => _parameters.D;
 
-        /// <summary>
-        /// Gets or sets the 'dp' (First Factor CRT Exponent).
-        /// </summary>
+        /// <summary>Gets or sets the first factor CRT exponent.</summary>
         public ReadOnlySpan<byte> DP => _parameters.DP;
 
-        /// <summary>
-        /// Gets or sets the 'dq' (Second Factor CRT Exponent).
-        /// </summary>
+        /// <summary>Gets or sets the second factor CRT exponent.</summary>
         public ReadOnlySpan<byte> DQ => _parameters.DQ;
 
-        /// <summary>
-        /// Gets or sets the 'e' ( Exponent).
-        /// </summary>
+        /// <summary>Gets or sets the exponent.</summary>
         public ReadOnlySpan<byte> E => _parameters.Exponent;
 
-        /// <summary>
-        /// Gets or sets the 'n' (Modulus).
-        /// </summary>
+        /// <summary>Gets or sets the modulus.</summary>
         public ReadOnlySpan<byte> N => _parameters.Modulus;
 
-        /// <summary>
-        /// Gets or sets the 'p' (First Prime Factor).
-        /// </summary>
+        /// <summary>Gets or sets the first prime factor.</summary>
         public ReadOnlySpan<byte> P => _parameters.P;
 
-        /// <summary>
-        /// Gets or sets the 'q' (Second  Prime Factor).
-        /// </summary>
+        /// <summary>Gets or sets the second prime factor.</summary>
         public ReadOnlySpan<byte> Q => _parameters.Q;
 
-        /// <summary>
-        /// Gets or sets the 'qi' (First CRT Coefficient).
-        /// </summary>
+        /// <summary>Gets or sets the first CRT coefficient.</summary>
         public ReadOnlySpan<byte> QI => _parameters.InverseQ;
 
-        /// <summary>
-        /// Generates a new random private <see cref="RsaJwk"/>.
-        /// </summary>
-        /// <param name="algorithm"></param>
-        /// <param name="computeThumbprint"></param>
-        /// <returns></returns>
+        /// <summary>Generates a new random private <see cref="RsaJwk"/>.</summary>
         public static RsaJwk GeneratePrivateKey(SignatureAlgorithm algorithm, bool computeThumbprint = true)
             => GenerateKey(algorithm.RequiredKeySizeInBits, algorithm, withPrivateKey: true, computeThumbprint: computeThumbprint);
 
-        /// <summary>
-        /// Generates a new random private <see cref="RsaJwk"/>.
-        /// </summary>
-        /// <param name="algorithm"></param>
-        /// <param name="computeThumbprint"></param>
-        /// <returns></returns>
+        /// <summary>Generates a new random private <see cref="RsaJwk"/>.</summary>
         public static RsaJwk GeneratePrivateKey(KeyManagementAlgorithm algorithm, bool computeThumbprint = true)
             => GenerateKey(algorithm.RequiredKeySizeInBits, algorithm, withPrivateKey: true, computeThumbprint);
 
-        /// <summary>
-        /// Generates a new random public <see cref="RsaJwk"/>.
-        /// </summary>
-        /// <param name="algorithm"></param>
-        /// <param name="computeThumbprint"></param>
-        /// <returns></returns>
+        /// <summary>Generates a new random public <see cref="RsaJwk"/>.</summary>
         public static RsaJwk GeneratePublicKey(SignatureAlgorithm algorithm, bool computeThumbprint = true)
             => GenerateKey(algorithm.RequiredKeySizeInBits, algorithm, withPrivateKey: false, computeThumbprint: computeThumbprint);
 
-        /// <summary>
-        /// Generates a new random public <see cref="RsaJwk"/>.
-        /// </summary>
-        /// <param name="algorithm"></param>
-        /// <param name="computeThumbprint"></param>
-        /// <returns></returns>
+        /// <summary>Generates a new random public <see cref="RsaJwk"/>.</summary>
         public static RsaJwk GeneratePublicKey(KeyManagementAlgorithm algorithm, bool computeThumbprint = true)
             => GenerateKey(algorithm.RequiredKeySizeInBits, algorithm, withPrivateKey: false, computeThumbprint: computeThumbprint);
 
-        /// <summary>
-        /// Generates a new random private <see cref="RsaJwk"/>.
-        /// </summary>
-        /// <param name="sizeInBits"></param>
-        /// <param name="algorithm"></param>
-        /// <param name="computeThumbprint"></param>
-        /// <returns></returns>
+        /// <summary>Generates a new random private <see cref="RsaJwk"/>.</summary>
         public static RsaJwk GeneratePrivateKey(int sizeInBits, SignatureAlgorithm algorithm, bool computeThumbprint = true)
             => GenerateKey(sizeInBits, algorithm, withPrivateKey: true, computeThumbprint: computeThumbprint);
 
-        /// <summary>
-        /// Generates a new random private <see cref="RsaJwk"/>.
-        /// </summary>
-        /// <param name="sizeInBits"></param>
-        /// <param name="algorithm"></param>
-        /// <param name="computeThumbprint"></param>
-        /// <returns></returns>
+        /// <summary>Generates a new random private <see cref="RsaJwk"/>.</summary>
         public static RsaJwk GeneratePrivateKey(int sizeInBits, KeyManagementAlgorithm algorithm, bool computeThumbprint = true)
             => GenerateKey(sizeInBits, algorithm, withPrivateKey: true, computeThumbprint);
 
-        /// <summary>
-        /// Generates a new random private <see cref="RsaJwk"/>.
-        /// </summary>
-        /// <param name="sizeInBits"></param>
-        /// <param name="computeThumbprint"></param>
-        /// <returns></returns>
+        /// <summary>Generates a new random private <see cref="RsaJwk"/>.</summary>
         public static RsaJwk GeneratePrivateKey(int sizeInBits, bool computeThumbprint = true)
             => GenerateKey(sizeInBits, withPrivateKey: true, computeThumbprint: computeThumbprint);
 
-        /// <summary>
-        /// Generates a new random public <see cref="RsaJwk"/>.
-        /// </summary>
-        /// <param name="sizeInBits"></param>
-        /// <param name="algorithm"></param>
-        /// <param name="computeThumbprint"></param>
-        /// <returns></returns>
+        /// <summary>Generates a new random public <see cref="RsaJwk"/>.</summary>
         public static RsaJwk GeneratePublicKey(int sizeInBits, SignatureAlgorithm algorithm, bool computeThumbprint = true)
             => GenerateKey(sizeInBits, algorithm, withPrivateKey: false, computeThumbprint: computeThumbprint);
 
-        /// <summary>
-        /// Generates a new random public <see cref="RsaJwk"/>.
-        /// </summary>
-        /// <param name="sizeInBits"></param>
-        /// <param name="algorithm"></param>
-        /// <param name="computeThumbprint"></param>
-        /// <returns></returns>
+        /// <summary>Generates a new random public <see cref="RsaJwk"/>.</summary>
         public static RsaJwk GeneratePublicKey(int sizeInBits, KeyManagementAlgorithm algorithm, bool computeThumbprint = true)
             => GenerateKey(sizeInBits, algorithm, withPrivateKey: false, computeThumbprint: computeThumbprint);
 
-        /// <summary>
-        /// Generates a new random private <see cref="RsaJwk"/>.
-        /// </summary>
-        /// <param name="sizeInBits"></param>
-        /// <param name="computeThumbprint"></param>
-        /// <returns></returns>
+        /// <summary>Generates a new random private <see cref="RsaJwk"/>.</summary>
         public static RsaJwk GeneratePublicKey(int sizeInBits, bool computeThumbprint = true)
             => GenerateKey(sizeInBits, withPrivateKey: false, computeThumbprint: computeThumbprint);
 
-        /// <summary>
-        /// Generates a new RSA key.
-        /// </summary>
+        /// <summary>Generates a new RSA key.</summary>
         /// <param name="sizeInBits">The key size in bits.</param>
-        /// <param name="withPrivateKey"></param>
-        /// <param name="computeThumbprint"></param>
-        /// <returns></returns>
         private static RsaJwk GenerateKey(int sizeInBits, bool withPrivateKey, bool computeThumbprint = true)
         {
 #if SUPPORT_SPAN_CRYPTO
@@ -633,14 +520,7 @@ namespace JsonWebToken
             return FromParameters(rsaParameters, computeThumbprint);
         }
 
-        /// <summary>
-        /// Generates a new random <see cref="RsaJwk"/>.
-        /// </summary>
-        /// <param name="sizeInBits"></param>
-        /// <param name="algorithm"></param>
-        /// <param name="withPrivateKey"></param>
-        /// <param name="computeThumbprint"></param>
-        /// <returns></returns>
+        /// <summary>Generates a new random <see cref="RsaJwk"/>.</summary>
         private static RsaJwk GenerateKey(int sizeInBits, SignatureAlgorithm algorithm, bool withPrivateKey, bool computeThumbprint = true)
         {
 #if SUPPORT_SPAN_CRYPTO
@@ -658,14 +538,7 @@ namespace JsonWebToken
             return FromParameters(rsaParameters, algorithm, computeThumbprint);
         }
 
-        /// <summary>
-        /// Generates a new random <see cref="RsaJwk"/>.
-        /// </summary>
-        /// <param name="sizeInBits"></param>
-        /// <param name="algorithm"></param>
-        /// <param name="withPrivateKey"></param>
-        /// <param name="computeThumbprint"></param>
-        /// <returns></returns>
+        /// <summary>Generates a new random <see cref="RsaJwk"/>.</summary>
         private static RsaJwk GenerateKey(int sizeInBits, KeyManagementAlgorithm algorithm, bool withPrivateKey, bool computeThumbprint = true)
         {
 #if SUPPORT_SPAN_CRYPTO
@@ -710,9 +583,7 @@ namespace JsonWebToken
             return publicKey;
         }
 
-        /// <summary>
-        /// Returns a new instance of <see cref="RsaJwk"/>.
-        /// </summary>
+        /// <summary>Returns a new instance of <see cref="RsaJwk"/>.</summary>
         public static RsaJwk FromByteArray(
             byte[] n,
             byte[] e,
@@ -733,9 +604,7 @@ namespace JsonWebToken
             return key;
         }
 
-        /// <summary>
-        /// Returns a new instance of <see cref="RsaJwk"/>.
-        /// </summary>
+        /// <summary>Returns a new instance of <see cref="RsaJwk"/>.</summary>
         public static RsaJwk FromBase64Url(
             string n,
             string e,
@@ -756,9 +625,7 @@ namespace JsonWebToken
             return key;
         }
 
-        /// <summary>
-        /// Returns a new instance of <see cref="RsaJwk"/>.
-        /// </summary>
+        /// <summary>Returns a new instance of <see cref="RsaJwk"/>.</summary>
         public static RsaJwk FromByteArray(
             byte[] n,
             byte[] e,
@@ -773,9 +640,7 @@ namespace JsonWebToken
             return key;
         }
 
-        /// <summary>
-        /// Returns a new instance of <see cref="RsaJwk"/>.
-        /// </summary>
+        /// <summaryReturns a new instance of <see cref="RsaJwk"/>.</summary>
         public static RsaJwk FromBase64Url(
             string n,
             string e,
@@ -790,9 +655,7 @@ namespace JsonWebToken
             return key;
         }
 
-        /// <summary>
-        /// Returns a new instance of <see cref="RsaJwk"/>.
-        /// </summary>
+        /// <summary>Returns a new instance of <see cref="RsaJwk"/>.</summary>
         public static RsaJwk FromByteArray(
             byte[] n,
             byte[] e,
@@ -814,9 +677,7 @@ namespace JsonWebToken
             return key;
         }
 
-        /// <summary>
-        /// Returns a new instance of <see cref="RsaJwk"/>.
-        /// </summary>
+        /// <summary>Returns a new instance of <see cref="RsaJwk"/>.</summary>
         public static RsaJwk FromBase64Url(
             string n,
             string e,
@@ -838,9 +699,7 @@ namespace JsonWebToken
             return key;
         }
 
-        /// <summary>
-        /// Returns a new instance of <see cref="RsaJwk"/>.
-        /// </summary>
+        /// <summary>Returns a new instance of <see cref="RsaJwk"/>.</summary>
         public static RsaJwk FromByteArray(
             byte[] n,
             byte[] e,
@@ -856,9 +715,7 @@ namespace JsonWebToken
             return key;
         }
 
-        /// <summary>
-        /// Returns a new instance of <see cref="RsaJwk"/>.
-        /// </summary>
+        /// <summary>Returns a new instance of <see cref="RsaJwk"/>.</summary>
         public static RsaJwk FromBase64Url(
             string n,
             string e,
@@ -874,9 +731,7 @@ namespace JsonWebToken
             return key;
         }
 
-        /// <summary>
-        /// Returns a new instance of <see cref="RsaJwk"/>.
-        /// </summary>
+        /// <summary>Returns a new instance of <see cref="RsaJwk"/>.</summary>
         public static RsaJwk FromByteArray(
             byte[] n,
             byte[] e,
@@ -898,9 +753,7 @@ namespace JsonWebToken
             return key;
         }
 
-        /// <summary>
-        /// Returns a new instance of <see cref="RsaJwk"/>.
-        /// </summary>
+        /// <summary>Returns a new instance of <see cref="RsaJwk"/>.</summary>
         public static RsaJwk FromBase64Url(
             string n,
             string e,
@@ -922,9 +775,7 @@ namespace JsonWebToken
             return key;
         }
 
-        /// <summary>
-        /// Returns a new instance of <see cref="RsaJwk"/>.
-        /// </summary>
+        /// <summary>Returns a new instance of <see cref="RsaJwk"/>.</summary>
         public static RsaJwk FromByteArray(
             byte[] n,
             byte[] e,
@@ -940,9 +791,7 @@ namespace JsonWebToken
             return key;
         }
 
-        /// <summary>
-        /// Returns a new instance of <see cref="RsaJwk"/>.
-        /// </summary>
+        /// <summary>Returns a new instance of <see cref="RsaJwk"/>.</summary>
         public static RsaJwk FromBase64Url(
             string n,
             string e,
@@ -958,9 +807,7 @@ namespace JsonWebToken
             return key;
         }
 
-        /// <summary>
-        /// Returns a new instance of <see cref="RsaJwk"/>.
-        /// </summary>
+        /// <summary>Returns a new instance of <see cref="RsaJwk"/>.</summary>
         /// <param name="parameters">A <see cref="RSAParameters"/> that contains the key parameters.</param>
         /// <param name="alg">The <see cref="KeyManagementAlgorithm"/></param>
         /// <param name="computeThumbprint">Defines whether the thumbprint of the key should be computed </param>
@@ -975,9 +822,7 @@ namespace JsonWebToken
             return key;
         }
 
-        /// <summary>
-        /// Returns a new instance of <see cref="RsaJwk"/>.
-        /// </summary>
+        /// <summary>Returns a new instance of <see cref="RsaJwk"/>.</summary>
         /// <param name="parameters">A <see cref="RSAParameters"/> that contains the key parameters.</param>
         /// <param name="alg">The <see cref="SignatureAlgorithm"/></param>
         /// <param name="computeThumbprint">Defines whether the thumbprint of the key should be computed </param>
@@ -992,9 +837,7 @@ namespace JsonWebToken
             return key;
         }
 
-        /// <summary>
-        /// Returns a new instance of <see cref="RsaJwk"/>.
-        /// </summary>
+        /// <summary>Returns a new instance of <see cref="RsaJwk"/>.</summary>
         /// <param name="parameters">A <see cref="RSAParameters"/> that contains the key parameters.</param>
         /// <param name="computeThumbprint">Defines whether the thumbprint of the key should be computed </param>
         public static RsaJwk FromParameters(RSAParameters parameters, bool computeThumbprint = true)

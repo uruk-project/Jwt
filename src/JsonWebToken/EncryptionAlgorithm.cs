@@ -116,12 +116,6 @@ namespace JsonWebToken
         public AuthenticatedDecryptor Decryptor => _decryptor;
 
         /// <summary>Initializes a new instance of <see cref="EncryptionAlgorithm"/>.</summary>
-        /// <param name="id"></param>
-        /// <param name="name"></param>
-        /// <param name="requiredKeySizeInBytes"></param>
-        /// <param name="signatureAlgorithm"></param>
-        /// <param name="requiredKeyWrappedSizeInBytes"></param>
-        /// <param name="category"></param>
         public EncryptionAlgorithm(AlgorithmId id, string name, ushort requiredKeySizeInBytes, SignatureAlgorithm signatureAlgorithm, ushort requiredKeyWrappedSizeInBytes, EncryptionType category)
         {
             _id = id;
@@ -135,8 +129,6 @@ namespace JsonWebToken
         }
 
         /// <summary>Parses the current value of the <see cref="Utf8JsonReader"/> into its <see cref="EncryptionAlgorithm"/> representation.</summary>
-        /// <param name="reader"></param>
-        /// <param name="algorithm"></param>
         public static bool TryParseSlow(ref Utf8JsonReader reader, [NotNullWhen(true)] out EncryptionAlgorithm? algorithm)
         {
             var algorithms = _algorithms;
@@ -154,8 +146,6 @@ namespace JsonWebToken
         }
 
         /// <summary>Parses the <see cref="ReadOnlySpan{T}"/> into its <see cref="EncryptionAlgorithm"/> representation.</summary>
-        /// <param name="value"></param>
-        /// <param name="algorithm"></param>
         public static bool TryParse(ReadOnlySpan<byte> value, [NotNullWhen(true)] out EncryptionAlgorithm? algorithm)
         {
             if (value.Length == 13)
@@ -196,8 +186,6 @@ namespace JsonWebToken
         }
 
         /// <summary>Parses the <see cref="string"/> into its <see cref="EncryptionAlgorithm"/> representation.</summary>
-        /// <param name="value"></param>
-        /// <param name="algorithm"></param>
         public static bool TryParse(string? value, [NotNullWhen(true)] out EncryptionAlgorithm? algorithm)
         {
             switch (value)
@@ -230,8 +218,6 @@ namespace JsonWebToken
         }
 
         /// <summary>Parses the <see cref="JwtElement"/> into its <see cref="EncryptionAlgorithm"/> representation.</summary>
-        /// <param name="value"></param>
-        /// <param name="algorithm"></param>
         public static bool TryParse(JwtElement value, [NotNullWhen(true)] out EncryptionAlgorithm? algorithm)
         {
             bool found;
@@ -275,8 +261,6 @@ namespace JsonWebToken
         }
 
         /// <summary>Parses the <see cref="JsonElement"/> into its <see cref="EncryptionAlgorithm"/> representation.</summary>
-        /// <param name="value"></param>
-        /// <param name="algorithm"></param>
         public static bool TryParse(JsonElement value, [NotNullWhen(true)] out EncryptionAlgorithm? algorithm)
         {
             bool found;
@@ -319,28 +303,19 @@ namespace JsonWebToken
             return found;
         }
 
-        /// <summary>Determines whether this instance and a specified object, which must also be a<see cref="EncryptionAlgorithm"/> object, have the same value.
-        /// </summary>
-        /// <param name="obj"></param>
-        /// <returns></returns>
+        /// <summary>Determines whether this instance and a specified object, which must also be a<see cref="EncryptionAlgorithm"/> object, have the same value.</summary>
         public override bool Equals(object? obj)
             => Equals(obj as EncryptionAlgorithm);
 
         /// <summary>Determines whether two specified <see cref="EncryptionAlgorithm"/> objects have the same value.</summary>
-        /// <param name="other"></param>
-        /// <returns></returns>
         public bool Equals(EncryptionAlgorithm? other)
             => !(other is null) && _id == other._id;
 
         /// <summary>Returns the hash code for this <see cref="EncryptionAlgorithm"/>.</summary>
-        /// <returns></returns>
         public override int GetHashCode()
             => _id.GetHashCode();
 
         /// <summary>Determines whether two specified <see cref="EncryptionAlgorithm"/> have the same value.</summary>
-        /// <param name="x"></param>
-        /// <param name="y"></param>
-        /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool operator ==(EncryptionAlgorithm? x, EncryptionAlgorithm? y)
         {
@@ -359,9 +334,6 @@ namespace JsonWebToken
         }
 
         /// <summary>Determines whether two specified <see cref="EncryptionAlgorithm"/> have different values.</summary>
-        /// <param name="x"></param>
-        /// <param name="y"></param>
-        /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool operator !=(EncryptionAlgorithm? x, EncryptionAlgorithm? y)
         {
@@ -380,17 +352,14 @@ namespace JsonWebToken
         }
 
         /// <summary>Cast the <see cref="EncryptionAlgorithm"/> into its <see cref="string"/> representation.</summary>
-        /// <param name="value"></param>
         public static explicit operator string?(EncryptionAlgorithm? value)
             => value?.Name.ToString();
 
         /// <summary>Cast the <see cref="EncryptionAlgorithm"/> into its <see cref="byte"/> array representation.</summary>
-        /// <param name="value"></param>
         public static explicit operator byte[]?(EncryptionAlgorithm? value)
             => value?._utf8Name.EncodedUtf8Bytes.ToArray();
 
         /// <summary>Cast the array of <see cref="byte"/>s into its <see cref="EncryptionAlgorithm"/> representation.</summary>
-        /// <param name="value"></param>
         public static explicit operator EncryptionAlgorithm?(byte[]? value)
         {
             if (value is null)
@@ -407,7 +376,6 @@ namespace JsonWebToken
         }
 
         /// <summary>Cast the <see cref="string"/> into its <see cref="EncryptionAlgorithm"/> representation.</summary>
-        /// <param name="value"></param>
         public static explicit operator EncryptionAlgorithm?(string? value)
         {
             if (value is null)
@@ -428,8 +396,6 @@ namespace JsonWebToken
             => Name.ToString();
 
         /// <summary>Computes a unique key for the combinaison of the <see cref="EncryptionAlgorithm"/> and the <see cref="KeyManagementAlgorithm"/>.</summary>
-        /// <param name="algorithm"></param>
-        /// <returns></returns>
         public int ComputeKey(KeyManagementAlgorithm algorithm)
             => ((ushort)_id << 16) | (ushort)algorithm.Id;
 

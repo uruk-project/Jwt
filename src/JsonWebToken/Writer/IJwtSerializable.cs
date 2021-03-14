@@ -9,7 +9,6 @@ namespace JsonWebToken
     public interface IJwtSerializable
     {
         /// <summary>Writes the current object to a <see cref="Utf8JsonWriter"/>.</summary>
-        /// <param name="writer"></param>
         void WriteTo(Utf8JsonWriter writer);
     }
 }

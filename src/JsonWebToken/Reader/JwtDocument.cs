@@ -10,9 +10,7 @@ using System.Threading;
 
 namespace JsonWebToken
 {
-    /// <summary>
-    ///   Represents the structure of a JWT value in a lightweight, read-only form.
-    /// </summary>
+    /// <summary>Represents the structure of a JWT value in a lightweight, read-only form.</summary>
     /// <remarks>
     ///   This class utilizes resources from pooled memory to minimize the garbage collector (GC)
     ///   impact in high-usage scenarios. Failure to properly Dispose this object will result in
