@@ -5,37 +5,27 @@ using System;
 
 namespace JsonWebToken
 {
-    /// <summary>
-    /// Represents an asymmetric JSON Web Key as defined in https://tools.ietf.org/html/rfc7518#section-6.
-    /// </summary>
+    /// <summary>Represents an asymmetric JSON Web Key as defined in https://tools.ietf.org/html/rfc7518#section-6.</summary>
     public abstract class AsymmetricJwk : Jwk
     {
-        /// <summary>
-        /// Initializes a new instance of the <see cref="AsymmetricJwk"/> class.
-        /// </summary>
+        /// <summary>Initializes a new instance of the <see cref="AsymmetricJwk"/> class.</summary>
         protected AsymmetricJwk()
         {
         }
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="AsymmetricJwk"/> class.
-        /// </summary>
+        /// <summary>Initializes a new instance of the <see cref="AsymmetricJwk"/> class.</summary>
         protected AsymmetricJwk(SignatureAlgorithm alg)
             : base(alg)
         {
         }
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="AsymmetricJwk"/> class.
-        /// </summary>
+        /// <summary>Initializes a new instance of the <see cref="AsymmetricJwk"/> class.</summary>
         protected AsymmetricJwk(KeyManagementAlgorithm alg)
             : base(alg)
         {
         }
 
-        /// <summary>
-        /// Gets a bool indicating if a private key exists.
-        /// </summary>
+        /// <summary>Gets a bool indicating if a private key exists.</summary>
         /// <return>true if it has a private key; otherwise, false.</return>
         public abstract bool HasPrivateKey { get; }
 

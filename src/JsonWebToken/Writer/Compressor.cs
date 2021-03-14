@@ -11,9 +11,6 @@ namespace JsonWebToken.Compression
         internal static Compressor Null = new NullCompressor();
 
         /// <summary>Compresses the data.</summary>
-        /// <param name="data"></param>
-        /// <param name="destination"></param>
-        /// <returns></returns>
         public abstract int Compress(ReadOnlySpan<byte> data, Span<byte> destination);
 
         private sealed class NullCompressor : Compressor

@@ -36,7 +36,6 @@ namespace JsonWebToken
         }
 
         /// <summary>Initializes an new instance of <see cref="Jwks"/>.</summary>
-        /// <param name="key"></param>
         public Jwks(Jwk key)
         {
             if (key is null)
@@ -196,7 +195,6 @@ namespace JsonWebToken
         }
 
         /// <summary>Removes the <paramref name="key"/> from the JWKS.</summary>
-        /// <param name="key"></param>
         public void Remove(Jwk key)
         {
             if (key is null)
@@ -484,8 +482,6 @@ namespace JsonWebToken
         public string Issuer { get; }
 
         /// <summary>Gets the list of <see cref="Jwk"/> identified by the 'kid'.</summary>
-        /// <param name="kid"></param>
-        /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Jwk[] GetKeys(JwtElement kid)
         {

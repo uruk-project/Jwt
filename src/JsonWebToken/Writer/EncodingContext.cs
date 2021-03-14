@@ -11,10 +11,6 @@ namespace JsonWebToken
         private static readonly DisabledJwtHeaderCache EmptyCache = new DisabledJwtHeaderCache();
 
         /// <summary>Initializes a new instance of the <see cref="EncodingContext"/> class.</summary>
-        /// <param name="bufferWriter"></param>
-        /// <param name="headerCache"></param>
-        /// <param name="tokenLifetimeInSeconds"></param>
-        /// <param name="generateIssuedTime"></param>
         public EncodingContext(IBufferWriter<byte> bufferWriter, IJwtHeaderCache? headerCache, int tokenLifetimeInSeconds, bool generateIssuedTime)
         {
             BufferWriter = bufferWriter;
@@ -24,8 +20,6 @@ namespace JsonWebToken
         }
 
         /// <summary>Initializes a new instance of the <see cref="EncodingContext"/> class.</summary>
-        /// <param name="bufferWriter"></param>
-        /// <param name="other"></param>
         public EncodingContext(IBufferWriter<byte> bufferWriter, EncodingContext other)
         {
             BufferWriter = bufferWriter;

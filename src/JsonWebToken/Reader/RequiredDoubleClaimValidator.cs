@@ -5,28 +5,19 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace JsonWebToken
 {
-    /// <summary>
-    /// Represents a <see cref="IValidator"/> verifying the JWT has a required claim.
-    /// </summary>
+    /// <summary>Represents a <see cref="IValidator"/> verifying the JWT has a required claim.</summary>
     internal sealed class RequiredDoubleClaimValidator : IValidator
     {
         private readonly string _claim;
         private readonly double? _value;
 
-        /// <summary>
-        /// Initializes an instance of <see cref="RequiredDoubleClaimValidator"/>.
-        /// </summary>
-        /// <param name="claim"></param>
+        /// <summary>Initializes an instance of <see cref="RequiredDoubleClaimValidator"/>.</summary>
         public RequiredDoubleClaimValidator(string claim)
             : this(claim, null)
         {
         }
 
-        /// <summary>
-        /// Initializes an instance of <see cref="RequiredDoubleClaimValidator"/>.
-        /// </summary>
-        /// <param name="claim"></param>
-        /// <param name="value"></param>
+        /// <summary>Initializes an instance of <see cref="RequiredDoubleClaimValidator"/>.</summary>
         public RequiredDoubleClaimValidator(string claim, double? value)
         {
             if (claim is null)

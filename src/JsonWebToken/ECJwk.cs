@@ -32,7 +32,6 @@ namespace JsonWebToken
 #endif
 
         /// <summary>Initializes a new instance of <see cref="ECJwk"/>.</summary>
-        /// <param name="parameters"></param>
         private ECJwk(ECParameters parameters)
         {
             Initialize(parameters);
@@ -63,8 +62,6 @@ namespace JsonWebToken
         }
 
         /// <summary>Initializes a new instance of <see cref="ECJwk"/>.</summary>
-        /// <param name="parameters"></param>
-        /// <param name="alg"></param>
         private ECJwk(ECParameters parameters, SignatureAlgorithm alg)
             : base(alg)
         {
@@ -120,8 +117,6 @@ namespace JsonWebToken
         }
 
         /// <summary>Initializes a new instance of <see cref="ECJwk"/>.</summary>
-        /// <param name="parameters"></param>
-        /// <param name="alg"></param>
         private ECJwk(ECParameters parameters, KeyManagementAlgorithm alg)
             : base(alg)
         {
@@ -401,54 +396,30 @@ namespace JsonWebToken
         }
 
         /// <summary>Generates a private <see cref="ECJwk"/>.</summary>
-        /// <param name="curve"></param>
-        /// <param name="computeThumbprint"></param>
-        /// <returns></returns>
         public static ECJwk GeneratePrivateKey(EllipticalCurve curve, bool computeThumbprint = true)
             => GenerateKey(curve, withPrivateKey: true, computeThumbprint: computeThumbprint);
 
         /// <summary>Generates a private <see cref="ECJwk"/>.</summary>
-        /// <param name="algorithm"></param>
-        /// <param name="computeThumbprint"></param>
-        /// <returns></returns>
         public static ECJwk GeneratePrivateKey(SignatureAlgorithm algorithm, bool computeThumbprint = true)
             => GenerateKey(algorithm, withPrivateKey: true, computeThumbprint: computeThumbprint);
 
         /// <summary>Generates a private <see cref="ECJwk"/>.</summary>
-        /// <param name="curve"></param>
-        /// <param name="algorithm"></param>
-        /// <param name="computeThumbprint"></param>
-        /// <returns></returns>
         public static ECJwk GeneratePrivateKey(in EllipticalCurve curve, KeyManagementAlgorithm algorithm, bool computeThumbprint = true)
             => GenerateKey(curve, algorithm, withPrivateKey: true, computeThumbprint: computeThumbprint);
 
         /// <summary>Generates a public <see cref="ECJwk"/>.</summary>
-        /// <param name="curve"></param>
-        /// <param name="computeThumbprint"></param>
-        /// <returns></returns>
         public static ECJwk GeneratePublicKey(in EllipticalCurve curve, bool computeThumbprint = true)
             => GenerateKey(curve, withPrivateKey: false, computeThumbprint: computeThumbprint);
 
         /// <summary>Generates a public <see cref="ECJwk"/>.</summary>
-        /// <param name="algorithm"></param>
-        /// <param name="computeThumbprint"></param>
-        /// <returns></returns>
         public static ECJwk GeneratePublicKey(SignatureAlgorithm algorithm, bool computeThumbprint = true)
             => GenerateKey(algorithm, withPrivateKey: false, computeThumbprint: computeThumbprint);
 
         /// <summary>Generates a public <see cref="ECJwk"/>.</summary>
-        /// <param name="curve"></param>
-        /// <param name="algorithm"></param>
-        /// <param name="computeThumbprint"></param>
-        /// <returns></returns>
         public static ECJwk GeneratePublicKey(in EllipticalCurve curve, KeyManagementAlgorithm algorithm, bool computeThumbprint = true)
             => GenerateKey(curve, algorithm, withPrivateKey: false, computeThumbprint: computeThumbprint);
 
         /// <summary>Generates a <see cref="ECJwk"/>.</summary>
-        /// <param name="curve"></param>
-        /// <param name="withPrivateKey"></param>
-        /// <param name="computeThumbprint"></param>
-        /// <returns></returns>
         private static ECJwk GenerateKey(in EllipticalCurve curve, bool withPrivateKey, bool computeThumbprint = true)
         {
             ECParameters parameters = GenerateParameters(curve, withPrivateKey);
@@ -456,10 +427,6 @@ namespace JsonWebToken
         }
 
         /// <summary>Generates a <see cref="ECJwk"/>.</summary>
-        /// <param name="algorithm"></param>
-        /// <param name="withPrivateKey"></param>
-        /// <param name="computeThumbprint"></param>
-        /// <returns></returns>
         private static ECJwk GenerateKey(SignatureAlgorithm algorithm, bool withPrivateKey, bool computeThumbprint = true)
         {
             EllipticalCurve curve;
@@ -490,11 +457,6 @@ namespace JsonWebToken
         }
 
         /// <summary>Generates a <see cref="ECJwk"/>.</summary>
-        /// <param name="curve"></param>
-        /// <param name="algorithm"></param>
-        /// <param name="withPrivateKey"></param>
-        /// <param name="computeThumbprint"></param>
-        /// <returns></returns>
         private static ECJwk GenerateKey(in EllipticalCurve curve, KeyManagementAlgorithm algorithm, bool withPrivateKey, bool computeThumbprint = true)
         {
             ECParameters parameters = GenerateParameters(curve, withPrivateKey);
@@ -509,7 +471,6 @@ namespace JsonWebToken
         }
 
         /// <summary>Converts the current <see cref="ECJwk"/> key to the public representation. This converted key can be exposed.</summary>
-        /// <returns></returns>
         public override Jwk AsPublicKey()
         {
             var publicParameters = new ECParameters

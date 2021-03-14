@@ -48,32 +48,4 @@ namespace JsonWebToken
         /// <summary>The JSON value null.</summary>
         Null = 0x10
     }
-
-    internal static class JwtValueKindExtensions
-    {
-        public static bool IsNumber(this JwtValueKind kind)
-        {
-            return ((uint)kind & 0xc0) != 0x00;
-        }
-
-        public static bool IsInteger(this JwtValueKind kind)
-        {
-            return ((uint)kind & 0x80) != 0x00;
-        }
-        
-        public static bool IsFloat(this JwtValueKind kind)
-        {
-            return ((uint)kind & 0x40) != 0x00;
-        }
-
-        public static bool IsString(this JwtValueKind kind)
-        {
-            return ((uint)kind & 0x08) != 0x00;
-        }
-
-        public static bool IsStringOrArray(this JwtValueKind kind)
-        {
-            return ((uint)kind & 0x0c) != 0x00;
-        }
-    }
 }

@@ -9,9 +9,7 @@ using System.Runtime.CompilerServices;
 
 namespace JsonWebToken
 {
-    /// <summary>
-    /// Defines the validations to apply to a JWT.
-    /// </summary>
+    /// <summary>Defines the validations to apply to a JWT.</summary>
     public sealed class TokenValidationPolicy
     {
         internal const byte MissingAudienceMask = 0x01;

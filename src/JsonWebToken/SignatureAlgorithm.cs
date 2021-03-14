@@ -124,11 +124,6 @@ namespace JsonWebToken
         public static ReadOnlyCollection<SignatureAlgorithm> SupportedAlgorithms => Array.AsReadOnly(_algorithms);
 
         /// <summary>Initializes a new instance of <see cref="SignatureAlgorithm"/>. </summary>
-        /// <param name="id"></param>
-        /// <param name="name"></param>
-        /// <param name="category"></param>
-        /// <param name="requiredKeySizeInBits"></param>
-        /// <param name="hashAlgorithm"></param>
         public SignatureAlgorithm(AlgorithmId id, string name, AlgorithmCategory category, ushort requiredKeySizeInBits, HashAlgorithmName hashAlgorithm)
         {
             _id = id;
@@ -146,28 +141,20 @@ namespace JsonWebToken
         }
 
         /// <summary>Determines whether this instance and a specified object, which must also be a<see cref="SignatureAlgorithm"/> object, have the same value.</summary>
-        /// <param name="obj"></param>
-        /// <returns></returns>
         public override bool Equals(object? obj)
         {
             return Equals(obj as SignatureAlgorithm);
         }
 
         /// <summary>Determines whether two specified <see cref="SignatureAlgorithm"/> objects have the same value.</summary>
-        /// <param name="other"></param>
-        /// <returns></returns>
         public bool Equals(SignatureAlgorithm? other)
             => other is null ? false : _id == other._id;
 
         /// <summary>Returns the hash code for this <see cref="SignatureAlgorithm"/>.</summary>
-        /// <returns></returns>
         public override int GetHashCode()
             => _id.GetHashCode();
 
         /// <summary>Determines whether two specified <see cref="SignatureAlgorithm"/> have the same value.</summary>
-        /// <param name="x"></param>
-        /// <param name="y"></param>
-        /// <returns></returns>
         public static bool operator ==(SignatureAlgorithm? x, SignatureAlgorithm? y)
         {
             // Fast path: should be singletons
@@ -185,9 +172,6 @@ namespace JsonWebToken
         }
 
         /// <summary>Determines whether two specified <see cref="SignatureAlgorithm"/> have different values.</summary>
-        /// <param name="x"></param>
-        /// <param name="y"></param>
-        /// <returns></returns>
         public static bool operator !=(SignatureAlgorithm? x, SignatureAlgorithm? y)
         {
             // Fast path: should be singletons
@@ -205,12 +189,10 @@ namespace JsonWebToken
         }
 
         /// <summary>Cast the <see cref="SignatureAlgorithm"/> into its <see cref="string"/> representation.</summary>
-        /// <param name="value"></param>
         public static explicit operator string?(SignatureAlgorithm? value)
             => value?.Name.ToString();
 
         /// <summary>Cast the <see cref="string"/> into its <see cref="SignatureAlgorithm"/> representation.</summary>
-        /// <param name="value"></param>
         public static explicit operator SignatureAlgorithm?(string? value)
         {
             if (value is null)
@@ -227,7 +209,6 @@ namespace JsonWebToken
         }
 
         /// <summary>Cast the <see cref="string"/> into its <see cref="SignatureAlgorithm"/> representation.</summary>
-        /// <param name="value"></param>
         public static explicit operator SignatureAlgorithm?(byte[]? value)
         {
             if (value is null)
@@ -244,8 +225,6 @@ namespace JsonWebToken
         }
 
         /// <summary>Reads the current value of the <paramref name="reader"/> and converts into its <see cref="SignatureAlgorithm"/> representation.</summary>
-        /// <param name="reader"></param>
-        /// <param name="algorithm"></param>
         public static bool TryParseSlow(ref Utf8JsonReader reader, [NotNullWhen(true)] out SignatureAlgorithm? algorithm)
         {
             for (int i = 0; i < _algorithms.Length; i++)
@@ -262,8 +241,6 @@ namespace JsonWebToken
         }
 
         /// <summary>Parses the <see cref="ReadOnlySpan{T}"/> into its <see cref="SignatureAlgorithm"/> representation.</summary>
-        /// <param name="value"></param>
-        /// <param name="algorithm"></param>
         public static bool TryParse(ReadOnlySpan<byte> value, [NotNullWhen(true)] out SignatureAlgorithm? algorithm)
         {
             if (value.Length == 5)
@@ -327,8 +304,6 @@ namespace JsonWebToken
         }
 
         /// <summary>Parses the <see cref="string"/> into its <see cref="SignatureAlgorithm"/> representation.</summary>
-        /// <param name="value"></param>
-        /// <param name="algorithm"></param>
         public static bool TryParse(string? value, [NotNullWhen(true)] out SignatureAlgorithm? algorithm)
         {
             switch (value)
@@ -384,8 +359,6 @@ namespace JsonWebToken
         }
 
         /// <summary>Parses the <see cref="string"/> into its <see cref="SignatureAlgorithm"/> representation.</summary>
-        /// <param name="value"></param>
-        /// <param name="algorithm"></param>
         public static bool TryParse(JsonElement value, [NotNullWhen(true)] out SignatureAlgorithm? algorithm)
         {
             if (value.ValueEquals(HS256._name.EncodedUtf8Bytes))
@@ -466,8 +439,6 @@ namespace JsonWebToken
         }
 
         /// <summary>Parse the current value of the <see cref="Utf8JsonReader"/> into its <see cref="SignatureAlgorithm"/> representation.</summary>
-        /// <param name="reader"></param>
-        /// <param name="algorithm"></param>
         public static bool TryParse(ref Utf8JsonReader reader, [NotNullWhen(true)] out SignatureAlgorithm? algorithm)
         {
             var value = reader.ValueSpan;

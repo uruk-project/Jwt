@@ -81,8 +81,6 @@ namespace JsonWebToken
             ThrowHelper.ThrowFormatException_MalformedJson();
         }
 
-        /// <summary>Consume a JSON array.</summary>
-        /// <param name="reader"></param>
         internal static void ConsumeJsonArray(ref Utf8JsonReader reader)
         {
             while (reader.Read())

@@ -15,17 +15,15 @@ namespace JsonWebToken
 
         /// <summary>Initializes a new instance of the <see cref="HttpDocumentRetriever"/> class.</summary>
         public HttpDocumentRetriever()
-            : this(null)
+            : this(new HttpClientHandler())
         {
         }
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="HttpDocumentRetriever"/> class with a specified httpClient.
-        /// </summary>
+        /// <summary>Initializes a new instance of the <see cref="HttpDocumentRetriever"/> class with a specified httpClient.</summary>
         /// <param name="handler"><see cref="HttpMessageHandler"/></param>
-        public HttpDocumentRetriever(HttpMessageHandler? handler)
+        public HttpDocumentRetriever(HttpMessageHandler handler)
         {
-            _httpClient = new HttpClient(handler ?? new HttpClientHandler());
+            _httpClient = new HttpClient(handler ?? throw new ArgumentNullException(nameof(handler)));
         }
 
         /// <summary>Requires Https secure channel for sending requests. This is turned ON by default for security reasons. It is RECOMMENDED that you do not allow retrieval from http addresses by default.</summary>
@@ -34,7 +32,7 @@ namespace JsonWebToken
         /// <summary>Returns a task which contains a string converted from remote document when completed, by using the provided address.</summary>
         /// <param name="address">Location of document</param>
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation. <see cref="CancellationToken"/></param>
-        /// <returns>Document as a string</returns>
+        /// <returns>Document as a byte array.</returns>
         public byte[] GetDocument(string address, CancellationToken cancellationToken)
         {
             if (string.IsNullOrEmpty(address))

@@ -14,7 +14,6 @@ namespace JsonWebToken.Compression
         /// <summary>Decompresses the compressed data.</summary>
         /// <param name="compressedData">The compressed data.</param>
         /// <param name="bufferWritter">The destination <see cref="IBufferWriter{T}"/>.</param>
-        /// <returns></returns>
         public abstract void Decompress(ReadOnlySpan<byte> compressedData, IBufferWriter<byte> bufferWritter);
 
         private sealed class NullDecompressor : Decompressor

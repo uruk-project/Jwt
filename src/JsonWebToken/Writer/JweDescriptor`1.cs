@@ -6,7 +6,6 @@ using System.Buffers;
 using System.Diagnostics;
 using System.Security.Cryptography;
 using System.Text.Json;
-using JsonWebToken.Cryptography;
 
 namespace JsonWebToken
 {
@@ -25,12 +24,6 @@ namespace JsonWebToken
 #endif
 
         /// <summary>Initializes a new instance of the <see cref="JweDescriptor{TPayload}"/> class.</summary>
-        /// <param name="encryptionKey"></param>
-        /// <param name="alg"></param>
-        /// <param name="enc"></param>
-        /// <param name="zip"></param>
-        /// <param name="typ"></param>
-        /// <param name="cty"></param>
         protected JweDescriptor(Jwk encryptionKey, KeyManagementAlgorithm alg, EncryptionAlgorithm enc, CompressionAlgorithm? zip = null, string? typ = null, string? cty = null)
         {
             _encryptionKey = encryptionKey ?? throw new ArgumentNullException(nameof(encryptionKey));

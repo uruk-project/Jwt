@@ -50,11 +50,6 @@ namespace JsonWebToken
         private readonly JsonEncodedText _utf8Name;
 
         /// <summary>Initializes a new instance of the <see cref="CompressionAlgorithm"/> class.</summary>
-        /// <param name="id"></param>
-        /// <param name="name"></param>
-        /// <param name="compressor"></param>
-        /// <param name="decompressor"></param>
-        /// <param name="enabled"></param>
         public CompressionAlgorithm(sbyte id, string name, Compressor compressor, Decompressor decompressor, bool enabled)
         {
             if (name is null)
@@ -80,26 +75,18 @@ namespace JsonWebToken
         }
 
         /// <summary>Determines whether this instance and a specified object, which must also be a<see cref="CompressionAlgorithm"/> object, have the same value.</summary>
-        /// <param name="obj"></param>
-        /// <returns></returns>
         public override bool Equals(object? obj)
             => Equals(obj as CompressionAlgorithm);
 
         /// <summary>Determines whether two specified <see cref="CompressionAlgorithm"/> objects have the same value.</summary>
-        /// <param name="other"></param>
-        /// <returns></returns>
         public bool Equals(CompressionAlgorithm? other) 
             => other is null ? false : Id == other.Id;
 
         /// <summary>Returns the hash code for this <see cref="CompressionAlgorithm"/>.</summary>
-        /// <returns></returns>
         public override int GetHashCode()
             => Id.GetHashCode();
 
         /// <summary>Determines whether two specified <see cref="CompressionAlgorithm"/> have the same value.</summary>
-        /// <param name="x"></param>
-        /// <param name="y"></param>
-        /// <returns></returns>
         public static bool operator ==(CompressionAlgorithm? x, CompressionAlgorithm? y)
         {
             // Fast path: should be singletons
@@ -117,9 +104,6 @@ namespace JsonWebToken
         }
 
         /// <summary>Determines whether two specified <see cref="CompressionAlgorithm"/> have different values.</summary>
-        /// <param name="x"></param>
-        /// <param name="y"></param>
-        /// <returns></returns>
         public static bool operator !=(CompressionAlgorithm? x, CompressionAlgorithm? y)
         {
             // Fast path: should be singletons
@@ -137,8 +121,6 @@ namespace JsonWebToken
         }
 
         /// <summary>Parse the current value of the <see cref="Utf8JsonReader"/> into its <see cref="CompressionAlgorithm"/> representation.</summary>
-        /// <param name="reader"></param>
-        /// <param name="algorithm"></param>
         public static bool TryParseSlow(ref Utf8JsonReader reader, [NotNullWhen(true)] out CompressionAlgorithm? algorithm)
         {
             if (reader.ValueTextEquals(Def._utf8Name.EncodedUtf8Bytes))
@@ -152,8 +134,6 @@ namespace JsonWebToken
         }
 
         /// <summary>Parse the <see cref="ReadOnlySpan{T}"/> into its <see cref="SignatureAlgorithm"/> representation.</summary>
-        /// <param name="value"></param>
-        /// <param name="algorithm"></param>
         public static bool TryParse(ReadOnlySpan<byte> value, [NotNullWhen(true)] out CompressionAlgorithm? algorithm)
         {
             if (value.Length == 3)
@@ -171,8 +151,6 @@ namespace JsonWebToken
         }
 
         /// <summary>Parse the <see cref="JwtElement"/> into its <see cref="SignatureAlgorithm"/> representation.</summary>
-        /// <param name="value"></param>
-        /// <param name="algorithm"></param>
         public static bool TryParse(JwtElement value, [NotNullWhen(true)] out CompressionAlgorithm? algorithm)
         {
             if (value.ValueEquals(Def.Utf8Name))
@@ -186,8 +164,6 @@ namespace JsonWebToken
         }
 
         /// <summary>Parse the <see cref="string"/> into its <see cref="SignatureAlgorithm"/> representation.</summary>
-        /// <param name="value"></param>
-        /// <param name="algorithm"></param>
         public static bool TryParse(string? value, [NotNullWhen(true)] out CompressionAlgorithm? algorithm)
         {
             if (value == "DEF")
@@ -201,7 +177,6 @@ namespace JsonWebToken
         }
 
         /// <summary>Cast the array of <see cref="byte"/>s into its <see cref="CompressionAlgorithm"/> representation.</summary>
-        /// <param name="value"></param>
         public static explicit operator CompressionAlgorithm?(byte[]? value)
         {
             if (value is null)
@@ -218,7 +193,6 @@ namespace JsonWebToken
         }
 
         /// <summary>Cast the <see cref="CompressionAlgorithm"/> into its <see cref="byte"/> array representation.</summary>
-        /// <param name="value"></param>
         public static explicit operator byte[]?(CompressionAlgorithm? value)
             => value is null ? null : value._utf8Name.EncodedUtf8Bytes.ToArray();
 

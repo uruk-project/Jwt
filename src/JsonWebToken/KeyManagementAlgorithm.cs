@@ -211,10 +211,6 @@ namespace JsonWebToken
         }
 
         /// <summary>Initializes a new instance of <see cref="KeyManagementAlgorithm"/>. </summary>
-        /// <param name="id"></param>
-        /// <param name="name"></param>
-        /// <param name="keyType"></param>
-        /// <param name="requiredKeySizeInBits"></param>
         public KeyManagementAlgorithm(AlgorithmId id, string name, AlgorithmCategory keyType, ushort requiredKeySizeInBits)
             : this(id, name, keyType, requiredKeySizeInBits, wrappedAlgorithm: null, sha2: null, produceEncryptedKey: true)
         {
