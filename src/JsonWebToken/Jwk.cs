@@ -17,7 +17,7 @@ namespace JsonWebToken
 {
     /// <summary>Represents a JSON Web Key as defined in http://tools.ietf.org/html/rfc7517.</summary>
     [DebuggerDisplay("{" + nameof(GetDebuggerDisplay) + "(),nq}")]
-    public abstract class Jwk : IDisposable
+    public abstract class Jwk : IDisposable, IEquatable<Jwk>
     {
         private const uint EC = 17221u;
         private const uint RSA = 4281170u;
@@ -1483,6 +1483,9 @@ namespace JsonWebToken
         private string GetDebuggerDisplay()
             => ToString();
 
+        /// <inheritdoc/>
+        public abstract bool Equals(Jwk? other);
+
         internal sealed class NullJwk : Jwk
         {
             public override JsonEncodedText Kty
@@ -1533,6 +1536,9 @@ namespace JsonWebToken
                 writer.WriteStartObject();
                 writer.WriteEndObject();
             }
+
+            public override bool Equals(Jwk? other)
+                => false;
         }
     }
 }

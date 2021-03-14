@@ -152,6 +152,27 @@ namespace JsonWebToken
         }
 
         /// <inheritsdoc />
+        public override bool Equals(Jwk? other)
+        {
+            if (ReferenceEquals(this, other))
+            {
+                return true;
+            }
+
+            if (!(other is PasswordBasedJwk key))
+            {
+                return false;
+            }
+
+            if (Kid.EncodedUtf8Bytes.Length != 0 && Kid.Equals(other.Kid))
+            {
+                return true;
+            }
+
+            return _inner.Equals(key._inner);
+        }
+
+        /// <inheritsdoc />
         public override void Dispose()
         {
             base.Dispose();

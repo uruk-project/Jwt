@@ -880,6 +880,34 @@ namespace JsonWebToken
         }
 
         /// <inheritsdoc />
+        public override bool Equals(Jwk? other)
+        {
+            if (ReferenceEquals(this, other))
+            {
+                return true;
+            }
+
+            if (!(other is ECJwk key))
+            {
+                return false;
+            }
+
+            if (HasPrivateKey ^ key.HasPrivateKey)
+            {
+                return false;
+            }
+
+            if (Kid.EncodedUtf8Bytes.Length != 0 && Kid.Equals(other.Kid))
+            {
+                return true;
+            }
+
+            return Crv.Id == Crv.Id &&
+                _parameters.Q.X.AsSpan().SequenceEqual(key._parameters.Q.X) &&
+                _parameters.Q.Y.AsSpan().SequenceEqual(key._parameters.Q.Y);
+        }
+
+        /// <inheritsdoc />
         public override void Dispose()
         {
             base.Dispose();

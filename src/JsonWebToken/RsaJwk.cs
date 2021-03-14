@@ -1190,6 +1190,34 @@ namespace JsonWebToken
         }
 
         /// <inheritsdoc />
+        public override bool Equals(Jwk? other)
+        {
+            if (ReferenceEquals(this, other))
+            {
+                return true;
+            }
+
+            if (!(other is RsaJwk key))
+            {
+                return false;
+            }
+
+            if (HasPrivateKey ^ key.HasPrivateKey)
+            {
+                return false;
+            }
+
+            if (Kid.EncodedUtf8Bytes.Length != 0 && Kid.Equals(other.Kid))
+            {
+                return true;
+            }
+
+            return
+                _parameters.Exponent.AsSpan().SequenceEqual(key._parameters.Exponent) &&
+                _parameters.Modulus.AsSpan().SequenceEqual(key._parameters.Modulus);
+        }
+
+        /// <inheritsdoc />
         public override void Dispose()
         {
             base.Dispose();
