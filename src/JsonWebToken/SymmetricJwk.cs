@@ -503,6 +503,27 @@ namespace JsonWebToken
         }
 
         /// <inheritsdoc />
+        public override bool Equals(Jwk? other)
+        {
+            if (ReferenceEquals(this, other))
+            {
+                return true;
+            }
+
+            if (!(other is SymmetricJwk key))
+            {
+                return false;
+            }
+
+            if (Kid.EncodedUtf8Bytes.Length != 0 && Kid.Equals(other.Kid))
+            {
+                return true;
+            }
+
+            return _k.AsSpan().SequenceEqual(key._k);
+        }
+
+        /// <inheritsdoc />
         public override void Dispose()
         {
             base.Dispose();

@@ -41,7 +41,7 @@ namespace JsonWebToken
         protected internal override void Canonicalize(Span<byte> buffer) => throw new NotImplementedException();
 
         /// <inheritdoc />
-        protected internal override int GetCanonicalizeSize() => throw new NotImplementedException();  
+        protected internal override int GetCanonicalizeSize() => throw new NotImplementedException();
 
         /// <inheritsdoc />
         protected override KeyUnwrapper CreateKeyUnwrapper(EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm algorithm) => throw new NotImplementedException();
@@ -50,13 +50,16 @@ namespace JsonWebToken
         protected override KeyWrapper CreateKeyWrapper(EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm algorithm) => throw new NotImplementedException();
 
         /// <inheritsdoc />
-        protected override Signer CreateSigner(SignatureAlgorithm algorithm) => throw new NotImplementedException();    
- 
+        protected override Signer CreateSigner(SignatureAlgorithm algorithm) => throw new NotImplementedException();
+
         /// <inheritsdoc />
         protected override SignatureVerifier CreateSignatureVerifier(SignatureAlgorithm algorithm) => throw new NotImplementedException();
 
         /// <inheritsdoc />
         public override Jwk AsPublicKey() => throw new NotImplementedException();
+
+        /// <inheritsdoc />
+        public override bool Equals(Jwk? other) => throw new NotImplementedException();
     }
 }
 #endif

@@ -68,14 +68,14 @@ namespace JsonWebToken
 
         /// <summary>Configure the <see cref="TokenValidationPolicy"/> based on the <paramref name="metadataUri"/>
         /// as defined by https://tools.ietf.org/html/rfc8414 and https://openid.net/specs/openid-connect-discovery-1_0.html.</summary>
-        public TokenValidationPolicyBuilder RequireMetadataConfiguration(string metadataUri, SignatureAlgorithm algorithm, HttpMessageHandler? handler = null, long minimumRefreshInterval = CachedKeyProvider.DefaultMinimumRefreshInterval, long automaticRefreshInterval = CachedKeyProvider.DefaultAutomaticRefreshInterval)
+        public TokenValidationPolicyBuilder RequireMetadataConfiguration(string metadataUri, SignatureAlgorithm algorithm, HttpMessageHandler? handler = null, long minimumRefreshInterval = CachedKeyProvider.DefaultMinimumRefreshInterval, long automaticRefreshInterval = CachedKeyProvider.DefaultAutomaticRefreshInterval, bool validateIssuer = true)
         {
             if (!Uri.IsWellFormedUriString(metadataUri, UriKind.Absolute))
             {
                 throw new InvalidOperationException($"'{metadataUri}' is not a valid URL.");
             }
 
-            var keyProvider = new JwksHttpKeyProvider(metadataUri, handler, minimumRefreshInterval, automaticRefreshInterval);
+            var keyProvider = new JwksHttpKeyProvider(metadataUri, handler, minimumRefreshInterval, automaticRefreshInterval, validateIssuer);
             return RequireSignature(keyProvider.Issuer, keyProvider, algorithm);
         }
 

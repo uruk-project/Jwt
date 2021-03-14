@@ -37,7 +37,7 @@ namespace JsonWebToken
         }
 
         /// <summary>Initializes a new instance of <see cref="JwksHttpKeyProvider"/> class.</summary>
-        public JwksHttpKeyProvider(string metadataConfiguration, Func<HttpDocumentRetriever> documentRetrieverFactory, long minimumRefreshInterval = DefaultMinimumRefreshInterval, long automaticRefreshInterval = DefaultAutomaticRefreshInterval)
+        public JwksHttpKeyProvider(string metadataConfiguration, Func<HttpDocumentRetriever> documentRetrieverFactory, long minimumRefreshInterval = DefaultMinimumRefreshInterval, long automaticRefreshInterval = DefaultAutomaticRefreshInterval, bool validateIssuer = true)
             : base(minimumRefreshInterval, automaticRefreshInterval)
         {
             if (metadataConfiguration is null)
@@ -52,12 +52,12 @@ namespace JsonWebToken
 
             _documentRetrieverFactory = documentRetrieverFactory ?? throw new ArgumentNullException(nameof(documentRetrieverFactory));
             using var retriever = _documentRetrieverFactory();
-            (_issuer, _jwksAddress) = GetMetadataConfiguration(retriever, metadataConfiguration);
+            (_issuer, _jwksAddress) = GetMetadataConfiguration(retriever, metadataConfiguration, validateIssuer);
         }
 
         /// <summary>Initializes a new instance of <see cref="JwksHttpKeyProvider"/>.</summary>
-        public JwksHttpKeyProvider(string metadataConfiguration, HttpMessageHandler? handler, long minimumRefreshInterval = DefaultMinimumRefreshInterval, long automaticRefreshInterval = DefaultAutomaticRefreshInterval)
-            : this(metadataConfiguration, () => new HttpDocumentRetriever(handler), minimumRefreshInterval, automaticRefreshInterval)
+        public JwksHttpKeyProvider(string metadataConfiguration, HttpMessageHandler? handler, long minimumRefreshInterval = DefaultMinimumRefreshInterval, long automaticRefreshInterval = DefaultAutomaticRefreshInterval, bool validateIssuer = true)
+            : this(metadataConfiguration, () => new HttpDocumentRetriever(handler), minimumRefreshInterval, automaticRefreshInterval, validateIssuer)
         {
         }
 
@@ -69,7 +69,7 @@ namespace JsonWebToken
             return Jwks.FromJson(Issuer, value);
         }
 
-        private static (string, string) GetMetadataConfiguration(HttpDocumentRetriever documentRetriever, string metadataAddress)
+        private static (string, string) GetMetadataConfiguration(HttpDocumentRetriever documentRetriever, string metadataAddress, bool validateIssuer)
         {
             string? issuer = null;
             string? jwksUri = null;
@@ -100,6 +100,10 @@ namespace JsonWebToken
                         break;
                     }
                 }
+                else
+                {
+                    JsonParser.ConsumeJsonMember(ref reader);
+                }
             }
 
             if (jwksUri is null)
@@ -113,7 +117,7 @@ namespace JsonWebToken
             }
 
             // Not perfect as test, but we do not have the issuer here for the moment.
-            if (!metadataAddress.StartsWith(issuer))
+            if (validateIssuer && !metadataAddress.StartsWith(issuer))
             {
                 throw new InvalidOperationException($"The 'issuer' claim in the document '{metadataAddress}' is invalid.");
             }
@@ -122,8 +126,8 @@ namespace JsonWebToken
         }
 
         /// <summary>Initializes a new instance of <see cref="JwksHttpKeyProvider"/>.</summary>
-        public JwksHttpKeyProvider(string metadataAddress, long minimumRefreshInterval = DefaultMinimumRefreshInterval, long automaticRefreshInterval = DefaultAutomaticRefreshInterval)
-            : this(metadataAddress, () => new HttpDocumentRetriever(), minimumRefreshInterval, automaticRefreshInterval)
+        public JwksHttpKeyProvider(string metadataAddress, long minimumRefreshInterval = DefaultMinimumRefreshInterval, long automaticRefreshInterval = DefaultAutomaticRefreshInterval, bool validateIssuer = true)
+            : this(metadataAddress, () => new HttpDocumentRetriever(), minimumRefreshInterval, automaticRefreshInterval, validateIssuer)
         {
         }
 

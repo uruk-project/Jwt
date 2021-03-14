@@ -3,7 +3,6 @@ using System.IO;
 using System.Security.Cryptography.X509Certificates;
 using System.Text.Json;
 using JsonWebToken;
-using JsonWebToken.Cryptography;
 
 namespace JwkSample
 {
@@ -27,7 +26,7 @@ namespace JwkSample
         {
             Jwks.OnJwksRefreshed += OnKeysRefreshed;
 
-            var jwks = new Jwks 
+            var jwks = new Jwks
             {
                 SymmetricJwk.GenerateKey(128),
                 SymmetricJwk.GenerateKey(128),
@@ -36,13 +35,17 @@ namespace JwkSample
             };
 
 
-            Jwks.PublishJwksRefreshed(jwks);
+            Jwks.PublishJwksRefreshed(new Jwks(), jwks);
         }
 
-        private static void OnKeysRefreshed(Jwks keys)
+        private static void OnKeysRefreshed(Jwks added, Jwks removed)
         {
-            Console.WriteLine("This key has been refreshed:");
-            Console.WriteLine(keys);
+            Console.WriteLine("This key has been refreshed.");
+            Console.WriteLine("Removed:");
+            Console.WriteLine(removed);
+
+            Console.WriteLine("Added:");
+            Console.WriteLine(added);
         }
 
         private static void GenerateKeys()
@@ -129,8 +132,8 @@ namespace JwkSample
 
         private static void ReadKeysFromJwksEndpoint()
         {
-            // The JwksKeyProvider retrieve the JWKs from an HTTP endpoint. The JkuKeyProvider & X5uKeyProvider do the same for differents formats.
-            var jwksProvider = new JwksHttpKeyProvider("https://login.microsoftonline.com/common/discovery/v2.0/keys"); // you may provide an HttpClientHandler with if you are behind a proxy.
+            // The JwksKeyProvider retrieve the JWKs from an HTTP endpoint. The JkuKeyProvider & X5uKeyProvider do the same for differents formats.            var jwksProvider = new JwksHttpKeyProvider("https://login.microsoftonline.com/common/.well-known/openid-configuration", validateIssuer: false); // you may provide an HttpClientHandler with if you are behind a proxy.
+            var jwksProvider = new JwksHttpKeyProvider("https://login.microsoftonline.com", "https://login.microsoftonline.com/common/discovery/v2.0/keys"); // you may provide an HttpClientHandler with if you are behind a proxy.
             var keys = jwksProvider.GetKeys();
             Console.WriteLine("JWK from internet faced JWKS:");
             foreach (var key in keys)

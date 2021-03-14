@@ -145,15 +145,42 @@ namespace JsonWebToken
         }
 
         /// <summary>Defines a delegate to call when a <see cref="Jwks"/> has been refreshed.</summary>
-        /// <param name="keys"></param>
-        public delegate void JwksRefreshed(Jwks keys);
+        public delegate void JwksRefreshed(Jwks added, Jwks removed);
 
         /// <summary>Event that occur when the <see cref="Jwks"/> has been refreshed. The parameter keys is the refreshed <see cref="Jwks"/>.</summary>
         public static event JwksRefreshed? OnJwksRefreshed;
 
         /// <summary>Publish an event that notify a <see cref="Jwks"/> has been refreshed.</summary>
-        public static void PublishJwksRefreshed(Jwks keys)
-            => OnJwksRefreshed?.Invoke(keys);
+        public static void PublishJwksRefreshed(Jwks oldJwks, Jwks newJwks)
+        {
+            if (OnJwksRefreshed != null)
+            {
+                var added = new Jwks(newJwks.Issuer);
+                var removed = new Jwks(newJwks.Issuer);
+                for (int i = 0; i < oldJwks.Count; i++)
+                {
+                    var key = oldJwks._keys[i];
+                    if (!newJwks.Contains(key))
+                    {
+                        removed._keys.Add(key);
+                    }
+                }
+
+                for (int i = 0; i < newJwks.Count; i++)
+                {
+                    var key = newJwks._keys[i];
+                    if (!oldJwks.Contains(key))
+                    {
+                        added._keys.Add(key);
+                    }
+                }
+
+                if (added.Count != 0 || removed.Count != 0)
+                {
+                    OnJwksRefreshed(added, removed);
+                }
+            }
+        }
 
         /// <summary>Adds the <paramref name="key"/> to the JWKS.</summary>
         /// <param name="key"></param>
@@ -593,14 +620,24 @@ namespace JsonWebToken
 
         /// <inheritdoc/>
         public IEnumerator<Jwk> GetEnumerator()
-        {
-            return ((IEnumerable<Jwk>)_keys).GetEnumerator();
-        }
+            => ((IEnumerable<Jwk>)_keys).GetEnumerator();
 
         /// <inheritdoc/>
         IEnumerator IEnumerable.GetEnumerator()
+            => ((IEnumerable)_keys).GetEnumerator();
+
+        /// <inheritdoc/>
+        public bool Contains(Jwk other)
         {
-            return ((IEnumerable)_keys).GetEnumerator();
+            for (int i = 0; i < Count; i++)
+            {
+                if (other.Equals(_keys[i]))
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
     }
 }

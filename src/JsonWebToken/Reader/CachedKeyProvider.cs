@@ -69,13 +69,18 @@ namespace JsonWebToken
 
             if (forceSync || _syncAfter <= now)
             {
+                Jwks previous = _currentJwks;
+                Jwks refreshedJwks;
                 _refreshLock.Wait();
                 try
                 {
-                    Jwks refreshedJwks = GetKeysFromSource();
-                    Jwks.PublishJwksRefreshed(refreshedJwks);
-                    _currentJwks = refreshedJwks;
-                    _syncAfter = now + AutomaticRefreshInterval;
+                    if (forceSync || _syncAfter <= now)
+                    {
+                        refreshedJwks = GetKeysFromSource();
+                        _currentJwks = refreshedJwks;
+                        _syncAfter = now + AutomaticRefreshInterval;
+                        Jwks.PublishJwksRefreshed(previous, refreshedJwks);
+                    }
                 }
                 catch
                 {

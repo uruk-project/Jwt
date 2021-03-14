@@ -9,6 +9,36 @@ namespace JsonWebToken
     /// <summary>Provides methods for parsing JSON data into a <see cref="Dictionary{TKey, TValue}"/></summary>
     internal static partial class JsonParser
     {
+        internal static void ConsumeJsonMember(ref Utf8JsonReader reader)
+        {
+            if (reader.Read())
+            {
+                switch (reader.TokenType)
+                {
+                    case JsonTokenType.StartObject:
+                        ConsumeJsonObject(ref reader);
+                        break;
+                    case JsonTokenType.StartArray:
+                        ConsumeJsonArray(ref reader);
+                        break;
+                    case JsonTokenType.String:
+                    case JsonTokenType.Number:
+                    case JsonTokenType.True:
+                    case JsonTokenType.False:
+                    case JsonTokenType.Null:
+                    case JsonTokenType.Comment:
+                        break;
+                    default:
+                        ThrowHelper.ThrowFormatException_MalformedJson();
+                        break;
+                }
+            }
+            else
+            {
+                ThrowHelper.ThrowFormatException_MalformedJson();
+            }
+        }
+
         internal static void ConsumeJsonObject(ref Utf8JsonReader reader)
         {
             int objectCount = 0;
