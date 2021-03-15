@@ -502,7 +502,6 @@ namespace JsonWebToken
             => GenerateKey(sizeInBits, withPrivateKey: false, computeThumbprint: computeThumbprint);
 
         /// <summary>Generates a new RSA key.</summary>
-        /// <param name="sizeInBits">The key size in bits.</param>
         private static RsaJwk GenerateKey(int sizeInBits, bool withPrivateKey, bool computeThumbprint = true)
         {
 #if SUPPORT_SPAN_CRYPTO
@@ -640,7 +639,7 @@ namespace JsonWebToken
             return key;
         }
 
-        /// <summaryReturns a new instance of <see cref="RsaJwk"/>.</summary>
+        /// <summary>Returns a new instance of <see cref="RsaJwk"/>.</summary>
         public static RsaJwk FromBase64Url(
             string n,
             string e,

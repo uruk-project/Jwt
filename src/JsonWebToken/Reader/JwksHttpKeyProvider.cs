@@ -31,8 +31,8 @@ namespace JsonWebToken
         }
 
         /// <summary>Initializes a new instance of <see cref="JwksHttpKeyProvider"/> class.</summary>
-        public JwksHttpKeyProvider(string issuer, string jwksAddress, HttpMessageHandler? handler, long minimumRefreshInterval = DefaultMinimumRefreshInterval, long automaticRefreshInterval = DefaultAutomaticRefreshInterval)
-            : this(issuer, jwksAddress, () => new HttpDocumentRetriever(handler), minimumRefreshInterval, automaticRefreshInterval)
+        public JwksHttpKeyProvider(string issuer, string jwksAddress, HttpMessageHandler? handler = null, long minimumRefreshInterval = DefaultMinimumRefreshInterval, long automaticRefreshInterval = DefaultAutomaticRefreshInterval)
+            : this(issuer, jwksAddress, () => new HttpDocumentRetriever(handler ?? new HttpClientHandler()), minimumRefreshInterval, automaticRefreshInterval)
         {
         }
 
@@ -56,8 +56,8 @@ namespace JsonWebToken
         }
 
         /// <summary>Initializes a new instance of <see cref="JwksHttpKeyProvider"/>.</summary>
-        public JwksHttpKeyProvider(string metadataConfiguration, HttpMessageHandler? handler, long minimumRefreshInterval = DefaultMinimumRefreshInterval, long automaticRefreshInterval = DefaultAutomaticRefreshInterval, bool validateIssuer = true)
-            : this(metadataConfiguration, () => new HttpDocumentRetriever(handler), minimumRefreshInterval, automaticRefreshInterval, validateIssuer)
+        public JwksHttpKeyProvider(string metadataConfiguration, HttpMessageHandler? handler = null, long minimumRefreshInterval = DefaultMinimumRefreshInterval, long automaticRefreshInterval = DefaultAutomaticRefreshInterval, bool validateIssuer = true)
+            : this(metadataConfiguration, () => new HttpDocumentRetriever(handler ?? new HttpClientHandler()), minimumRefreshInterval, automaticRefreshInterval, validateIssuer)
         {
         }
 
