@@ -4,46 +4,185 @@
 using System;
 using System.Collections.ObjectModel;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Text.Json;
 using JsonWebToken.Cryptography;
 
 namespace JsonWebToken
 {
+    //[DiagnosticAnalyzer(LanguageNames.CSharp)]
+    //public class MagicNumberAnalyzer : DiagnosticAnalyzer
+    //{
+    //    public const string Id = "CompilationEnded";
+    //    private static readonly DiagnosticDescriptor s_rule = GetRule(Id);
+
+    //    public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics
+    //    {
+    //        get
+    //        {
+    //            return ImmutableArray.Create(s_rule);
+    //        }
+    //    }
+
+    //    public override void Initialize(AnalysisContext context)
+    //    {
+    //        context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
+    //        context.EnableConcurrentExecution();
+
+    //        // TODO: Consider registering other actions that act on syntax instead of or in addition to symbols
+    //        // See https://github.com/dotnet/roslyn/blob/master/docs/analyzers/Analyzer%20Actions%20Semantics.md for more information
+    //        context.RegisterSyntaxNodeAction(AnalyzeSymbol, SymbolKind.NamedType);
+    //    }
+
+    //    private static void AnalyzeSymbol(SyntaxNodeAnalysisContext context)
+    //    {
+    //        var attribute = (AttributeSyntax)context.Node;
+    //        if (!(attribute.ArgumentList?.Arguments.FirstOrDefault()?.Expression is TypeOfExpressionSyntax argumentExpression))
+    //            return;
+
+    //        var semanticModel = context.SemanticModel;
+    //        if (!Equals(semanticModel.GetTypeInfo(attribute).Type, typeof(MagicNumberAttribute)))
+    //            return;
+    //    }
+    //}
+
+    internal static class MagicNumberVerifier
+    {
+        public static void Assert<T>()
+        {
+            Type type = typeof(T);
+            var fields = type.GetFields(System.Reflection.BindingFlags.Static)
+                .Where(f => f.IsLiteral && !f.IsInitOnly);
+            foreach (var field in fields)
+            {
+                var attribute = (MagicNumberAttribute?)field.GetCustomAttributes(typeof(MagicNumberAttribute), true).SingleOrDefault();
+                if (attribute != null)
+                {
+                    object? value = field.GetValue(null);
+
+                    if (field.FieldType == typeof(ushort))
+                    {
+                        Utf8.AssertMagicNumber((ushort)value, attribute.Value);
+                    }
+                    else if (field.FieldType == typeof(uint))
+                    {
+                        Utf8.AssertMagicNumber((uint)value, attribute.Value);
+                    }
+                    else if (field.FieldType == typeof(ulong))
+                    {
+                        Utf8.AssertMagicNumber((ulong)value, attribute.Value);
+                    }
+                    else
+                    {
+                        throw new InvalidOperationException($"Type {field.FieldType} is not supported.");
+                    }
+                }
+            }
+        }
+    }
+
+    [AttributeUsage(AttributeTargets.Field, Inherited = false, AllowMultiple = true)]
+    sealed class MagicNumberAttribute : Attribute
+    {
+        readonly string _value;
+
+        // This is a positional argument
+        public MagicNumberAttribute(string value)
+        {
+            _value = value;
+        }
+
+        public string Value => _value;
+    }
+
     /// <summary>Defines key management algorithm.</summary>
     public sealed partial class KeyManagementAlgorithm : IEquatable<KeyManagementAlgorithm>, IAlgorithm
     {
+        [MagicNumber("dir")]
         private const uint _dir = 7498084u;
+
+        [MagicNumber("KW")]
         private const ushort _KW = 22347;
+
+        [MagicNumber("A128")]
         private const uint _A128 = 942813505u;
+
+        [MagicNumber("A192")]
         private const uint _A192 = 842608961u;
+
+        [MagicNumber("A256")]
         private const uint _A256 = 909455937u;
+
+        [MagicNumber("ECDH-ES")]
         private const ulong _ECDH_ES = 23438483855262533u;
+
+        [MagicNumber("RSA-OAEP")]
         private const ulong _RSA_OAEP = 5784101104744747858u;
+
+        [MagicNumber("RSA1")]
         private const uint _RSA1 = 826364754u;
+
+        [MagicNumber("_5")]
         private const ushort __5 = 13663;
+
+        [MagicNumber("128GCMKW")]
         private const ulong __128GCMKW = 6290206255906042417u;
+
+        [MagicNumber("192GCMKW")]
         private const ulong __192GCMKW = 6290206255905650993u;
+
+        [MagicNumber("256GCMKW")]
         private const ulong __256GCMKW = 6290206255905912114u;
+
+        [MagicNumber("-256")]
         private const uint __256 = 909455917u;
+
+        [MagicNumber("-384")]
         private const uint __384 = 876098349u;
+
+        [MagicNumber("-512")]
         private const uint __512 = 842085677u;
+
+        [MagicNumber("ECDH-ES+")]
         private const ulong _ECDH_ES_ = 3121915027486163781u;
+
+        [MagicNumber("S+A128KW")]
         private const ulong _S_A128KW = 6290183092778904403u;
+
+        [MagicNumber("S+A192KW")]
         private const ulong _S_A192KW = 6290176525773908819u;
+
+        [MagicNumber("S+A256KW")]
         private const ulong _S_A256KW = 6290180906657327955u;
+
+        [MagicNumber("ECDH-ES\\\\")]
         private const ulong _ECDH_ES_UTF8 = 6652737135344632645u;
+
+        [MagicNumber("u002bA12")]
         private const ulong _u002bA12 = 3616743865759838325u;
+
+        [MagicNumber("28KW")]
         private const uint __28KW = 1464547378u;
+
+        [MagicNumber("u002bA19")]
         private const ulong _u002bA19 = 4121147024025333877u;
+
+        [MagicNumber("92KW")]
         private const uint __92KW = 1464545849u;
+
+        [MagicNumber("u002bA25")]
         private const ulong _u002bA25 = 3833198122850332789u;
+
+        [MagicNumber("56KW")]
         private const uint __56KW = 1464546869u;
+
         private const ulong u002bUpperMask = 137438953504u;
 
 #if DEBUG
 #pragma warning disable CS8618
         static KeyManagementAlgorithm()
         {
+            //MagicNumberVerifier.Assert<KeyManagementAlgorithm>();
             Utf8.AssertMagicNumber(_dir, "dir");
             Utf8.AssertMagicNumber(_KW, "KW");
             Utf8.AssertMagicNumber(_A128, "A128");
@@ -71,7 +210,7 @@ namespace JsonWebToken
             Utf8.AssertMagicNumber(__92KW, "92KW");
             Utf8.AssertMagicNumber(__56KW, "56KW");
         }
-#pragma warning restore CS8618 
+#pragma warning restore CS8618
 #endif
 
         /// <summary>Empty</summary>

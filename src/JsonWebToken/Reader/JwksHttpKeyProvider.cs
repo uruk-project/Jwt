@@ -130,11 +130,5 @@ namespace JsonWebToken
             : this(metadataAddress, () => new HttpDocumentRetriever(), minimumRefreshInterval, automaticRefreshInterval, validateIssuer)
         {
         }
-
-        /// <summary>Initializes a new instance of <see cref="JwksHttpKeyProvider"/>.</summary>
-        public JwksHttpKeyProvider(string issuer, string jwksAddress, long minimumRefreshInterval = DefaultMinimumRefreshInterval, long automaticRefreshInterval = DefaultAutomaticRefreshInterval)
-            : this(issuer, jwksAddress, () => new HttpDocumentRetriever(), minimumRefreshInterval, automaticRefreshInterval)
-        {
-        }
     }
 }
