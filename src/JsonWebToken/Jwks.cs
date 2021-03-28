@@ -17,17 +17,12 @@ namespace JsonWebToken
     [DebuggerDisplay("{DebuggerDisplay(),nq}")]
     public sealed class Jwks : IDisposable, IEnumerable<Jwk>
     {
+        [MagicNumber("keys")]
         private const uint keys = 1937335659u;
+
         private readonly List<Jwk> _keys = new List<Jwk>();
 
         private KeyValuePair<JsonEncodedText, Jwk[]>[]? _identifiedKeys;
-
-#if DEBUG
-        static Jwks()
-        {
-            Utf8.AssertMagicNumber(keys, "keys");
-        }
-#endif
 
         /// <summary>Initializes an new instance of <see cref="Jwks"/>.</summary>
         public Jwks()

@@ -12,16 +12,8 @@ namespace JsonWebToken
     /// <summary>Defines compression algorithm.</summary>
     public sealed partial class CompressionAlgorithm : IEquatable<CompressionAlgorithm>, IAlgorithm
     {
+        [MagicNumber("x5u")]
         private const uint DEF = 4605252u;
-
-#if DEBUG
-#pragma warning disable CS8618
-        static CompressionAlgorithm()
-        {
-            Utf8.AssertMagicNumber(DEF, "DEF");
-        }
-#pragma warning restore CS8618
-#endif
 
         /// <summary>Deflate</summary>
         public static readonly CompressionAlgorithm Def = new CompressionAlgorithm(id: 1, "DEF", new DeflateCompressor(), new DeflateDecompressor(), true);

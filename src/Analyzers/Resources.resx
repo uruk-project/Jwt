@@ -118,15 +118,19 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="AnalyzerDescription" xml:space="preserve">
-    <value>Type names should be all uppercase.</value>
+    <value>Magic value is incorrect.</value>
     <comment>An optional longer localizable description of the diagnostic.</comment>
   </data>
   <data name="AnalyzerMessageFormat" xml:space="preserve">
-    <value>Type name '{0}' contains lowercase letters</value>
+    <value>Magic value '{0}' does not correspond to the string representation '{1}'. The string representation is '{2}', or the value should be '{3}'.</value>
     <comment>The format-able message the diagnostic displays.</comment>
   </data>
   <data name="AnalyzerTitle" xml:space="preserve">
-    <value>Type name contains lowercase letters</value>
+    <value>Incorrect magic value.</value>
     <comment>The title of the diagnostic.</comment>
+  </data>
+  <data name="CodeFixTitle" xml:space="preserve">
+    <value>Fix magic number</value>
+    <comment>The title of the code fix.</comment>
   </data>
 </root>

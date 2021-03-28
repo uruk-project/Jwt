@@ -19,34 +19,38 @@ namespace JsonWebToken
     [DebuggerDisplay("{" + nameof(GetDebuggerDisplay) + "(),nq}")]
     public abstract class Jwk : IDisposable, IEquatable<Jwk>
     {
+        [MagicNumber("EC")]
         private const uint EC = 17221u;
-        private const uint RSA = 4281170u;
-        private const uint oct = 7627631u;
-        private const uint alg = 6777953u;
-        private const uint use = 6648693u;
-        private const uint x5t = 7615864u;
-        private const uint kid = 6580587u;
-        private const ulong x5t_S256 = 3906083584472266104u;
-        private const uint x5c = 6501752u;
-        private const uint x5u = 7681400u;
-        private const ulong key_ops = 32493245967197547u;
 
-#if DEBUG
-        static Jwk()
-        {
-            Utf8.AssertMagicNumber(EC, "EC");
-            Utf8.AssertMagicNumber(RSA, "RSA");
-            Utf8.AssertMagicNumber(oct, "oct");
-            Utf8.AssertMagicNumber(alg, "alg");
-            Utf8.AssertMagicNumber(use, "use");
-            Utf8.AssertMagicNumber(x5t, "x5t");
-            Utf8.AssertMagicNumber(kid, "kid");
-            Utf8.AssertMagicNumber(x5t_S256, "x5t#S256");
-            Utf8.AssertMagicNumber(x5c, "x5c");
-            Utf8.AssertMagicNumber(x5u, "x5u");
-            Utf8.AssertMagicNumber(key_ops, "key_ops");
-        }
-#endif
+        [MagicNumber("RSA")]
+        private const uint RSA = 4281170u;
+
+        [MagicNumber("oct")]
+        private const uint oct = 7627631u;
+
+        [MagicNumber("alg")]
+        private const uint alg = 6777953u;
+
+        [MagicNumber("use")]
+        private const uint use = 6648693u;
+
+        [MagicNumber("x5t")]
+        private const uint x5t = 7615864u;
+
+        [MagicNumber("kid")]
+        private const uint kid = 6580587u;
+
+        [MagicNumber("x5t#S256")]
+        private const ulong x5t_S256 = 3906083584472266104u;
+
+        [MagicNumber("x5c")]
+        private const uint x5c = 6501752u;
+
+        [MagicNumber("x5u")]
+        private const uint x5u = 7681400u;
+
+        [MagicNumber("key_ops")]
+        private const ulong key_ops = 32493245967197547u;
 
         /// <summary>An empty <see cref="Jwk"/>.</summary>
         public static readonly Jwk None = new NullJwk();

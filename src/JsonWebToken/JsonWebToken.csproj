@@ -32,7 +32,19 @@
 
   <ItemGroup>
     <PackageReference Include="gfoidl.Base64" Version="1.1.1" />
+    <ProjectReference Include="..\Analyzers\JsonWebToken.Analyzers.csproj" PrivateAssets="all">
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <OutputItemType>Analyzer</OutputItemType>
+    </ProjectReference>
   </ItemGroup>
+
+
+  <!--<ItemGroup Condition="'$(TargetFramework)' == 'net5.0'">
+    <ProjectReference Include="..\JsonWebToken.Analyzers\JsonWebToken.Analyzers\JsonWebToken.Analyzers.csproj" PrivateAssets="all">
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <OutputItemType>Analyzer</OutputItemType>
+    </ProjectReference>
+  </ItemGroup>-->
 
   <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
     <PackageReference Include="System.Memory" Version="4.5.4" />

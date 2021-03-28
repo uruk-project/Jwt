@@ -13,24 +13,20 @@ namespace JsonWebToken
     /// <summary>Defines signature algorithm.</summary>
     public sealed partial class SignatureAlgorithm : IEquatable<SignatureAlgorithm>, IAlgorithm
     {
+        [MagicNumber("S256")]
         private const uint _S256 = 909455955u;
-        private const uint _S384 = 876098387u;
-        private const uint _S512 = 842085715u;
-        private const uint _none = 1701736302u;
-        private const ulong _ES256K = 82696192807749u;
 
-#if DEBUG
-#pragma warning disable CS8618
-        static SignatureAlgorithm()
-        {
-            Utf8.AssertMagicNumber(_S256, "S256");
-            Utf8.AssertMagicNumber(_S384, "S384");
-            Utf8.AssertMagicNumber(_S512, "S512");
-            Utf8.AssertMagicNumber(_none, "none");
-            Utf8.AssertMagicNumber(_ES256K, "ES256K");
-        }
-#pragma warning restore CS8618 
-#endif
+        [MagicNumber("S384")]
+        private const uint _S384 = 876098387u;
+
+        [MagicNumber("S512")]
+        private const uint _S512 = 842085715u;
+
+        [MagicNumber("none")]
+        private const uint _none = 1701736302u;
+
+        [MagicNumber("ES256K")]
+        private const ulong _ES256K = 82696192807749u;
 
         /// <summary>'none'</summary>
         public static readonly SignatureAlgorithm None = new SignatureAlgorithm(id: AlgorithmId.None, "none", AlgorithmCategory.None, requiredKeySizeInBits: 0, new HashAlgorithmName());
