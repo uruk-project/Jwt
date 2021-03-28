@@ -12,7 +12,7 @@ namespace JsonWebToken
     /// <summary>Defines compression algorithm.</summary>
     public sealed partial class CompressionAlgorithm : IEquatable<CompressionAlgorithm>, IAlgorithm
     {
-        [MagicNumber("x5u")]
+        [MagicNumber("DEF")]
         private const uint DEF = 4605252u;
 
         /// <summary>Deflate</summary>

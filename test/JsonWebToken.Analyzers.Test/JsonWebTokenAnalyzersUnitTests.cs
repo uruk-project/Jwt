@@ -1,12 +1,11 @@
 ﻿using System.Threading.Tasks;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Xunit;
 
 namespace JsonWebToken.Analyzers.Test
 {
-    [TestClass]
     public class JsonWebTokenAnalyzersUnitTest
     {
-        [TestMethod]
+        [Fact]
         public async Task NoIssue_NoDiagnostic()
         {
             var test = @"";
@@ -14,7 +13,7 @@ namespace JsonWebToken.Analyzers.Test
             await CSharpCodeFixVerifier<MagicNumberAnalyzer, MagicNumberCodeFixProvider>.VerifyAnalyzerAsync(test);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task FixMagicNumberByValue()
         {
             var test = @"
@@ -101,7 +100,7 @@ namespace ConsoleApplication1
             .WithLocation(32, 27); await CSharpCodeFixVerifier<MagicNumberAnalyzer, MagicNumberCodeFixProvider>.VerifyCodeFixAsync(test, new[] { expected1, expected2, expected3, expected4 }, fixtest, "FixMagicValue");
         }
 
-        [TestMethod]
+        [Fact]
         public async Task FixMagicNumberByAttribute()
         {
             var test = @"
