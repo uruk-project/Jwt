@@ -18,17 +18,12 @@ namespace JsonWebToken
     /// <summary>Represents an Elliptic Curve JSON Web Key as defined in https://tools.ietf.org/html/rfc7518#section-6.</summary>
     public sealed class ECJwk : AsymmetricJwk, IJwtSerializable
     {
+        [MagicNumber("crv")]
         private const uint crv = 7762531u;
+
         private ECParameters _parameters;
 #if !NETSTANDARD2_0
         private ECDiffieHellman? _ecdhKey;
-#endif
-
-#if DEBUG
-        static ECJwk()
-        {
-            Utf8.AssertMagicNumber(crv, "crv");
-        }
 #endif
 
         /// <summary>Initializes a new instance of <see cref="ECJwk"/>.</summary>

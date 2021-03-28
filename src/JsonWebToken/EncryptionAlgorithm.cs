@@ -13,32 +13,32 @@ namespace JsonWebToken
     /// <summary>Defines encryption algorithm.</summary>
     public sealed partial class EncryptionAlgorithm : IEquatable<EncryptionAlgorithm>, IAlgorithm
     {
+        [MagicNumber("A128CBC-")]
         private const ulong _A128CBC_ = 3261523411619426625u;
-        private const ulong _A192CBC_ = 3261523411519222081u;
-        private const ulong _A256CBC_ = 3261523411586069057u;
-        private const ulong _BC_HS256 = 3906083585088373570u;
-        private const ulong _BC_HS384 = 3762813921454277442u;
-        private const ulong _BC_HS512 = 3616730607564702530u;
-        private const ulong _A128GCM = 21747546371273025u;
-        private const ulong _A192GCM = 21747546271068481u;
-        private const ulong _A256GCM = 21747546337915457u;
 
-#if DEBUG
-#pragma warning disable CS8618 
-        static EncryptionAlgorithm()
-        {
-            Utf8.AssertMagicNumber(_A128CBC_, "A128CBC-");
-            Utf8.AssertMagicNumber(_A192CBC_, "A192CBC-");
-            Utf8.AssertMagicNumber(_A256CBC_, "A256CBC-");
-            Utf8.AssertMagicNumber(_BC_HS256, "BC-HS256");
-            Utf8.AssertMagicNumber(_BC_HS384, "BC-HS384");
-            Utf8.AssertMagicNumber(_BC_HS512, "BC-HS512");
-            Utf8.AssertMagicNumber(_A128GCM, "A128GCM");
-            Utf8.AssertMagicNumber(_A192GCM, "A192GCM");
-            Utf8.AssertMagicNumber(_A256GCM, "A256GCM");
-        }
-#pragma warning restore CS8618 
-#endif
+        [MagicNumber("A192CBC-")]
+        private const ulong _A192CBC_ = 3261523411519222081u;
+
+        [MagicNumber("A256CBC-")]
+        private const ulong _A256CBC_ = 3261523411586069057u;
+
+        [MagicNumber("BC-HS256")]
+        private const ulong _BC_HS256 = 3906083585088373570u;
+
+        [MagicNumber("BC-HS384")]
+        private const ulong _BC_HS384 = 3762813921454277442u;
+
+        [MagicNumber("BC-HS512")]
+        private const ulong _BC_HS512 = 3616730607564702530u;
+
+        [MagicNumber("A128GCM")]
+        private const ulong _A128GCM = 21747546371273025u;
+
+        [MagicNumber("A192GCM")]
+        private const ulong _A192GCM = 21747546271068481u;
+
+        [MagicNumber("A256GCM")]
+        private const ulong _A256GCM = 21747546337915457u;
 
         /// <summary>Defines whether the AES instruction set is enabled. </summary>
         public static bool EnabledAesInstructionSet { get; set; } = true;

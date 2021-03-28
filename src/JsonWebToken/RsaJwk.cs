@@ -16,18 +16,14 @@ namespace JsonWebToken
     /// <summary>Represents a RSA JSON Web Key as defined in https://tools.ietf.org/html/rfc7518#section-6.</summary>
     public sealed class RsaJwk : AsymmetricJwk
     {
+        [MagicNumber("qi")]
         private const ushort qi = (ushort)26993u;
-        private const ushort dp = (ushort)28772u;
-        private const ushort dq = (ushort)29028u;
 
-#if DEBUG
-        static RsaJwk()
-        {
-            Utf8.AssertMagicNumber(qi, "qi");
-            Utf8.AssertMagicNumber(dp, "dp");
-            Utf8.AssertMagicNumber(dq, "dq");
-        }
-#endif
+        [MagicNumber("dp")]
+        private const ushort dp = (ushort)28772u;
+
+        [MagicNumber("dq")]
+        private const ushort dq = (ushort)29028u;
 
         private RSAParameters _parameters;
 

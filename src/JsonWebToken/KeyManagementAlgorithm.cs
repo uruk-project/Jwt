@@ -12,67 +12,85 @@ namespace JsonWebToken
     /// <summary>Defines key management algorithm.</summary>
     public sealed partial class KeyManagementAlgorithm : IEquatable<KeyManagementAlgorithm>, IAlgorithm
     {
-        private const uint _dir = 7498084u;
-        private const ushort _KW = 22347;
-        private const uint _A128 = 942813505u;
-        private const uint _A192 = 842608961u;
-        private const uint _A256 = 909455937u;
-        private const ulong _ECDH_ES = 23438483855262533u;
-        private const ulong _RSA_OAEP = 5784101104744747858u;
-        private const uint _RSA1 = 826364754u;
-        private const ushort __5 = 13663;
-        private const ulong __128GCMKW = 6290206255906042417u;
-        private const ulong __192GCMKW = 6290206255905650993u;
-        private const ulong __256GCMKW = 6290206255905912114u;
-        private const uint __256 = 909455917u;
-        private const uint __384 = 876098349u;
-        private const uint __512 = 842085677u;
-        private const ulong _ECDH_ES_ = 3121915027486163781u;
-        private const ulong _S_A128KW = 6290183092778904403u;
-        private const ulong _S_A192KW = 6290176525773908819u;
-        private const ulong _S_A256KW = 6290180906657327955u;
-        private const ulong _ECDH_ES_UTF8 = 6652737135344632645u;
-        private const ulong _u002bA12 = 3616743865759838325u;
-        private const uint __28KW = 1464547378u;
-        private const ulong _u002bA19 = 4121147024025333877u;
-        private const uint __92KW = 1464545849u;
-        private const ulong _u002bA25 = 3833198122850332789u;
-        private const uint __56KW = 1464546869u;
-        private const ulong u002bUpperMask = 137438953504u;
+        [MagicNumber("dir")]
+        private const uint _dir = 7498084U;
 
-#if DEBUG
-#pragma warning disable CS8618
-        static KeyManagementAlgorithm()
-        {
-            Utf8.AssertMagicNumber(_dir, "dir");
-            Utf8.AssertMagicNumber(_KW, "KW");
-            Utf8.AssertMagicNumber(_A128, "A128");
-            Utf8.AssertMagicNumber(_A192, "A192");
-            Utf8.AssertMagicNumber(_A256, "A256");
-            Utf8.AssertMagicNumber(_ECDH_ES, "ECDH-ES");
-            Utf8.AssertMagicNumber(_RSA_OAEP, "RSA-OAEP");
-            Utf8.AssertMagicNumber(_RSA1, "RSA1");
-            Utf8.AssertMagicNumber(__5, "_5");
-            Utf8.AssertMagicNumber(__128GCMKW, "128GCMKW");
-            Utf8.AssertMagicNumber(__192GCMKW, "192GCMKW");
-            Utf8.AssertMagicNumber(__256GCMKW, "256GCMKW");
-            Utf8.AssertMagicNumber(__256, "-256");
-            Utf8.AssertMagicNumber(__384, "-384");
-            Utf8.AssertMagicNumber(__512, "-512");
-            Utf8.AssertMagicNumber(_ECDH_ES_, "ECDH-ES+");
-            Utf8.AssertMagicNumber(_S_A128KW, "S+A128KW");
-            Utf8.AssertMagicNumber(_S_A192KW, "S+A192KW");
-            Utf8.AssertMagicNumber(_S_A256KW, "S+A256KW");
-            Utf8.AssertMagicNumber(_ECDH_ES_UTF8, "ECDH-ES\\\\");
-            Utf8.AssertMagicNumber(_u002bA12, "u002bA12");
-            Utf8.AssertMagicNumber(_u002bA19, "u002bA19");
-            Utf8.AssertMagicNumber(_u002bA25, "u002bA25");
-            Utf8.AssertMagicNumber(__28KW, "28KW");
-            Utf8.AssertMagicNumber(__92KW, "92KW");
-            Utf8.AssertMagicNumber(__56KW, "56KW");
-        }
-#pragma warning restore CS8618 
-#endif
+        [MagicNumber("KW")]
+        private const ushort _KW = 22347;
+
+        [MagicNumber("A128")]
+        private const uint _A128 = 942813505u;
+
+        [MagicNumber("A192")]
+        private const uint _A192 = 842608961u;
+
+        [MagicNumber("A256")]
+        private const uint _A256 = 909455937u;
+
+        [MagicNumber("ECDH-ES")]
+        private const ulong _ECDH_ES = 23438483855262533u;
+
+        [MagicNumber("RSA-OAEP")]
+        private const ulong _RSA_OAEP = 5784101104744747858u;
+
+        [MagicNumber("RSA1")]
+        private const uint _RSA1 = 826364754u;
+
+        [MagicNumber("_5")]
+        private const ushort __5 = 13663;
+
+        [MagicNumber("128GCMKW")]
+        private const ulong __128GCMKW = 6290206255906042417u;
+
+        [MagicNumber("192GCMKW")]
+        private const ulong __192GCMKW = 6290206255905650993u;
+
+        [MagicNumber("256GCMKW")]
+        private const ulong __256GCMKW = 6290206255905912114u;
+
+        [MagicNumber("-256")]
+        private const uint __256 = 909455917u;
+
+        [MagicNumber("-384")]
+        private const uint __384 = 876098349u;
+
+        [MagicNumber("-512")]
+        private const uint __512 = 842085677u;
+
+        [MagicNumber("ECDH-ES+")]
+        private const ulong _ECDH_ES_ = 3121915027486163781u;
+
+        [MagicNumber("S+A128KW")]
+        private const ulong _S_A128KW = 6290183092778904403u;
+
+        [MagicNumber("S+A192KW")]
+        private const ulong _S_A192KW = 6290176525773908819u;
+
+        [MagicNumber("S+A256KW")]
+        private const ulong _S_A256KW = 6290180906657327955u;
+
+        [MagicNumber("ECDH-ES\\\\")]
+        private const ulong _ECDH_ES_UTF8 = 6652737135344632645u;
+
+        [MagicNumber("u002bA12")]
+        private const ulong _u002bA12 = 3616743865759838325u;
+
+        [MagicNumber("28KW")]
+        private const uint __28KW = 1464547378u;
+
+        [MagicNumber("u002bA19")]
+        private const ulong _u002bA19 = 4121147024025333877u;
+
+        [MagicNumber("92KW")]
+        private const uint __92KW = 1464545849u;
+
+        [MagicNumber("u002bA25")]
+        private const ulong _u002bA25 = 3833198122850332789u;
+
+        [MagicNumber("56KW")]
+        private const uint __56KW = 1464546869u;
+
+        private const ulong u002bUpperMask = 137438953504u;
 
         /// <summary>Empty</summary>
         internal static readonly KeyManagementAlgorithm Empty = new KeyManagementAlgorithm(id: 0, "Empty", AlgorithmCategory.None, produceEncryptedKey: false);
