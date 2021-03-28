@@ -691,6 +691,34 @@ namespace JsonWebToken
         /// Returns a new instance of <see cref="AsymmetricJwk"/>.
         /// </summary>
         /// <param name="certificate">A <see cref="X509Certificate2"/> that contains JSON Web Key parameters.</param>
+        /// <param name="alg">A <see cref="SignatureAlgorithm"/> that identify the 'alg' JWK parameter.</param>
+        /// <param name="withPrivateKey">Determines if the private key must be extracted from the certificate.</param>
+        public static AsymmetricJwk FromX509Certificate(X509Certificate2 certificate, SignatureAlgorithm alg, bool withPrivateKey)
+        {
+            var jwk = FromX509Certificate(certificate, withPrivateKey);
+            jwk._algorithm = alg;
+            jwk._signatureAlgorithm = alg;
+            return jwk;
+        }
+
+        /// <summary>
+        /// Returns a new instance of <see cref="AsymmetricJwk"/>.
+        /// </summary>
+        /// <param name="certificate">A <see cref="X509Certificate2"/> that contains JSON Web Key parameters.</param>
+        /// <param name="alg">A <see cref="KeyManagementAlgorithm"/> that identify the 'alg' JWK parameter.</param>
+        /// <param name="withPrivateKey">Determines if the private key must be extracted from the certificate.</param>
+        public static AsymmetricJwk FromX509Certificate(X509Certificate2 certificate, KeyManagementAlgorithm alg, bool withPrivateKey)
+        {
+            var jwk = FromX509Certificate(certificate, withPrivateKey);
+            jwk._algorithm = alg;
+            jwk._keyManagementAlgorithm = alg;
+            return jwk;
+        }
+
+        /// <summary>
+        /// Returns a new instance of <see cref="AsymmetricJwk"/>.
+        /// </summary>
+        /// <param name="certificate">A <see cref="X509Certificate2"/> that contains JSON Web Key parameters.</param>
         /// <param name="withPrivateKey">Determines if the private key must be extracted from the certificate.</param>
         public static AsymmetricJwk FromX509Certificate(X509Certificate2 certificate, bool withPrivateKey)
         {
