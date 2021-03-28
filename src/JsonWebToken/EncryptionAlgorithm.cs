@@ -13,31 +13,31 @@ namespace JsonWebToken
     /// <summary>Defines encryption algorithm.</summary>
     public sealed partial class EncryptionAlgorithm : IEquatable<EncryptionAlgorithm>, IAlgorithm
     {
-        [MagicNumber("x5u")]
+        [MagicNumber("A128CBC-")]
         private const ulong _A128CBC_ = 3261523411619426625u;
-   
-        [MagicNumber("x5u")]
+
+        [MagicNumber("A192CBC-")]
         private const ulong _A192CBC_ = 3261523411519222081u;
-        
-        [MagicNumber("x5u")]
+
+        [MagicNumber("A256CBC-")]
         private const ulong _A256CBC_ = 3261523411586069057u;
-        
-        [MagicNumber("x5u")]
+
+        [MagicNumber("BC-HS256")]
         private const ulong _BC_HS256 = 3906083585088373570u;
-        
-        [MagicNumber("x5u")]
+
+        [MagicNumber("BC-HS384")]
         private const ulong _BC_HS384 = 3762813921454277442u;
-        
-        [MagicNumber("x5u")]
+
+        [MagicNumber("BC-HS512")]
         private const ulong _BC_HS512 = 3616730607564702530u;
-        
-        [MagicNumber("x5u")]
+
+        [MagicNumber("A128GCM")]
         private const ulong _A128GCM = 21747546371273025u;
-        
-        [MagicNumber("x5u")]
+
+        [MagicNumber("A192GCM")]
         private const ulong _A192GCM = 21747546271068481u;
-        
-        [MagicNumber("x5u")]
+
+        [MagicNumber("A256GCM")]
         private const ulong _A256GCM = 21747546337915457u;
 
         /// <summary>Defines whether the AES instruction set is enabled. </summary>
