@@ -47,10 +47,10 @@ namespace JsonWebToken
         public const int RsaSha512 = -259;
 
         /// <summary>
-        /// 'ES256X'
+        /// 'ES256K'
         /// https://tools.ietf.org/html/draft-ietf-cose-webauthn-algorithms-05
         /// </summary>
-        public const int EcdsaSha256X = -46;
+        public const int EcdsaSha256K = -46;
 
         /// <summary>
         /// 'ES256'

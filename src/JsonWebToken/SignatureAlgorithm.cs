@@ -18,7 +18,7 @@ namespace JsonWebToken
         private const uint S384 = 876098387u;
         private const uint S512 = 842085715u;
         private const uint none = 1701736302u;
-        private const ulong ES256X = 96989843968837ul;
+        private const ulong ES256K = 82696192807749ul;
 
         /// <summary>
         /// 'none'
@@ -56,9 +56,9 @@ namespace JsonWebToken
         public static readonly SignatureAlgorithm RsaSha512 = new SignatureAlgorithm(id: Algorithms.RsaSha512, "RS512", AlgorithmCategory.Rsa, requiredKeySizeInBits: 2048/*?*/, HashAlgorithmName.SHA512);
 
         /// <summary>
-        /// 'ES256X'
+        /// 'ES256K'
         /// </summary>
-        public static readonly SignatureAlgorithm EcdsaSha256X = new SignatureAlgorithm(id: Algorithms.EcdsaSha256X, "ES256X", AlgorithmCategory.EllipticCurve, requiredKeySizeInBits: 256, HashAlgorithmName.SHA256);
+        public static readonly SignatureAlgorithm EcdsaSha256K = new SignatureAlgorithm(id: Algorithms.EcdsaSha256K, "ES256K", AlgorithmCategory.EllipticCurve, requiredKeySizeInBits: 256, HashAlgorithmName.SHA256);
 
         /// <summary>
         /// 'ES256'
@@ -104,7 +104,7 @@ namespace JsonWebToken
             RsaSha256,
             RsaSsaPssSha256,
             HmacSha512,
-            EcdsaSha256X,
+            EcdsaSha256K,
             EcdsaSha512,
             RsaSha512,
             RsaSsaPssSha512,
@@ -374,9 +374,9 @@ namespace JsonWebToken
                 algorithm = None;
                 goto Found;
             }
-            else if (value.Length == 6 && IntegerMarshal.ReadUInt48(value) == ES256X)
+            else if (value.Length == 6 && IntegerMarshal.ReadUInt48(value) == ES256K)
             {
-                algorithm = EcdsaSha256X;
+                algorithm = EcdsaSha256K;
                 goto Found;
             }
 
