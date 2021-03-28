@@ -116,7 +116,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JwkEncryptionSample", "samp
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JsonWebToken.Analyzers", "src\Analyzers\JsonWebToken.Analyzers.csproj", "{8456FC00-7D0C-4E01-B326-772FD2917E5D}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JsonWebToken.Analyzers.Test", "test\JsonWebToken.Analyzers.Test\JsonWebToken.Analyzers.Test.csproj", "{188D6D51-A863-4281-AEEF-3C9FD451ADC6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JsonWebToken.Analyzers.Tests", "test\JsonWebToken.Analyzers.Test\JsonWebToken.Analyzers.Tests.csproj", "{188D6D51-A863-4281-AEEF-3C9FD451ADC6}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
