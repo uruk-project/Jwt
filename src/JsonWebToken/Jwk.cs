@@ -227,6 +227,21 @@ namespace JsonWebToken
 
                 return _signatureAlgorithm;
             }
+
+            set
+            {
+                if (value is null)
+                {
+                    _algorithm = EmptyAlg;
+                    _signatureAlgorithm = null;
+                }
+                else
+                {
+                    _algorithm = value;
+                    _signatureAlgorithm = value;
+                    _keyManagementAlgorithm = null;
+                }
+            }
         }
 
         internal bool IsEncryptionKey
@@ -257,6 +272,21 @@ namespace JsonWebToken
                 }
 
                 return _keyManagementAlgorithm;
+            }
+
+            set
+            {
+                if (value is null)
+                {
+                    _algorithm = EmptyAlg;
+                    _keyManagementAlgorithm = null;
+                }
+                else
+                {
+                    _algorithm = value;
+                    _keyManagementAlgorithm = value;
+                    _signatureAlgorithm = null;
+                }
             }
         }
 
