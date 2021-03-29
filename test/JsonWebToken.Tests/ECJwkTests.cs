@@ -112,7 +112,7 @@ namespace JsonWebToken.Tests
 
             yield return new object[] { PrivateEcc521Key, SignatureAlgorithm.EcdsaSha256 };
             yield return new object[] { PrivateEcc521Key, SignatureAlgorithm.EcdsaSha384 };
-            yield return new object[] { PrivateEcc521Key, SignatureAlgorithm.EcdsaSha256X };
+            yield return new object[] { PrivateEcc521Key, SignatureAlgorithm.EcdsaSha256K };
 
             yield return new object[] { PrivateEcc256XKey, SignatureAlgorithm.EcdsaSha256 };
             yield return new object[] { PrivateEcc256XKey, SignatureAlgorithm.EcdsaSha384 };
