@@ -89,7 +89,7 @@ namespace JsonWebToken.Tests
 
             yield return new object[] { PublicEcc521Key, SignatureAlgorithm.EcdsaSha512 };
             
-            yield return new object[] { PublicEcc256XKey, SignatureAlgorithm.EcdsaSha256X };
+            yield return new object[] { PublicEcc256XKey, SignatureAlgorithm.EcdsaSha256K };
 
             yield return new object[] { PrivateEcc256Key, SignatureAlgorithm.EcdsaSha256 };
 
@@ -97,18 +97,18 @@ namespace JsonWebToken.Tests
 
             yield return new object[] { PrivateEcc521Key, SignatureAlgorithm.EcdsaSha512 };
             
-            yield return new object[] { PrivateEcc256XKey, SignatureAlgorithm.EcdsaSha256X };
+            yield return new object[] { PrivateEcc256XKey, SignatureAlgorithm.EcdsaSha256K };
         }
 
         public static IEnumerable<object[]> GetInvalidKeys()
         {
             yield return new object[] { PrivateEcc256Key, SignatureAlgorithm.EcdsaSha384 };
             yield return new object[] { PrivateEcc256Key, SignatureAlgorithm.EcdsaSha512 };
-            yield return new object[] { PrivateEcc256Key, SignatureAlgorithm.EcdsaSha256X };
+            yield return new object[] { PrivateEcc256Key, SignatureAlgorithm.EcdsaSha256K };
 
             yield return new object[] { PrivateEcc384Key, SignatureAlgorithm.EcdsaSha256 };
             yield return new object[] { PrivateEcc384Key, SignatureAlgorithm.EcdsaSha512 };
-            yield return new object[] { PrivateEcc384Key, SignatureAlgorithm.EcdsaSha256X };
+            yield return new object[] { PrivateEcc384Key, SignatureAlgorithm.EcdsaSha256K };
 
             yield return new object[] { PrivateEcc521Key, SignatureAlgorithm.EcdsaSha256 };
             yield return new object[] { PrivateEcc521Key, SignatureAlgorithm.EcdsaSha384 };
