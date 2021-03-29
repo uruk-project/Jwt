@@ -41,7 +41,7 @@ namespace JsonWebToken
         /// <summary>
         /// 'secp256k1'.
         /// </summary>    
-        public static readonly EllipticalCurve Secp256k1 = new EllipticalCurve(8, ECCurve.CreateFromValue("1.3.132.0.10"), Secp256k1Name, 256, 64, SignatureAlgorithm.EcdsaSha256X);
+        public static readonly EllipticalCurve Secp256k1 = new EllipticalCurve(8, ECCurve.CreateFromValue("1.3.132.0.10"), Secp256k1Name, 256, 64, SignatureAlgorithm.EcdsaSha256K);
 
         /// <summary>
         /// Initializes a new instance of the <see cref="EllipticalCurve"/> struct.
