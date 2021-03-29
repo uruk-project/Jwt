@@ -29,11 +29,6 @@ namespace JsonWebToken.Tests
         [Fact]
         public void Wrap_Rfc7518_Appendix_C()
         {
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-            {
-                return;
-            }
-
             var kwp = new EcdhKeyWrapper(_bobKey, EncryptionAlgorithm.A128Gcm, KeyManagementAlgorithm.EcdhEs);
             var header = new JwtHeader
             {
