@@ -39,6 +39,11 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
+      - name: Setup OpenSSL (macOS)
+        if: matrix.operatingSystem == 'macOS-latest'
+        run: |
+          ln -s /usr/local/opt/openssl@1.1/lib/libssl.1.1.dylib /usr/local/lib/libssl.1.1.dylib
+          ln -s /usr/local/opt/openssl@1.1/lib/libcrypto.1.1.dylib /usr/local/lib/libcrypto.1.1.dylib
       - name: setup dotnet '2.2.x'
         uses: actions/setup-dotnet@v1
         with:
