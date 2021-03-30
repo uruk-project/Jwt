@@ -24,12 +24,9 @@ namespace JsonWebToken.Tests
             yield return new object[] { EncryptionAlgorithm.A128CbcHS256, KeyManagementAlgorithm.Dir };
             yield return new object[] { EncryptionAlgorithm.A192CbcHS384, KeyManagementAlgorithm.Dir };
             yield return new object[] { EncryptionAlgorithm.A256CbcHS512, KeyManagementAlgorithm.Dir };
-            if (!RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-            {
-                yield return new object[] { EncryptionAlgorithm.A128Gcm, KeyManagementAlgorithm.Dir };
-                yield return new object[] { EncryptionAlgorithm.A192Gcm, KeyManagementAlgorithm.Dir };
-                yield return new object[] { EncryptionAlgorithm.A256Gcm, KeyManagementAlgorithm.Dir };
-            }
+            yield return new object[] { EncryptionAlgorithm.A128Gcm, KeyManagementAlgorithm.Dir };
+            yield return new object[] { EncryptionAlgorithm.A192Gcm, KeyManagementAlgorithm.Dir };
+            yield return new object[] { EncryptionAlgorithm.A256Gcm, KeyManagementAlgorithm.Dir };
         }
 
         [Theory]
