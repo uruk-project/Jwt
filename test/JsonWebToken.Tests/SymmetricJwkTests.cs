@@ -59,12 +59,9 @@ namespace JsonWebToken.Tests
             yield return new object[] { _symmetric384Key, EncryptionAlgorithm.A192CbcHS384 };
             yield return new object[] { _symmetric512Key, EncryptionAlgorithm.A256CbcHS512 };
 #if SUPPORT_AESGCM
-            if (!RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-            {
-                yield return new object[] { _symmetric256Key, EncryptionAlgorithm.A128Gcm };
-                yield return new object[] { _symmetric384Key, EncryptionAlgorithm.A192Gcm };
-                yield return new object[] { _symmetric512Key, EncryptionAlgorithm.A256Gcm };
-            }
+            yield return new object[] { _symmetric256Key, EncryptionAlgorithm.A128Gcm };
+            yield return new object[] { _symmetric384Key, EncryptionAlgorithm.A192Gcm };
+            yield return new object[] { _symmetric512Key, EncryptionAlgorithm.A256Gcm };
 #endif
         }
 
@@ -74,15 +71,12 @@ namespace JsonWebToken.Tests
             yield return new object[] { _symmetric192Key, EncryptionAlgorithm.A192CbcHS384, KeyManagementAlgorithm.A192KW };
             yield return new object[] { _symmetric256Key, EncryptionAlgorithm.A256CbcHS512, KeyManagementAlgorithm.A256KW };
 #if SUPPORT_AESGCM
-            if (!RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-            {
-                yield return new object[] { _symmetric128Key, EncryptionAlgorithm.A128Gcm, KeyManagementAlgorithm.A128GcmKW };
-                yield return new object[] { _symmetric192Key, EncryptionAlgorithm.A192Gcm, KeyManagementAlgorithm.A192GcmKW };
-                yield return new object[] { _symmetric256Key, EncryptionAlgorithm.A256Gcm, KeyManagementAlgorithm.A256GcmKW };
-                yield return new object[] { _symmetric128Key, EncryptionAlgorithm.A128Gcm, KeyManagementAlgorithm.A128KW };
-                yield return new object[] { _symmetric192Key, EncryptionAlgorithm.A192Gcm, KeyManagementAlgorithm.A192KW };
-                yield return new object[] { _symmetric256Key, EncryptionAlgorithm.A256Gcm, KeyManagementAlgorithm.A256KW };
-            }
+            yield return new object[] { _symmetric128Key, EncryptionAlgorithm.A128Gcm, KeyManagementAlgorithm.A128GcmKW };
+            yield return new object[] { _symmetric192Key, EncryptionAlgorithm.A192Gcm, KeyManagementAlgorithm.A192GcmKW };
+            yield return new object[] { _symmetric256Key, EncryptionAlgorithm.A256Gcm, KeyManagementAlgorithm.A256GcmKW };
+            yield return new object[] { _symmetric128Key, EncryptionAlgorithm.A128Gcm, KeyManagementAlgorithm.A128KW };
+            yield return new object[] { _symmetric192Key, EncryptionAlgorithm.A192Gcm, KeyManagementAlgorithm.A192KW };
+            yield return new object[] { _symmetric256Key, EncryptionAlgorithm.A256Gcm, KeyManagementAlgorithm.A256KW };
 #endif
         }
 

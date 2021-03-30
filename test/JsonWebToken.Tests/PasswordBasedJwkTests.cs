@@ -44,18 +44,15 @@ namespace JsonWebToken.Tests
             yield return new object[] { _key, EncryptionAlgorithm.A256CbcHS512, KeyManagementAlgorithm.Pbes2HS384A192KW };
             yield return new object[] { _key, EncryptionAlgorithm.A256CbcHS512, KeyManagementAlgorithm.Pbes2HS512A256KW };
 #if SUPPORT_AESGCM
-            if (!RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-            {
-                yield return new object[] { _key, EncryptionAlgorithm.A128Gcm, KeyManagementAlgorithm.Pbes2HS256A128KW };
-                yield return new object[] { _key, EncryptionAlgorithm.A128Gcm, KeyManagementAlgorithm.Pbes2HS384A192KW };
-                yield return new object[] { _key, EncryptionAlgorithm.A128Gcm, KeyManagementAlgorithm.Pbes2HS512A256KW };
-                yield return new object[] { _key, EncryptionAlgorithm.A192Gcm, KeyManagementAlgorithm.Pbes2HS256A128KW };
-                yield return new object[] { _key, EncryptionAlgorithm.A192Gcm, KeyManagementAlgorithm.Pbes2HS384A192KW };
-                yield return new object[] { _key, EncryptionAlgorithm.A192Gcm, KeyManagementAlgorithm.Pbes2HS512A256KW };
-                yield return new object[] { _key, EncryptionAlgorithm.A256Gcm, KeyManagementAlgorithm.Pbes2HS256A128KW };
-                yield return new object[] { _key, EncryptionAlgorithm.A256Gcm, KeyManagementAlgorithm.Pbes2HS384A192KW };
-                yield return new object[] { _key, EncryptionAlgorithm.A256Gcm, KeyManagementAlgorithm.Pbes2HS512A256KW };
-            }
+            yield return new object[] { _key, EncryptionAlgorithm.A128Gcm, KeyManagementAlgorithm.Pbes2HS256A128KW };
+            yield return new object[] { _key, EncryptionAlgorithm.A128Gcm, KeyManagementAlgorithm.Pbes2HS384A192KW };
+            yield return new object[] { _key, EncryptionAlgorithm.A128Gcm, KeyManagementAlgorithm.Pbes2HS512A256KW };
+            yield return new object[] { _key, EncryptionAlgorithm.A192Gcm, KeyManagementAlgorithm.Pbes2HS256A128KW };
+            yield return new object[] { _key, EncryptionAlgorithm.A192Gcm, KeyManagementAlgorithm.Pbes2HS384A192KW };
+            yield return new object[] { _key, EncryptionAlgorithm.A192Gcm, KeyManagementAlgorithm.Pbes2HS512A256KW };
+            yield return new object[] { _key, EncryptionAlgorithm.A256Gcm, KeyManagementAlgorithm.Pbes2HS256A128KW };
+            yield return new object[] { _key, EncryptionAlgorithm.A256Gcm, KeyManagementAlgorithm.Pbes2HS384A192KW };
+            yield return new object[] { _key, EncryptionAlgorithm.A256Gcm, KeyManagementAlgorithm.Pbes2HS512A256KW };
 #endif
         }
 
