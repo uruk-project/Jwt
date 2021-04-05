@@ -174,6 +174,10 @@ namespace JsonWebToken
         }
 
         /// <inheritsdoc />
+        public override int GetHashCode()
+            => _inner.GetHashCode();
+
+        /// <inheritsdoc />
         public override void Dispose()
         {
             base.Dispose();
