@@ -4,7 +4,6 @@
 #if SUPPORT_ELLIPTIC_CURVE
 using System;
 using System.Collections.ObjectModel;
-using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Text.Json;
@@ -14,9 +13,16 @@ namespace JsonWebToken
     /// <summary>Elliptical Curve Types.</summary>
     public readonly struct EllipticalCurve
     {
+        [MagicNumber("-256")]
         private const uint _256 = 909455917u;
+
+        [MagicNumber("-384")]
         private const uint _384 = 876098349u;
+
+        [MagicNumber("-521")]
         private const uint _521 = 825373997u;
+
+        [MagicNumber("ecp256k1")]
         private const ulong ecp256k1 = 3560999532473901925ul;
 
         /// <summary>'P-256'.</summary>
