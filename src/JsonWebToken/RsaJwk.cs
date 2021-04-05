@@ -1056,6 +1056,10 @@ namespace JsonWebToken
         }
 
         /// <inheritsdoc />
+        public override int GetHashCode()
+            => Marvin.ComputeHash32(_parameters.Modulus, Marvin.DefaultSeed);
+
+        /// <inheritsdoc />
         public override void Dispose()
         {
             base.Dispose();

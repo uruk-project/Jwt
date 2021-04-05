@@ -98,7 +98,7 @@ namespace JsonWebToken
             _keyManagementAlgorithm = alg;
         }
 
-        /// <summary>Gets or sets the 'alg' (KeyType).</summary>
+        /// <summary>Gets the 'alg' (Algorithm).</summary>
         public JsonEncodedText Alg => _alg;
 
         /// <summary>Gets the 'key_ops' (Key Operations).</summary>
@@ -118,7 +118,7 @@ namespace JsonWebToken
         /// <summary>Gets or sets the 'kid' (Key ID).</summary>
         public JsonEncodedText Kid { get; set; }
 
-        /// <summary>Gets or sets the 'kty' (Key Type).</summary>
+        /// <summary>Gets the 'kty' (Key Type).</summary>
         public abstract JsonEncodedText Kty { get; }
 
         /// <summary>Gets or sets the 'use' (Public Key Use).</summary>
@@ -211,6 +211,21 @@ namespace JsonWebToken
 
                 return _signatureAlgorithm;
             }
+
+            set
+            {
+                if (value is null)
+                {
+                    _alg = default;
+                    _signatureAlgorithm = null;
+                }
+                else
+                {
+                    _alg = value.Name;
+                    _signatureAlgorithm = value;
+                    _keyManagementAlgorithm = null;
+                }
+            }
         }
 
         internal bool IsEncryptionKey
@@ -241,6 +256,21 @@ namespace JsonWebToken
                 }
 
                 return _keyManagementAlgorithm;
+            }
+
+            set
+            {
+                if (value is null)
+                {
+                    _alg = default;
+                    _keyManagementAlgorithm = null;
+                }
+                else
+                {
+                    _alg = value.Name;
+                    _keyManagementAlgorithm = value;
+                    _signatureAlgorithm = null;
+                }
             }
         }
 
@@ -623,6 +653,30 @@ namespace JsonWebToken
                     ArrayPool<byte>.Shared.Return(arrayToReturn);
                 }
             }
+        }
+
+        /// <summary>Returns a new instance of <see cref="AsymmetricJwk"/>.</summary>
+        /// <param name="certificate">A <see cref="X509Certificate2"/> that contains JSON Web Key parameters.</param>
+        /// <param name="alg">A <see cref="SignatureAlgorithm"/> that identify the 'alg' JWK parameter.</param>
+        /// <param name="withPrivateKey">Determines if the private key must be extracted from the certificate.</param>
+        public static AsymmetricJwk FromX509Certificate(X509Certificate2 certificate, SignatureAlgorithm alg, bool withPrivateKey)
+        {
+            var jwk = FromX509Certificate(certificate, withPrivateKey);
+            jwk._alg = alg?.Name ?? default;
+            jwk._signatureAlgorithm = alg;
+            return jwk;
+        }
+
+        /// <summary>Returns a new instance of <see cref="AsymmetricJwk"/>.</summary>
+        /// <param name="certificate">A <see cref="X509Certificate2"/> that contains JSON Web Key parameters.</param>
+        /// <param name="alg">A <see cref="KeyManagementAlgorithm"/> that identify the 'alg' JWK parameter.</param>
+        /// <param name="withPrivateKey">Determines if the private key must be extracted from the certificate.</param>
+        public static AsymmetricJwk FromX509Certificate(X509Certificate2 certificate, KeyManagementAlgorithm alg, bool withPrivateKey)
+        {
+            var jwk = FromX509Certificate(certificate, withPrivateKey);
+            jwk._alg = alg?.Name ?? default;
+            jwk._keyManagementAlgorithm = alg;
+            return jwk;
         }
 
         /// <summary>Returns a new instance of <see cref="AsymmetricJwk"/>.</summary>
@@ -1480,6 +1534,13 @@ namespace JsonWebToken
         /// <inheritdoc/>
         public abstract bool Equals(Jwk? other);
 
+        /// <inheritdoc/>
+        public override bool Equals(object? other)
+            => Equals(other as Jwk);
+
+        /// <inheritdoc/>
+        public abstract override int GetHashCode();
+
         internal sealed class NullJwk : Jwk
         {
             public override JsonEncodedText Kty
@@ -1533,6 +1594,9 @@ namespace JsonWebToken
 
             public override bool Equals(Jwk? other)
                 => false;
+
+            public override int GetHashCode()
+                => 0;
         }
     }
 }

@@ -60,6 +60,9 @@ namespace JsonWebToken
 
         /// <inheritsdoc />
         public override bool Equals(Jwk? other) => throw new NotImplementedException();
+
+        /// <inheritsdoc />
+        public override int GetHashCode() => throw new NotImplementedException();
     }
 }
 #endif
