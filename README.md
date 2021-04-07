@@ -19,7 +19,12 @@ Install the [JsonWebToken NuGet Package](https://www.nuget.org/packages/JsonWebT
 
 ### Package Manager Console
 ```
-Install-Package JsonWebToken -Version 1.9.1
+Install-Package JsonWebToken -Version 1.9.3
+```
+
+For the latest beta version:
+```
+Install-Package JsonWebToken -Version 2.0.0-beta.4
 ```
 ### .NET CLI
 ```
