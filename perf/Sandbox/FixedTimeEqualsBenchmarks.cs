@@ -651,28 +651,6 @@ namespace JsonWebToken.Performance
                     return (accumulator | *(int*)(l + end) ^ *(int*)(r + end)) == 0;
                 }
             }
-
-            // NoOptimization because we want this method to be exactly as non-short-circuiting
-            // as written.
-            //
-            // NoInlining because the NoOptimization would get lost if the method got inlined.
-            //[MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization)]
-            static int LoopInt(byte* l, byte* r, int length)
-            {
-                int offset = 0;
-                int accumulator = 0;
-                unchecked
-                {
-                    int end = length - sizeof(int);
-                    while ((int)(byte*)offset < length)
-                    {
-                        accumulator |= *(int*)(l + offset) ^ *(int*)(r + offset);
-                        offset += sizeof(int);
-                    }
-
-                    return accumulator | *(int*)(l + end) ^ *(int*)(r + end);
-                }
-            }
         }
 
         public static unsafe bool FixedTimeEquals_static_int_unsafe_overlap_end_intptr(ReadOnlySpan<byte> left, ReadOnlySpan<byte> right)
