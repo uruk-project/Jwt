@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Buffers;
 using System.Security.Cryptography;
-using JsonWebToken.Cryptography;
 using Xunit;
 using CryptographicOperations = JsonWebToken.Cryptography.CryptographicOperations;
 
@@ -24,7 +23,7 @@ namespace JsonWebToken.Tests
         [InlineData(96)]
         [InlineData(128)]
         [InlineData(256)]
-        [InlineData(1024)]
+        [InlineData(1024)]  
         [InlineData(1025)]
         public static void EqualReturnsTrue(int byteLength)
         {

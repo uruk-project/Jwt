@@ -3,11 +3,6 @@
 
 using System;
 using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
-#if SUPPORT_SIMD
-using System.Runtime.Intrinsics;
-using System.Runtime.Intrinsics.X86;
-#endif
 
 namespace JsonWebToken.Cryptography
 {
@@ -18,7 +13,7 @@ namespace JsonWebToken.Cryptography
             buffer.Clear();
         }
 
-        // Optimized byte-based FixedTimeEquals. Inspired from https://github.com/dotnet/corefx/blob/master/src/Common/src/CoreLib/System/SpanHelpers.Byte.cs
+        // Optimized FixedTimeEquals
         public unsafe static bool FixedTimeEquals(ReadOnlySpan<byte> left, ReadOnlySpan<byte> right)
         {
             int length = left.Length;
@@ -27,79 +22,84 @@ namespace JsonWebToken.Cryptography
                 return false;
             }
 
-            bool result;
-#if SUPPORT_SIMD
-            if (Avx2.IsSupported && length >= sizeof(Vector256<byte>))
+            fixed (byte* l = left)
+            fixed (byte* r = right)
             {
-                ref byte first = ref MemoryMarshal.GetReference(left);
-                ref byte second = ref MemoryMarshal.GetReference(right);
-                int accumulator = unchecked((int)0b1111_1111_1111_1111_1111_1111_1111_1111);
-                IntPtr offset = (IntPtr)0;
-                int end = length - sizeof(Vector256<byte>);
-                while ((int)(byte*)offset < end)
+                int accumulator;
+                // fast-path for SHA256 (32 bytes & 16 for half),
+                // SHA512 (64 bytes & 32 bytes for half) &
+                // SHA384 (48 bytes & 24 bytes for half)
+                accumulator = length switch
                 {
-                    accumulator &= Avx2.MoveMask(Avx2.CompareEqual(first.AsVector256<byte>(offset), second.AsVector256<byte>(offset)));
-                    offset += sizeof(Vector256<byte>);
-                }
+                    16 => *(int*)l ^ *(int*)r
+                        | *(int*)(l + sizeof(int)) ^ *(int*)(r + sizeof(int))
+                        | *(int*)(l + 2 * sizeof(int)) ^ *(int*)(r + 2 * sizeof(int))
+                        | *(int*)(l + 3 * sizeof(int)) ^ *(int*)(r + 3 * sizeof(int)),
+                    32 => *(int*)l ^ *(int*)r
+                        | *(int*)(l + sizeof(int)) ^ *(int*)(r + sizeof(int))
+                        | *(int*)(l + 2 * sizeof(int)) ^ *(int*)(r + 2 * sizeof(int))
+                        | *(int*)(l + 3 * sizeof(int)) ^ *(int*)(r + 3 * sizeof(int))
+                        | *(int*)(l + 4 * sizeof(int)) ^ *(int*)(r + 4 * sizeof(int))
+                        | *(int*)(l + 5 * sizeof(int)) ^ *(int*)(r + 5 * sizeof(int))
+                        | *(int*)(l + 6 * sizeof(int)) ^ *(int*)(r + 6 * sizeof(int))
+                        | *(int*)(l + 7 * sizeof(int)) ^ *(int*)(r + 7 * sizeof(int)),
+                    64 => *(int*)l ^ *(int*)r
+                        | *(int*)(l + sizeof(int)) ^ *(int*)(r + sizeof(int))
+                        | *(int*)(l + 2 * sizeof(int)) ^ *(int*)(r + 2 * sizeof(int))
+                        | *(int*)(l + 3 * sizeof(int)) ^ *(int*)(r + 3 * sizeof(int))
+                        | *(int*)(l + 4 * sizeof(int)) ^ *(int*)(r + 4 * sizeof(int))
+                        | *(int*)(l + 5 * sizeof(int)) ^ *(int*)(r + 5 * sizeof(int))
+                        | *(int*)(l + 6 * sizeof(int)) ^ *(int*)(r + 6 * sizeof(int))
+                        | *(int*)(l + 7 * sizeof(int)) ^ *(int*)(r + 7 * sizeof(int))
+                        | *(int*)(l + 8 * sizeof(int)) ^ *(int*)(r + 8 * sizeof(int))
+                        | *(int*)(l + 9 * sizeof(int)) ^ *(int*)(r + 9 * sizeof(int))
+                        | *(int*)(l + 10 * sizeof(int)) ^ *(int*)(r + 10 * sizeof(int))
+                        | *(int*)(l + 11 * sizeof(int)) ^ *(int*)(r + 11 * sizeof(int))
+                        | *(int*)(l + 12 * sizeof(int)) ^ *(int*)(r + 12 * sizeof(int))
+                        | *(int*)(l + 13 * sizeof(int)) ^ *(int*)(r + 13 * sizeof(int))
+                        | *(int*)(l + 14 * sizeof(int)) ^ *(int*)(r + 14 * sizeof(int))
+                        | *(int*)(l + 15 * sizeof(int)) ^ *(int*)(r + 15 * sizeof(int)),
+                    24 => *(int*)l ^ *(int*)r
+                        | *(int*)(l + sizeof(int)) ^ *(int*)(r + sizeof(int))
+                        | *(int*)(l + 2 * sizeof(int)) ^ *(int*)(r + 2 * sizeof(int))
+                        | *(int*)(l + 3 * sizeof(int)) ^ *(int*)(r + 3 * sizeof(int))
+                        | *(int*)(l + 4 * sizeof(int)) ^ *(int*)(r + 4 * sizeof(int))
+                        | *(int*)(l + 5 * sizeof(int)) ^ *(int*)(r + 5 * sizeof(int)),
+                    48 => *(int*)l ^ *(int*)r
+                        | *(int*)(l + sizeof(int)) ^ *(int*)(r + sizeof(int))
+                        | *(int*)(l + 2 * sizeof(int)) ^ *(int*)(r + 2 * sizeof(int))
+                        | *(int*)(l + 3 * sizeof(int)) ^ *(int*)(r + 3 * sizeof(int))
+                        | *(int*)(l + 4 * sizeof(int)) ^ *(int*)(r + 4 * sizeof(int))
+                        | *(int*)(l + 5 * sizeof(int)) ^ *(int*)(r + 5 * sizeof(int))
+                        | *(int*)(l + 6 * sizeof(int)) ^ *(int*)(r + 6 * sizeof(int))
+                        | *(int*)(l + 7 * sizeof(int)) ^ *(int*)(r + 7 * sizeof(int))
+                        | *(int*)(l + 8 * sizeof(int)) ^ *(int*)(r + 8 * sizeof(int))
+                        | *(int*)(l + 9 * sizeof(int)) ^ *(int*)(r + 9 * sizeof(int))
+                        | *(int*)(l + 10 * sizeof(int)) ^ *(int*)(r + 10 * sizeof(int))
+                        | *(int*)(l + 11 * sizeof(int)) ^ *(int*)(r + 11 * sizeof(int)),
+                    0 => 0,
+                    _ => Aggregate(l, r, length),
+                };
 
-                accumulator &= Avx2.MoveMask(Avx2.CompareEqual(first.AsVector256<byte>((IntPtr)end), second.AsVector256<byte>((IntPtr)end)));
-                result = accumulator == unchecked((int)0b1111_1111_1111_1111_1111_1111_1111_1111);
+                return accumulator == 0;
             }
-            else if (Sse2.IsSupported && length >= sizeof(Vector128<byte>))
-            {
-                ref byte first = ref MemoryMarshal.GetReference(left);
-                ref byte second = ref MemoryMarshal.GetReference(right);
-                int accumulator = 0b1111_1111_1111_1111;
-                IntPtr offset = (IntPtr)0;
-                int end = length - sizeof(Vector128<byte>);
-                while ((int)(byte*)offset < end)
-                {
-                    accumulator &= Sse2.MoveMask(Sse2.CompareEqual(first.AsVector128<byte>(offset), second.AsVector128<byte>(offset)));
-                    offset += sizeof(Vector128<byte>);
-                }
 
-                accumulator &= Sse2.MoveMask(Sse2.CompareEqual(first.AsVector128<byte>((IntPtr)end), second.AsVector128<byte>((IntPtr)end)));
-                result = accumulator == 0b1111_1111_1111_1111;
-            }
-            else
-#endif
-            if (length >= sizeof(ulong))
+            // NoOptimization because we want this method to be exactly as non-short-circuiting as written.
+            // NoInlining because the NoOptimization would get lost if the method got inlined.
+            [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization)]
+            static int Aggregate(byte* l, byte* r, int length)
             {
-                ref byte first = ref MemoryMarshal.GetReference(left);
-                ref byte second = ref MemoryMarshal.GetReference(right);
-                ulong accumulator = 0L;
-                IntPtr offset = (IntPtr)0;
-                int end = length - sizeof(ulong);
-
-                while ((int)(byte*)offset < end)
-                {
-                    accumulator |= first.ReadUnaligned<ulong>(offset) ^ second.ReadUnaligned<ulong>(offset);
-                    offset += sizeof(ulong);
-                }
-
-                accumulator |= first.ReadUnaligned<ulong>((IntPtr)end) ^ second.ReadUnaligned<ulong>((IntPtr)end);
-                result = accumulator == 0L;
-            }
-            else if (length != 0)
-            {
+                int offset = 0;
                 int accumulator = 0;
-                IntPtr offset = (IntPtr)0;
-                ref byte first = ref MemoryMarshal.GetReference(left);
-                ref byte second = ref MemoryMarshal.GetReference(right);
-                while ((int)(byte*)offset < length)
+                int end = length - sizeof(int);
+                while ((int)(byte*)offset < end)
                 {
-                    accumulator |= Unsafe.AddByteOffset(ref first, offset) - Unsafe.AddByteOffset(ref second, offset);
-                    offset += 1;
+                    accumulator |= *(int*)(l + offset) ^ *(int*)(r + offset);
+                    offset += sizeof(int);
                 }
 
-                result = accumulator == 0;
+                return accumulator | *(int*)(l + end) ^ *(int*)(r + end);
             }
-            else
-            {
-                result = true;
-            }
-
-            return result;
         }
     }
 }

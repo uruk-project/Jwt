@@ -75,16 +75,6 @@ namespace JsonWebToken.Cryptography
         }
 
         /// <inheritsdoc />
-        public override bool VerifyHalf(ReadOnlySpan<byte> input, ReadOnlySpan<byte> signature)
-        {
-            Debug.Assert(!_disposed);
-
-            Span<byte> hash = stackalloc byte[_hashSizeInBytes];
-            _hashAlgorithm.ComputeHash(input, hash);
-            return CryptographicOperations.FixedTimeEquals(signature, hash.Slice(0, _hashSizeInBytes / 2));
-        }
-
-        /// <inheritsdoc />
         protected override void Dispose(bool disposing)
         {
             if (!_disposed)

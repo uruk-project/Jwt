@@ -60,11 +60,6 @@ namespace JsonWebToken.Cryptography
 #endif
         }
 
-        public override bool VerifyHalf(ReadOnlySpan<byte> data, ReadOnlySpan<byte> signature)
-        {
-            throw new NotImplementedException();
-        }
-
         /// <inheritsdoc />
         protected override void Dispose(bool disposing)
         {
