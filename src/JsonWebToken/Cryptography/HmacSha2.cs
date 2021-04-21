@@ -7,46 +7,28 @@ using System.Diagnostics;
 
 namespace JsonWebToken.Cryptography
 {
-    /// <summary>
-    /// Computes a Hash-based Message Authentication Code (HMAC) using a SHA2 hash function.
-    /// </summary>
+    /// <summary>Computes a Hash-based Message Authentication Code (HMAC) using a SHA2 hash function.</summary>
     internal sealed class HmacSha2 : IDisposable
     {
-        /// <summary>
-        /// The hash algorithm.
-        /// </summary>
-        public Sha2 Sha2 { get; }
-
-        /// <summary>
-        /// The inner &amp; outer pad keys.
-        /// </summary>
+        // The inner &amp; outer pad keys.
         private readonly byte[] _keys;
 
-        /// <summary>
-        /// The inner pad key.
-        /// </summary>
+        // The inner pad key.
         private readonly ReadOnlyMemory<byte> _innerPadKey;
 
-        /// <summary>
-        /// The outer pad key.
-        /// </summary>
+        // The outer pad key.
         private readonly ReadOnlyMemory<byte> _outerPadKey;
 
-        /// <summary>
-        /// The block size.
-        /// </summary>
+        /// <summary>The hash algorithm.</summary>
+        public Sha2 Sha2 { get; }
+
+        /// <summary>The block size.</summary>
         public int BlockSize => Sha2.BlockSize;
 
-        /// <summary>
-        /// The size of the resulting hash.
-        /// </summary>
+        /// <summary>The size of the resulting hash.</summary>
         public int HashSize => Sha2.HashSize;
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="HmacSha2"/> class.
-        /// </summary>
-        /// <param name="sha2"></param>
-        /// <param name="key"></param>
+        /// <summary>Initializes a new instance of the <see cref="HmacSha2"/> class.</summary>
         public HmacSha2(Sha2 sha2, ReadOnlySpan<byte> key)
         {
             Debug.Assert(sha2 != null);
@@ -69,11 +51,7 @@ namespace JsonWebToken.Cryptography
             }
         }
 
-        /// <summary>
-        /// Computes the hash value.
-        /// </summary>
-        /// <param name="source"></param>
-        /// <param name="destination"></param>
+        /// <summary>Computes the hash value.</summary>
         public void ComputeHash(ReadOnlySpan<byte> source, Span<byte> destination)
         {
             // hash(o_key_pad ∥ hash(i_key_pad ∥ message));         
@@ -96,17 +74,13 @@ namespace JsonWebToken.Cryptography
             }
         }
 
-        /// <summary>
-        /// Clears the keys.
-        /// </summary>
+        /// <summary>Clears the keys.</summary>
         public void Clear()
         {
             _keys.AsSpan().Clear();
         }
 
-        /// <summary>
-        /// Clears the non-managed resources.
-        /// </summary>
+        /// <summary>Clears the non-managed resources.</summary>
         public void Dispose()
         {
             Clear();

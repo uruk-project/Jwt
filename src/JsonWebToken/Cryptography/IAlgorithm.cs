@@ -6,19 +6,13 @@ using System.Text.Json;
 
 namespace JsonWebToken.Cryptography
 {
-    /// <summary>
-    /// Represents a cyrptographic algorithm.
-    /// </summary>
+    /// <summary>Represents a cyrptographic algorithm.</summary>
     public interface IAlgorithm
     {
-        /// <summary>
-        /// Gets the UTF8 byte array of the name of the algorithm.
-        /// </summary>
+        /// <summary>Gets the UTF8 byte array of the name of the algorithm.</summary>
         public ReadOnlySpan<byte> Utf8Name { get; }
 
-        /// <summary>
-        /// Gets the name of the algorithm.
-        /// </summary>
+        /// <summary>Gets the name of the algorithm.</summary>
         public JsonEncodedText Name { get; }
     }
 }

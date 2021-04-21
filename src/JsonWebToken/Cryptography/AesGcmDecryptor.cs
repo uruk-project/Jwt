@@ -8,9 +8,7 @@ using System.Security.Cryptography;
 
 namespace JsonWebToken.Cryptography
 {
-    /// <summary>
-    /// Provides authenticated decryption for AES GCM algorithm.
-    /// </summary>
+    /// <summary>Provides authenticated decryption for AES GCM algorithm.</summary>
     internal sealed class AesGcmDecryptor : AuthenticatedDecryptor
     {
         private readonly EncryptionAlgorithm _encryptionAlgorithm;

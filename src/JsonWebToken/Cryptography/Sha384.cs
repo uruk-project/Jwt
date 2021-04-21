@@ -13,14 +13,10 @@ using System.Runtime.Intrinsics.X86;
 
 namespace JsonWebToken.Cryptography
 {
-    /// <summary>
-    /// Computes SHA2-512 hash values.
-    /// </summary>
+    /// <summary>Computes SHA2-512 hash values.</summary>
     public sealed class Sha384 : Sha2
     {
-        /// <summary>
-        /// The resulting hash size of the <see cref="Sha384"/> algorithm.
-        /// </summary>
+        /// <summary>The resulting hash size of the <see cref="Sha384"/> algorithm.</summary>
         public const int Sha384HashSize = 48;
 
         /// <summary>
@@ -29,9 +25,7 @@ namespace JsonWebToken.Cryptography
         public const int Sha384BlockSize = 128;
         private const int IterationCount = 80;
 
-        /// <summary>
-        /// Gets the default instance of the <see cref="Sha384"/> class.
-        /// </summary>
+        /// <summary>Gets the default instance of the <see cref="Sha384"/> class.</summary>
         public static readonly Sha384 Shared = new Sha384();
 
         /// <inheritsdoc />
@@ -48,9 +42,7 @@ namespace JsonWebToken.Cryptography
             => IterationCount * 8;
 #endif
 
-        /// <summary>
-        /// Computes the hash value for the specified <paramref name="source"/>.
-        /// </summary>
+        /// <summary>Computes the hash value for the specified <paramref name="source"/>.</summary>
         /// <param name="source">The data to hash.</param>
         /// <param name="prepend">Optionnal. The data to hash before the source. Must be of the length of <see cref="BlockSize"/> or less.</param>
         /// <param name="destination">The destination <see cref="Span{T}"/>.</param>
@@ -58,18 +50,14 @@ namespace JsonWebToken.Cryptography
         public static void Hash(ReadOnlySpan<byte> source, ReadOnlySpan<byte> prepend, Span<byte> destination, Span<byte> workingSet)
             => Shared.ComputeHash(source, prepend, destination, workingSet);
 
-        /// <summary>
-        /// Computes the hash value for the specified <paramref name="source"/>.
-        /// </summary>
+        /// <summary>Computes the hash value for the specified <paramref name="source"/>.</summary>
         /// <param name="source">The data to hash.</param>
         /// <param name="prepend">Optionnal. The data to hash before the source. Must be of the length of <see cref="BlockSize"/> or less.</param>
         /// <param name="destination">The destination <see cref="Span{T}"/>.</param>
         public static void Hash(ReadOnlySpan<byte> source, ReadOnlySpan<byte> prepend, Span<byte> destination)
            => Shared.ComputeHash(source, prepend, destination);
 
-        /// <summary>
-        /// Computes the hash value for the specified <paramref name="source"/>.
-        /// </summary>
+        /// <summary>Computes the hash value for the specified <paramref name="source"/>.</summary>
         /// <param name="source">The data to hash.</param>
         /// <param name="destination">The destination <see cref="Span{T}"/>.</param>
         public static void Hash(ReadOnlySpan<byte> source, Span<byte> destination)

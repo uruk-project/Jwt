@@ -10,35 +10,23 @@ using System.Runtime.Intrinsics;
 
 namespace JsonWebToken.Cryptography
 {
-    /// <summary>
-    /// Represents the base class for SHA-2 algorithms.
-    /// </summary>
+    /// <summary>Represents the base class for SHA-2 algorithms.</summary>
     public abstract class Sha2
     {
-        /// <summary>
-        /// Computes the hash value for the specified <paramref name="source"/>.
-        /// </summary>
+        /// <summary>Computes the hash value for the specified <paramref name="source"/>.</summary>
         /// <param name="source">The data to hash.</param>
         /// <param name="prepend">Optionnal. The data to hash before the source. Must be of the length of <see cref="BlockSize"/> or less.</param>
         /// <param name="destination">The destination <see cref="Span{T}"/>.</param>
         /// <param name="workingSet">Optionnal. The working set used for computing the hash. Useful if you expect to chain hashing in the same thread and you want to avoid memory allocations. Use the method <see cref="GetWorkingSetSize(int)"/> for getting the required size. </param>
         public abstract void ComputeHash(ReadOnlySpan<byte> source, ReadOnlySpan<byte> prepend, Span<byte> destination, Span<byte> workingSet);
 
-        /// <summary>
-        /// Computes the required working set size.
-        /// </summary>
-        /// <param name="sourceLength"></param>
-        /// <returns></returns>
+        /// <summary>Computes the required working set size.</summary>
         public abstract int GetWorkingSetSize(int sourceLength);
 
-        /// <summary>
-        /// The size of the resulting hash.
-        /// </summary>
+        /// <summary>The size of the resulting hash.</summary>
         public abstract int HashSize { get; }
 
-        /// <summary>
-        /// The size of the resulting hash.
-        /// </summary>
+        /// <summary>The size of the resulting hash.</summary>
         public abstract int BlockSize { get; }
 
 #if SUPPORT_SIMD
@@ -58,24 +46,16 @@ namespace JsonWebToken.Cryptography
             27, 26, 25, 24, 31, 30, 29, 28
         };
 
-        /// <summary>
-        /// The 128 bits shuffle mask for reverting endianness of 2 Int64.
-        /// </summary>
+        /// <summary>The 128 bits shuffle mask for reverting endianness of 2 Int64.</summary>
         private protected static readonly Vector128<byte> EndiannessMask128UInt64 = ReadVector128(LittleEndianUInt64);
 
-        /// <summary>
-        /// The 256 bits shuffle mask for reverting endianness of 4 Int64.
-        /// </summary>
+        /// <summary>The 256 bits shuffle mask for reverting endianness of 4 Int64.</summary>
         private protected static readonly Vector256<byte> EndiannessMask256UInt64 = ReadVector256(LittleEndianUInt64);
 
-        /// <summary>
-        /// The 128 bits shuffle mask for reverting endianness of 4 Int32.
-        /// </summary>
+        /// <summary>The 128 bits shuffle mask for reverting endianness of 4 Int32.</summary>
         private protected static readonly Vector128<byte> EndiannessMask128UInt32 = ReadVector128(LittleEndianUInt32);
 
-        /// <summary>
-        /// The 256 bits shuffle mask for reverting endianness of 8 Int32.
-        /// </summary>
+        /// <summary>The 256 bits shuffle mask for reverting endianness of 8 Int32.</summary>
         private protected static readonly Vector256<byte> EndianessnMask256UInt32 = ReadVector256(LittleEndianUInt32);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

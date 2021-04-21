@@ -8,19 +8,13 @@ using System.Diagnostics;
 
 namespace JsonWebToken.Cryptography
 {
-    /// <summary>
-    /// Provides authenticated encryption and decryption for AES CBC HMAC algorithm.
-    /// </summary>
+    /// <summary>Provides authenticated encryption and decryption for AES CBC HMAC algorithm.</summary>
     internal sealed class AesCbcHmacDecryptor : AuthenticatedDecryptor
     {
         private readonly AesDecryptor _decryptor;
         private readonly EncryptionAlgorithm _encryptionAlgorithm;
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="AesCbcHmacDecryptor"/> class.
-        /// </summary>
-        /// <param name="encryptionAlgorithm"></param>
-        /// <param name="decryptor"></param>
+        /// <summary>Initializes a new instance of the <see cref="AesCbcHmacDecryptor"/> class.</summary>
         public AesCbcHmacDecryptor(EncryptionAlgorithm encryptionAlgorithm, AesDecryptor decryptor)
         {
             Debug.Assert(encryptionAlgorithm != null);
@@ -32,10 +26,7 @@ namespace JsonWebToken.Cryptography
             _decryptor = decryptor;
         }
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="AesCbcHmacDecryptor"/> class.
-        /// </summary>
-        /// <param name="encryptionAlgorithm"></param>
+        /// <summary>Initializes a new instance of the <see cref="AesCbcHmacDecryptor"/> class.</summary>
         public AesCbcHmacDecryptor(EncryptionAlgorithm encryptionAlgorithm)
             : this(encryptionAlgorithm, new AesCbcDecryptor(encryptionAlgorithm))
         {

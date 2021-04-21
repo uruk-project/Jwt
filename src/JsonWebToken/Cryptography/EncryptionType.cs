@@ -5,30 +5,20 @@ using System;
 
 namespace JsonWebToken.Cryptography
 {
-    /// <summary>
-    /// Defines the algorithm encryption types.
-    /// </summary>
+    /// <summary>Defines the algorithm encryption types.</summary>
     [Flags]
     public enum EncryptionType
     {
-        /// <summary>
-        /// Not supported encryption.
-        /// </summary>
+        /// <summary>Not supported encryption.</summary>
         NotSupported = 0,
 
-        /// <summary>
-        /// AES encryption.
-        /// </summary>
+        /// <summary>AES encryption.</summary>
         Aes = 0x01,
 
-        /// <summary>
-        /// AES-HMAC encryption.
-        /// </summary>
+        /// <summary>AES-HMAC encryption.</summary>
         AesHmac = 0x02 | Aes,
 
-        /// <summary>
-        /// AES-GCM encryption.
-        /// </summary>
+        /// <summary>AES-GCM encryption.</summary>
         AesGcm = 0x04 | Aes
     }
 }
