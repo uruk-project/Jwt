@@ -11,33 +11,22 @@ using System.Runtime.Intrinsics;
 namespace JsonWebToken.Cryptography
 {
 
-    /// <summary>
-    /// Provides AES decryption.
-    /// </summary>
+    /// <summary>Provides AES decryption.</summary>
     internal abstract class AesDecryptor
     {
-        /// <summary>
-        /// The size of the AES block.
-        /// </summary>
+        /// <summary>The size of the AES block.</summary>
         protected const int BlockSize = 16;
 
-        /// <summary>
-        /// Try to decrypt the <paramref name="ciphertext"/>. 
-        /// </summary>
+        /// <summary>Try to decrypt the <paramref name="ciphertext"/>. </summary>
         /// <param name="key">The decryption key.</param>
         /// <param name="ciphertext">The ciphertext to decrypt.</param>
         /// <param name="nonce">The nonce used to encrypt.</param>
         /// <param name="plaintext">The resulting plaintext.</param>
         /// <param name="bytesWritten">The bytes written in the <paramref name="plaintext"/>.</param>
-        /// <returns></returns>
         public abstract bool TryDecrypt(ReadOnlySpan<byte> key, ReadOnlySpan<byte> ciphertext, ReadOnlySpan<byte> nonce, Span<byte> plaintext, out int bytesWritten);
 
 #if SUPPORT_SIMD
-        /// <summary>
-        /// Gets the padding mask used to validate the padding of the ciphertext. The padding value MUST be between 0 and 16 included.
-        /// </summary>
-        /// <param name="padding"></param>
-        /// <returns></returns>
+        /// <summary>Gets the padding mask used to validate the padding of the ciphertext. The padding value MUST be between 0 and 16 included.</summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         protected static Vector128<byte> GetPaddingMask(byte padding)
         {

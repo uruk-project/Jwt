@@ -6,17 +6,13 @@ using System.Diagnostics;
 
 namespace JsonWebToken.Cryptography
 {
-    /// <summary>
-    /// Provides signing operations using a <see cref="SymmetricJwk"/> and specifying an algorithm.
-    /// </summary>
+    /// <summary>Provides signing operations using a <see cref="SymmetricJwk"/> and specifying an algorithm.</summary>
     internal sealed class SymmetricSigner : Signer
     {
         private readonly HmacSha2 _hashAlgorithm;
         private bool _disposed;
 
-        /// <summary>
-        /// This is the minimum <see cref="SymmetricJwk"/>.KeySize when creating and verifying signatures.
-        /// </summary>
+        /// <summary>This is the minimum <see cref="SymmetricJwk"/>.KeySize when creating and verifying signatures.</summary>
         public const int DefaultMinimumSymmetricKeySizeInBits = 128;
 
         private readonly int _hashSizeInBytes;
@@ -42,9 +38,7 @@ namespace JsonWebToken.Cryptography
 
         public override int Base64HashSizeInBytes => _base64HashSizeInBytes;
 
-        /// <summary>
-        /// Gets or sets the minimum <see cref="SymmetricJwk"/>.KeySize.
-        /// </summary>
+        /// <summary>Gets or sets the minimum <see cref="SymmetricJwk"/>.KeySize.</summary>
         public int MinimumKeySizeInBits
         {
             get

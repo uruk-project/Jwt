@@ -9,11 +9,11 @@ namespace JsonWebToken.Cryptography
 {
     internal readonly ref struct Hmac
     {
+        // The inner &amp; outer pad keys.
+        private readonly Span<byte> _keys;
+
         /// <summary>The hash algorithm.</summary>
         public Sha2 Sha2 { get; }
-
-        /// <summary>The inner &amp; outer pad keys.</summary>
-        private readonly Span<byte> _keys;
 
         /// <summary>The block size.</summary>
         public int BlockSize => Sha2.BlockSize;

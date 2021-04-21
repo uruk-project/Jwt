@@ -8,9 +8,7 @@ using System.Runtime.InteropServices;
 
 namespace JsonWebToken.Cryptography
 {
-    /// <summary>
-    /// Provides AES key unwrapping services.
-    /// </summary>
+    /// <summary>Provides AES key unwrapping services.</summary>
     internal sealed class AesKeyUnwrapper : KeyUnwrapper
     {
         private const int BlockSizeInBytes = 8;

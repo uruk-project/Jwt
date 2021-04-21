@@ -8,9 +8,7 @@ using System.Runtime.InteropServices;
 
 namespace JsonWebToken.Cryptography
 {
-    /// <summary>
-    /// Provides AES key wrapping services.
-    /// </summary>
+    /// <summary>Provides AES key wrapping services.</summary>
     internal sealed class AesKeyWrapper : KeyWrapper
     {
         private const int BlockSizeInBytes = 8;
@@ -69,12 +67,6 @@ namespace JsonWebToken.Cryptography
             }
         }
         
-        /// <summary>
-        /// Wrap a key using AES encryption.
-        /// </summary>
-        /// <param name="staticKey">the key to be wrapped. If <c>null</c>, a new <see cref="SymmetricJwk"/> will be generated.</param>
-        /// <param name="header"></param>
-        /// <param name="destination"></param>
         public override SymmetricJwk WrapKey(Jwk? staticKey, JwtHeader header, Span<byte> destination)
         {
             if (destination.Length < GetKeyWrapSize())
