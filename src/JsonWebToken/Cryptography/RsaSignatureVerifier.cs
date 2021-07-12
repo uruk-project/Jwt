@@ -30,7 +30,7 @@ namespace JsonWebToken.Cryptography
 
             _hashAlgorithm = algorithm.HashAlgorithm;
             _sha = algorithm.Sha;
-            _signaturePadding = RsaHelper.GetPadding(algorithm);
+            _signaturePadding = RsaHelper.GetSignaturePadding(algorithm.Id);
 
             _hashSizeInBytes = key.KeySizeInBits >> 3;
             _base64HashSizeInBytes = Base64Url.GetArraySizeRequiredToEncode(_hashSizeInBytes);

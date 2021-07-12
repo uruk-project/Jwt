@@ -3,16 +3,17 @@
 
 using System;
 using System.Buffers;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using gfoidl.Base64;
 
 namespace JsonWebToken
 {
-    /// <summary>Encodes and Decodes strings as Base64Url.</summary>
-    /// <remarks>Issued from https://github.com/aspnet/. </remarks>
+    /// <summary>Encodes and decodes strings as Base64Url.</summary>
     public static class Base64Url
     {
         /// <summary>Decodes a string of UTF-8 base64url-encoded text.</summary>
+        /// <remarks>This method allocate an array of bytes. Use <see cref="Decode(ReadOnlySpan{byte}, Span{byte})"/> when possible.</remarks>
         public static byte[] Decode(string data)
         {
             if (data is null)
@@ -20,10 +21,27 @@ namespace JsonWebToken
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.data);
             }
 
-            return Decode(Utf8.GetBytes(data));
+            int length = Utf8.GetMaxByteCount(data.Length);
+            byte[]? utf8ArrayToReturn = null;
+            try
+            {
+                Span<byte> tmp = length > Constants.MaxStackallocBytes
+                    ? (utf8ArrayToReturn = ArrayPool<byte>.Shared.Rent(length)).AsSpan(0, length)
+                    : stackalloc byte[length];
+                int written = Utf8.GetBytes(data, tmp);
+                return Decode(tmp.Slice(0, written));
+            }
+            finally
+            {
+                if (utf8ArrayToReturn != null)
+                {
+                    ArrayPool<byte>.Shared.Return(utf8ArrayToReturn);
+                }
+            }
         }
 
         /// <summary>Decodes a span of UTF-8 base64url-encoded text.</summary>
+        /// <remarks>This method allocate an array of bytes. Use <see cref="Decode(ReadOnlySpan{byte}, Span{byte})"/> when possible.</remarks>
         public static byte[] Decode(ReadOnlySpan<byte> base64Url)
         {
             var dataLength = GetArraySizeRequiredToDecode(base64Url.Length);
@@ -56,6 +74,8 @@ namespace JsonWebToken
                 : stackalloc byte[base64Url.Length];
             try
             {
+                // base64url does not contain characters outside of the ASCII plan 
+                // There is no need of slicing the resulting buffer.
                 Utf8.GetBytes(base64Url, buffer);
                 return Decode(buffer, data);
             }
@@ -81,6 +101,17 @@ namespace JsonWebToken
             return bytesWritten;
         }
 
+        /// <summary>Decodes the span of UTF-8 base64url-encoded text into a span of bytes.</summary>
+        /// <returns>The number of the bytes written to <paramref name="data"/>.</returns>
+        /// <remarks>Does not verify the operation result.</remarks>
+        internal static int DecodeUnsafe(ReadOnlySpan<byte> base64Url, Span<byte> data)
+        {
+            var status = Decode(base64Url, data, out _, out int bytesWritten);
+            Debug.Assert(status == OperationStatus.Done);
+
+            return bytesWritten;
+        }
+
         /// <summary>Decodes the span of UTF-8 base64url-encoded text into binary data.</summary>
         public static OperationStatus Decode(ReadOnlySpan<byte> base64Url, Span<byte> data, out int bytesConsumed, out int bytesWritten)
             => Base64.Url.Decode(base64Url, data, out bytesConsumed, out bytesWritten);
@@ -100,6 +131,7 @@ namespace JsonWebToken
 
         /// <summary>Encodes a span of UTF-8 text.</summary>
         /// <returns>The base64-url encoded string.</returns>
+        /// <remarks>This method allocate an array of bytes. Use <see cref="Encode(ReadOnlySpan{byte}, Span{byte})"/> when possible.</remarks>
         public static byte[] Encode(ReadOnlySpan<byte> utf8Data)
         {
             int base64UrlLength = Base64.Url.GetEncodedLength(utf8Data.Length);
@@ -111,6 +143,7 @@ namespace JsonWebToken
 #if NETSTANDARD2_0 || NET47
         /// <summary>Encodes a string of UTF-8 text.</summary>
         /// <returns>The base64-url encoded string.</returns>
+        /// <remarks>This method allocate an array of bytes. Use <see cref="Encode(ReadOnlySpan{byte}, Span{byte})"/> when possible.</remarks>
         public static byte[] Encode(string data)
         {
             if (data is null)
@@ -124,17 +157,19 @@ namespace JsonWebToken
 
         /// <summary>Encodes a string of UTF-8 text.</summary>
         /// <returns>The base64-url encoded string.</returns>
+        /// <remarks>This method allocate an array of bytes. Use <see cref="Encode(ReadOnlySpan{byte}, Span{byte})"/> when possible.</remarks>
         public static byte[] Encode(ReadOnlySpan<char> data)
         {
             byte[]? utf8ArrayToReturn = null;
             try
             {
-                var utf8Data = data.Length > Constants.MaxStackallocBytes
-                    ? (utf8ArrayToReturn = ArrayPool<byte>.Shared.Rent(data.Length)).AsSpan(0, data.Length)
-                    : stackalloc byte[data.Length];
+                int length = Utf8.GetMaxByteCount(data.Length);
+                var utf8Data = length > Constants.MaxStackallocBytes
+                    ? (utf8ArrayToReturn = ArrayPool<byte>.Shared.Rent(length)).AsSpan(0, length)
+                    : stackalloc byte[length];
 
-                Utf8.GetBytes(data, utf8Data);
-                return Encode(utf8Data);
+                int written = Utf8.GetBytes(data, utf8Data);
+                return Encode(utf8Data.Slice(0, written));
             }
             finally
             {
@@ -154,10 +189,10 @@ namespace JsonWebToken
         public static int GetArraySizeRequiredToDecode(int count)
             => Base64.Url.GetMaxDecodedLength(count);
 
-        /// <summary>Gets the minimum output buffer size required for encoding <paramref name="count"/> bytes.</summary>
+        /// <summary>Gets the output buffer size required for encoding <paramref name="count"/> bytes.</summary>
         /// <param name="count">The number of characters to encode.</param>
         /// <returns>
-        /// The minimum output buffer size required for encoding <paramref name="count"/> <see cref="byte"/>s.
+        /// The output buffer size required for encoding <paramref name="count"/> <see cref="byte"/>s.
         /// </returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int GetArraySizeRequiredToEncode(int count)

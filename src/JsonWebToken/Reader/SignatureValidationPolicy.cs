@@ -146,7 +146,7 @@ namespace JsonWebToken
                 {
                     int signatureBytesLength = Base64Url.GetArraySizeRequiredToDecode(signatureSegment.Length);
                     Span<byte> signatureBytes = stackalloc byte[signatureBytesLength];
-                    if (Base64Url.Decode(signatureSegment, signatureBytes, out int byteConsumed, out int bytesWritten) != OperationStatus.Done)
+                    if (Base64Url.Decode(signatureSegment, signatureBytes, out _, out int bytesWritten) != OperationStatus.Done)
                     {
                         error = SignatureValidationError.MalformedSignature();
 						goto Error;

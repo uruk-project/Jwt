@@ -69,8 +69,8 @@ namespace JsonWebToken.Cryptography
         //     NULL
         //   BIT STRING
         //     SEQUENCE
-        //       INTEGER
-        //       INTEGER
+        //       INTEGER N
+        //       INTEGER E
         private static AsymmetricJwk ReadRsaPublicKey(ref AsnReader reader)
         {
             reader = reader.ReadBitString();

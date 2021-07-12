@@ -7,9 +7,7 @@ using System.Security.Cryptography;
 
 namespace JsonWebToken.Cryptography
 {
-    /// <summary>
-    /// Provides RSA key wrapping and key unwrapping services.
-    /// </summary>
+    /// <summary>Provides RSA key wrapping and key unwrapping services.</summary>
     internal sealed class RsaKeyWrapper : KeyWrapper
     {
         private readonly RsaJwk _key;
@@ -33,15 +31,7 @@ namespace JsonWebToken.Cryptography
 #endif
             _rsa.ImportParameters(key.ExportParameters());
 #endif
-            _padding = algorithm.Id switch
-            {
-                AlgorithmId.RsaOaep => RSAEncryptionPadding.OaepSHA1,
-                AlgorithmId.Rsa1_5 => RSAEncryptionPadding.Pkcs1,
-                AlgorithmId.RsaOaep256 => RSAEncryptionPadding.OaepSHA256,
-                AlgorithmId.RsaOaep384 => RSAEncryptionPadding.OaepSHA384,
-                AlgorithmId.RsaOaep512 => RSAEncryptionPadding.OaepSHA512,
-                _ => throw ThrowHelper.CreateNotSupportedException_AlgorithmForKeyWrap(algorithm)
-            };
+            _padding = RsaHelper.GetEncryptionPadding(algorithm.Id);
         }
 
         /// <inheritsdoc />

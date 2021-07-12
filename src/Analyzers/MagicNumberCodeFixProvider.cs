@@ -13,7 +13,7 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 namespace JsonWebToken.Analyzers
 {
     [ExportCodeFixProvider(LanguageNames.CSharp, Name = nameof(MagicNumberCodeFixProvider)), Shared]
-    public class MagicNumberCodeFixProvider : CodeFixProvider
+    public sealed class MagicNumberCodeFixProvider : CodeFixProvider
     {
         public sealed override ImmutableArray<string> FixableDiagnosticIds
         {
@@ -85,8 +85,6 @@ namespace JsonWebToken.Analyzers
             return token;
         }
 
-
-
         private async static Task<Document> ChangeAttribute(Document document, Diagnostic diagnostic, CancellationToken cancellationToken)
         {
             if (diagnostic.Properties.TryGetValue("numericValue", out var value) &&
@@ -112,7 +110,6 @@ namespace JsonWebToken.Analyzers
 
             return document;
         }
-
 
         internal static SyntaxToken CreateMagicStringValue(string value, string type)
         {

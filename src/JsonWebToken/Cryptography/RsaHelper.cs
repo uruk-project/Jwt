@@ -7,17 +7,36 @@ namespace JsonWebToken.Cryptography
 {
     internal static class RsaHelper
     {
-        public static RSASignaturePadding GetPadding(SignatureAlgorithm algorithm)
+        public static RSASignaturePadding GetSignaturePadding(AlgorithmId algorithm)
         {
-            return algorithm.Id switch
+            RSASignaturePadding? padding;
+            if (algorithm <= AlgorithmId.RS256 && algorithm >= AlgorithmId.RS512)
             {
-                AlgorithmId.RS256 => RSASignaturePadding.Pkcs1,
-                AlgorithmId.RS384 => RSASignaturePadding.Pkcs1,
-                AlgorithmId.RS512 => RSASignaturePadding.Pkcs1,
-                AlgorithmId.PS256 => RSASignaturePadding.Pss,
-                AlgorithmId.PS384 => RSASignaturePadding.Pss,
-                AlgorithmId.PS512 => RSASignaturePadding.Pss,
-                _ => throw ThrowHelper.CreateNotSupportedException_Algorithm(algorithm)
+                padding = RSASignaturePadding.Pkcs1;
+            }
+            else if (algorithm <= AlgorithmId.PS256 && algorithm >= AlgorithmId.PS512)
+            {
+                padding = RSASignaturePadding.Pss;
+            }
+            else
+            {
+                ThrowHelper.ThrowNotSupportedException_Algorithm(algorithm);
+                padding = RSASignaturePadding.Pkcs1;
+            }
+
+            return padding;
+        }
+
+        public static RSAEncryptionPadding GetEncryptionPadding(AlgorithmId algorithm)
+        {
+            return algorithm switch
+            {
+                AlgorithmId.RsaOaep => RSAEncryptionPadding.OaepSHA1,
+                AlgorithmId.Rsa1_5 => RSAEncryptionPadding.Pkcs1,
+                AlgorithmId.RsaOaep256 => RSAEncryptionPadding.OaepSHA256,
+                AlgorithmId.RsaOaep384 => RSAEncryptionPadding.OaepSHA384,
+                AlgorithmId.RsaOaep512 => RSAEncryptionPadding.OaepSHA512,
+                _ => throw ThrowHelper.CreateNotSupportedException_AlgorithmForKeyWrap(algorithm)
             };
         }
     }
