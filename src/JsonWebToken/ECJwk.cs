@@ -887,12 +887,12 @@ namespace JsonWebToken
             base.Validate();
             if (X.Length == 0)
             {
-                throw new JwkValidateException($"Member '{JwkParameterNames.X}' must not be empty.");
+                throw new JwkValidationException($"Member '{JwkParameterNames.X}' must not be empty.");
             }
 
             if (Y.Length == 0)
             {
-                throw new JwkValidateException($"Member '{JwkParameterNames.Y}' must not be empty.");
+                throw new JwkValidationException($"Member '{JwkParameterNames.Y}' must not be empty.");
             }
 
             int keySize = Math.DivRem(Crv.KeySizeInBits, 8, out int reminder);
@@ -905,11 +905,11 @@ namespace JsonWebToken
 
             if (SignatureAlgorithm != null && SignatureAlgorithm.Category != AlgorithmCategory.EllipticCurve)
             {
-                throw new JwkValidateException(@$"JWK of type '{Kty}' and '{JwkParameterNames.Alg}' value '{Alg}' are inconsistent.");
+                throw new JwkValidationException(@$"JWK of type '{Kty}' and '{JwkParameterNames.Alg}' value '{Alg}' are inconsistent.");
             }
             else if (KeyManagementAlgorithm != null && KeyManagementAlgorithm.Category != AlgorithmCategory.EllipticCurve)
             {
-                throw new JwkValidateException(@$"JWK of type '{Kty}' and '{JwkParameterNames.Alg}' value '{Alg}' are inconsistent.");
+                throw new JwkValidationException(@$"JWK of type '{Kty}' and '{JwkParameterNames.Alg}' value '{Alg}' are inconsistent.");
             }
         }
     }

@@ -75,8 +75,8 @@ namespace JsonWebToken
             {
                 ThrowHelper.ThrowJwtDescriptorException_HeaderMustBeOfType(utf8Name, new[] {
                     JwtValueKind.Int32,
-                    JwtValueKind.Int32,
-                    JwtValueKind.UInt64,
+                    JwtValueKind.Int64,
+                    JwtValueKind.UInt32,
                     JwtValueKind.UInt64,
                     JwtValueKind.Float,
                     JwtValueKind.Double});

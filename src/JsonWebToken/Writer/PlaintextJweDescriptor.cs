@@ -37,30 +37,23 @@ namespace JsonWebToken
         /// <inheritsdoc />
         public override void Encode(EncodingContext context)
         {
-            if (_payload != null)
-            {
-                int payloadLength = Utf8.GetMaxByteCount(_payload.Length);
-                byte[]? payloadToReturnToPool = null;
-                Span<byte> encodedPayload = payloadLength > Constants.MaxStackallocBytes
-                                 ? (payloadToReturnToPool = ArrayPool<byte>.Shared.Rent(payloadLength))
-                                 : stackalloc byte[payloadLength];
+            int payloadLength = Utf8.GetMaxByteCount(_payload.Length);
+            byte[]? payloadToReturnToPool = null;
+            Span<byte> encodedPayload = payloadLength > Constants.MaxStackallocBytes
+                             ? (payloadToReturnToPool = ArrayPool<byte>.Shared.Rent(payloadLength))
+                             : stackalloc byte[payloadLength];
 
-                try
-                {
-                    int bytesWritten = Utf8.GetBytes(_payload, encodedPayload);
-                    EncryptToken(encodedPayload.Slice(0, bytesWritten), context);
-                }
-                finally
-                {
-                    if (payloadToReturnToPool != null)
-                    {
-                        ArrayPool<byte>.Shared.Return(payloadToReturnToPool);
-                    }
-                }
-            }
-            else
+            try
             {
-                ThrowHelper.ThrowInvalidOperationException_UndefinedPayload();
+                int bytesWritten = Utf8.GetBytes(_payload, encodedPayload);
+                EncryptToken(encodedPayload.Slice(0, bytesWritten), context);
+            }
+            finally
+            {
+                if (payloadToReturnToPool != null)
+                {
+                    ArrayPool<byte>.Shared.Return(payloadToReturnToPool);
+                }
             }
         }
 

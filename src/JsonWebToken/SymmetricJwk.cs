@@ -525,12 +525,12 @@ namespace JsonWebToken
             base.Validate();
             if (_k.Length == 0)
             {
-                throw new JwkValidateException($"Key length must be greater than zero.");
+                throw new JwkValidationException($"Key length must be greater than zero.");
             }
 
             if (SignatureAlgorithm != null && SignatureAlgorithm.Category != AlgorithmCategory.Hmac)
             {
-                throw new JwkValidateException
+                throw new JwkValidationException
                     (@$"JWK of type '{Kty}' and '{JwkParameterNames.Alg}' value '{Alg}' are inconsistent.");
             }
             else if (KeyManagementAlgorithm != null)
@@ -538,7 +538,7 @@ namespace JsonWebToken
                 var category = KeyManagementAlgorithm.Category;
                 if (category != AlgorithmCategory.Aes && category != AlgorithmCategory.AesGcm && category != AlgorithmCategory.Direct)
                 {
-                    throw new JwkValidateException(@$"JWK of type '{Kty}' and '{JwkParameterNames.Alg}' value '{Alg}' are inconsistent.");
+                    throw new JwkValidationException(@$"JWK of type '{Kty}' and '{JwkParameterNames.Alg}' value '{Alg}' are inconsistent.");
                 }
             }
         }
