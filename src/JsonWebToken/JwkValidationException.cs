@@ -6,16 +6,16 @@ using System;
 namespace JsonWebToken
 {
     /// <summary>Represents an exception occuring while checking the validity of a JWK.</summary>
-    public class JwkValidateException : Exception
+    public class JwkValidationException : Exception
     {
-        /// <summary>Initializes a new instance of the <see cref="JwkValidateException"/> class</summary>
-        public JwkValidateException(string? message)
+        /// <summary>Initializes a new instance of the <see cref="JwkValidationException"/> class</summary>
+        public JwkValidationException(string? message)
             : base(message)
         {
         }
 
-        /// <summary>Initializes a new instance of the <see cref="JwkValidateException"/> class</summary>
-        public JwkValidateException(string? message, Exception? innerException)
+        /// <summary>Initializes a new instance of the <see cref="JwkValidationException"/> class</summary>
+        public JwkValidationException(string? message, Exception? innerException)
             : base(message, innerException)
         {
         }

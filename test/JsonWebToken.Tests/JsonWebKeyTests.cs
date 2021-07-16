@@ -501,7 +501,7 @@ namespace JsonWebToken.Tests
         public void Validate_Invalid_ThrowsJwkCheckException(string description, string json)
         {
             var jwk = Jwk.FromJson(json);
-            Assert.ThrowsAny<JwkValidateException>(() => jwk.Validate());
+            Assert.ThrowsAny<JwkValidationException>(() => jwk.Validate());
             Assert.True(true, description);
         }
 
@@ -1158,7 +1158,7 @@ namespace JsonWebToken.Tests
         [Theory]
         public void Check_Invalid(string description, string json)
         {
-            Assert.ThrowsAny<JwkValidateException>(() => Jwk.Validate(json));
+            Assert.ThrowsAny<JwkValidationException>(() => Jwk.Validate(json));
             Assert.True(true, description);
         }
 

@@ -863,7 +863,7 @@ namespace JsonWebToken
 
                     if (keyLength % 256 != 0 || keyLength < 512)
                     {
-                        throw new JwkValidateException(@$"Invalid key length. Must be a multiple of 256 bits, and at least 512 bits. Current key length is {keyLength}.");
+                        throw new JwkValidationException(@$"Invalid key length. Must be a multiple of 256 bits, and at least 512 bits. Current key length is {keyLength}.");
                     }
 
                     CheckRequiredBase64UrlMember(document, JwkParameterNames.E);
@@ -878,32 +878,32 @@ namespace JsonWebToken
                     {
                         if ((privateRsaMembers & 1) == 0)
                         {
-                            throw new JwkValidateException(@$"Missing '{JwkParameterNames.D}' member.");
+                            throw new JwkValidationException(@$"Missing '{JwkParameterNames.D}' member.");
                         }
 
                         if ((privateRsaMembers & 2) == 0)
                         {
-                            throw new JwkValidateException(@$"Missing '{JwkParameterNames.P}' member.");
+                            throw new JwkValidationException(@$"Missing '{JwkParameterNames.P}' member.");
                         }
 
                         if ((privateRsaMembers & 4) == 0)
                         {
-                            throw new JwkValidateException(@$"Missing '{JwkParameterNames.Q}' member.");
+                            throw new JwkValidationException(@$"Missing '{JwkParameterNames.Q}' member.");
                         }
 
                         if ((privateRsaMembers & 8) == 0)
                         {
-                            throw new JwkValidateException(@$"Missing '{JwkParameterNames.DP}' member.");
+                            throw new JwkValidationException(@$"Missing '{JwkParameterNames.DP}' member.");
                         }
 
                         if ((privateRsaMembers & 16) == 0)
                         {
-                            throw new JwkValidateException(@$"Missing '{JwkParameterNames.DQ}' member.");
+                            throw new JwkValidationException(@$"Missing '{JwkParameterNames.DQ}' member.");
                         }
 
                         if ((privateRsaMembers & 32) == 0)
                         {
-                            throw new JwkValidateException(@$"Missing '{JwkParameterNames.QI}' member.");
+                            throw new JwkValidationException(@$"Missing '{JwkParameterNames.QI}' member.");
                         }
                     }
                 }
@@ -913,7 +913,7 @@ namespace JsonWebToken
                     CheckRequiredStringMember(document, JwkParameterNames.Crv, out JsonElement crv);
                     if (!EllipticalCurve.TryParse(crv.GetString()!, out var c))
                     {
-                        throw new JwkValidateException(@$"Invalid '{JwkParameterNames.Crv}' member. Supported values are {string.Join(",", EllipticalCurveNames.All)}.");
+                        throw new JwkValidationException(@$"Invalid '{JwkParameterNames.Crv}' member. Supported values are {string.Join(",", EllipticalCurveNames.All)}.");
                     }
 
                     CheckRequiredBase64UrlMember(document, JwkParameterNames.X);
@@ -929,7 +929,7 @@ namespace JsonWebToken
 #endif
                 else
                 {
-                    throw new JwkValidateException($"Invalid '{JwkParameterNames.Kty}' member. Value '{kty.GetString()}' is not supported. Supported values are {string.Join(",", JwkTypeNames.All)}.");
+                    throw new JwkValidationException($"Invalid '{JwkParameterNames.Kty}' member. Value '{kty.GetString()}' is not supported. Supported values are {string.Join(",", JwkTypeNames.All)}.");
                 }
 
                 bool hasUse = false;
@@ -938,7 +938,7 @@ namespace JsonWebToken
                     if (!use.ValueEquals(JwkUseValues.Sig.EncodedUtf8Bytes)
                         && !use.ValueEquals(JwkUseValues.Enc.EncodedUtf8Bytes))
                     {
-                        throw new JwkValidateException($"Invalid '{JwkParameterNames.Use}' member.  Value '{use.GetString()}' is not supported. Supported values are {string.Join(",", JwkUseValues.All)}.");
+                        throw new JwkValidationException($"Invalid '{JwkParameterNames.Use}' member.  Value '{use.GetString()}' is not supported. Supported values are {string.Join(",", JwkUseValues.All)}.");
                     }
 
                     hasUse = true;
@@ -954,7 +954,7 @@ namespace JsonWebToken
                         hasKeyOps = true;
                         if (item.ValueKind != JsonValueKind.String)
                         {
-                            throw new JwkValidateException($"Invalid '{JwkParameterNames.KeyOps}' item. Must be of type 'String'. Value '{item.GetRawText()}' is of type '{item.ValueKind}'.");
+                            throw new JwkValidationException($"Invalid '{JwkParameterNames.KeyOps}' item. Must be of type 'String'. Value '{item.GetRawText()}' is of type '{item.ValueKind}'.");
                         }
 
                         if (!item.ValueEquals(JwkKeyOpsValues.Sign.EncodedUtf8Bytes)
@@ -966,7 +966,7 @@ namespace JsonWebToken
                             && !item.ValueEquals(JwkKeyOpsValues.Encrypt.EncodedUtf8Bytes)
                             && !item.ValueEquals(JwkKeyOpsValues.Decrypt.EncodedUtf8Bytes))
                         {
-                            throw new JwkValidateException(@$"Invalid '{JwkParameterNames.KeyOps}' member. Supported values are {string.Join(",", JwkKeyOpsValues.All)}.");
+                            throw new JwkValidationException(@$"Invalid '{JwkParameterNames.KeyOps}' member. Supported values are {string.Join(",", JwkKeyOpsValues.All)}.");
                         }
 
                         if (item.ValueEquals(JwkKeyOpsValues.Sign.EncodedUtf8Bytes)
@@ -974,7 +974,7 @@ namespace JsonWebToken
                         {
                             if (hasUse && !use.ValueEquals(JwkUseValues.Sig.EncodedUtf8Bytes))
                             {
-                                throw new JwkValidateException(@$"'{JwkParameterNames.KeyOps}' value '{item.GetString()}' and '{JwkParameterNames.Use}' value '{use.GetString()}' are inconsistent.");
+                                throw new JwkValidationException(@$"'{JwkParameterNames.KeyOps}' value '{item.GetString()}' and '{JwkParameterNames.Use}' value '{use.GetString()}' are inconsistent.");
                             }
 
                             hasSignatureKeyOps = true;
@@ -987,7 +987,7 @@ namespace JsonWebToken
                         {
                             if (hasUse && !use.ValueEquals(JwkUseValues.Enc.EncodedUtf8Bytes))
                             {
-                                throw new JwkValidateException(@$"'{JwkParameterNames.KeyOps}' value '{item.GetString()}' and '{JwkParameterNames.Use}' value '{use.GetString()}' are inconsistent.");
+                                throw new JwkValidationException(@$"'{JwkParameterNames.KeyOps}' value '{item.GetString()}' and '{JwkParameterNames.Use}' value '{use.GetString()}' are inconsistent.");
                             }
 
                             hasEncryptionKeyOps = true;
@@ -1003,17 +1003,17 @@ namespace JsonWebToken
                             || kty.ValueEquals(JwkTypeNames.Rsa.EncodedUtf8Bytes) && signatureAlgorithm.Category != AlgorithmCategory.Rsa
                             || kty.ValueEquals(JwkTypeNames.EllipticCurve.EncodedUtf8Bytes) && signatureAlgorithm.Category != AlgorithmCategory.EllipticCurve)
                         {
-                            throw new JwkValidateException(@$"'{JwkParameterNames.Kty}' value '{kty.GetString()}' and '{JwkParameterNames.Alg}' value '{alg.GetString()}' are inconsistent.");
+                            throw new JwkValidationException(@$"'{JwkParameterNames.Kty}' value '{kty.GetString()}' and '{JwkParameterNames.Alg}' value '{alg.GetString()}' are inconsistent.");
                         }
 
                         if (hasUse && !use.ValueEquals(JwkUseValues.Sig.EncodedUtf8Bytes))
                         {
-                            throw new JwkValidateException(@$"'{JwkParameterNames.Use}' value '{use.GetString()}' and '{JwkParameterNames.Alg}' value '{alg.GetString()}' are inconsistent.");
+                            throw new JwkValidationException(@$"'{JwkParameterNames.Use}' value '{use.GetString()}' and '{JwkParameterNames.Alg}' value '{alg.GetString()}' are inconsistent.");
                         }
 
                         if (hasKeyOps && !hasSignatureKeyOps)
                         {
-                            throw new JwkValidateException(@$"'{JwkParameterNames.KeyOps}' value and '{JwkParameterNames.Alg}' value '{alg.GetString()}' are inconsistent.");
+                            throw new JwkValidationException(@$"'{JwkParameterNames.KeyOps}' value and '{JwkParameterNames.Alg}' value '{alg.GetString()}' are inconsistent.");
                         }
                     }
                     else
@@ -1024,22 +1024,22 @@ namespace JsonWebToken
                               || kty.ValueEquals(JwkTypeNames.Rsa.EncodedUtf8Bytes) && keyManagementAlgorithm.Category != AlgorithmCategory.Rsa
                               || kty.ValueEquals(JwkTypeNames.EllipticCurve.EncodedUtf8Bytes) && keyManagementAlgorithm.Category != AlgorithmCategory.EllipticCurve)
                             {
-                                throw new JwkValidateException(@$"'{JwkParameterNames.Kty}' value '{kty.GetString()}' and '{JwkParameterNames.Alg}' value '{alg.GetString()}' are inconsistent.");
+                                throw new JwkValidationException(@$"'{JwkParameterNames.Kty}' value '{kty.GetString()}' and '{JwkParameterNames.Alg}' value '{alg.GetString()}' are inconsistent.");
                             }
 
                             if (hasUse && !use.ValueEquals(JwkUseValues.Enc.EncodedUtf8Bytes))
                             {
-                                throw new JwkValidateException(@$"'{JwkParameterNames.Use}' value '{use.GetString()}' and '{JwkParameterNames.Alg}' value '{alg.GetString()}' are inconsistent.");
+                                throw new JwkValidationException(@$"'{JwkParameterNames.Use}' value '{use.GetString()}' and '{JwkParameterNames.Alg}' value '{alg.GetString()}' are inconsistent.");
                             }
 
                             if (hasKeyOps && !hasEncryptionKeyOps)
                             {
-                                throw new JwkValidateException(@$"'{JwkParameterNames.KeyOps}' value and '{JwkParameterNames.Alg}' value '{alg.GetString()}' are inconsistent.");
+                                throw new JwkValidationException(@$"'{JwkParameterNames.KeyOps}' value and '{JwkParameterNames.Alg}' value '{alg.GetString()}' are inconsistent.");
                             }
                         }
                         else
                         {
-                            throw new JwkValidateException($"Invalid '{JwkParameterNames.Alg}' member.  Value '{alg.GetString()}' is not supported. Supported values are {string.Join(",", SignatureAlgorithm.SupportedAlgorithms.Select(a => a.Name))} for signature and  {string.Join(",", KeyManagementAlgorithm.SupportedAlgorithms.Select(a => a.Name))} for key management.");
+                            throw new JwkValidationException($"Invalid '{JwkParameterNames.Alg}' member.  Value '{alg.GetString()}' is not supported. Supported values are {string.Join(",", SignatureAlgorithm.SupportedAlgorithms.Select(a => a.Name))} for signature and  {string.Join(",", KeyManagementAlgorithm.SupportedAlgorithms.Select(a => a.Name))} for key management.");
                         }
                     }
                 }
@@ -1051,12 +1051,12 @@ namespace JsonWebToken
                     {
                         if (item.ValueKind != JsonValueKind.String)
                         {
-                            throw new JwkValidateException($"Invalid '{JwkParameterNames.X5c}' item. Must be of type 'String'. Value '{item.GetRawText()}' is of type '{item.ValueKind}'.");
+                            throw new JwkValidationException($"Invalid '{JwkParameterNames.X5c}' item. Must be of type 'String'. Value '{item.GetRawText()}' is of type '{item.ValueKind}'.");
                         }
 
                         if (IsBase64UrlString(item.GetString()!))
                         {
-                            throw new JwkValidateException($"Invalid '{JwkParameterNames.X5c}' value '{item.GetString()}'. Must be a valid base64 encoded string.");
+                            throw new JwkValidationException($"Invalid '{JwkParameterNames.X5c}' value '{item.GetString()}'. Must be a valid base64 encoded string.");
                         }
                     }
                 }
@@ -1068,22 +1068,22 @@ namespace JsonWebToken
             }
             catch (JsonException e)
             {
-                throw new JwkValidateException("Malformed JSON. See inner exception for details.", e);
+                throw new JwkValidationException("Malformed JSON. See inner exception for details.", e);
             }
 
             static void CheckRequiredBase64UrlMember(JsonDocument document, JsonEncodedText memberName)
             {
                 if (!document.RootElement.TryGetProperty(memberName.EncodedUtf8Bytes, out var value))
                 {
-                    throw new JwkValidateException($"Missing '{memberName}' member.");
+                    throw new JwkValidationException($"Missing '{memberName}' member.");
                 }
                 if (value.ValueKind != JsonValueKind.String)
                 {
-                    throw new JwkValidateException($"Invalid '{memberName}' member. Must be of type 'String'. Value '{value.GetRawText()}' is of type '{value.ValueKind}'.");
+                    throw new JwkValidationException($"Invalid '{memberName}' member. Must be of type 'String'. Value '{value.GetRawText()}' is of type '{value.ValueKind}'.");
                 }
                 else if (!IsBase64String(value.GetString()!))
                 {
-                    throw new JwkValidateException($"Invalid '{memberName}' member. Must be a base64-URL encoded string.");
+                    throw new JwkValidationException($"Invalid '{memberName}' member. Must be a base64-URL encoded string.");
                 }
             }
 
@@ -1093,11 +1093,11 @@ namespace JsonWebToken
                 {
                     if (value.ValueKind != JsonValueKind.String)
                     {
-                        throw new JwkValidateException($"Invalid '{memberName}' member. Must be of type 'String'. Value '{value.GetRawText()}' is of type '{value.ValueKind}'.");
+                        throw new JwkValidationException($"Invalid '{memberName}' member. Must be of type 'String'. Value '{value.GetRawText()}' is of type '{value.ValueKind}'.");
                     }
                     else if (!IsBase64UrlString(value.GetString()!))
                     {
-                        throw new JwkValidateException($"Invalid '{memberName}' member. Must be a base64-URL encoded string.");
+                        throw new JwkValidationException($"Invalid '{memberName}' member. Must be a base64-URL encoded string.");
                     }
 
                     return true;
@@ -1207,19 +1207,19 @@ namespace JsonWebToken
                 {
                     if (value.ValueKind != JsonValueKind.String)
                     {
-                        throw new JwkValidateException($"Invalid '{memberName}' member. Must be of type 'String'. Value '{value.GetRawText()}' is of type '{value.ValueKind}'.");
+                        throw new JwkValidationException($"Invalid '{memberName}' member. Must be of type 'String'. Value '{value.GetRawText()}' is of type '{value.ValueKind}'.");
                     }
 
                     string s = value.GetString()!;
                     if (!IsBase64UrlString(s))
                     {
-                        throw new JwkValidateException($"Invalid '{memberName}' member. Must be a base64-URL encoded string.");
+                        throw new JwkValidationException($"Invalid '{memberName}' member. Must be a base64-URL encoded string.");
                     }
 
                     int currentLength = Base64Url.GetArraySizeRequiredToDecode(s.Length) * 8;
                     if (length != 0 && length != currentLength)
                     {
-                        throw new JwkValidateException($"Invalid '{memberName}' member. Must be a base64-URL encoded string with a length of {length}. Current length is {currentLength}.");
+                        throw new JwkValidationException($"Invalid '{memberName}' member. Must be a base64-URL encoded string with a length of {length}. Current length is {currentLength}.");
                     }
 
                     return 1;
@@ -1232,12 +1232,12 @@ namespace JsonWebToken
             {
                 if (!document.RootElement.TryGetProperty(memberName.EncodedUtf8Bytes, out value))
                 {
-                    throw new JwkValidateException($"Missing '{memberName}' member.");
+                    throw new JwkValidationException($"Missing '{memberName}' member.");
                 }
 
                 if (value.ValueKind != JsonValueKind.String)
                 {
-                    throw new JwkValidateException($"Invalid '{memberName}' member. Must be of type 'String'. Value '{value.GetRawText()}' is of type '{value.ValueKind}'.");
+                    throw new JwkValidationException($"Invalid '{memberName}' member. Must be of type 'String'. Value '{value.GetRawText()}' is of type '{value.ValueKind}'.");
                 }
             }
 
@@ -1256,7 +1256,7 @@ namespace JsonWebToken
                 {
                     if (value.ValueKind != type)
                     {
-                        throw new JwkValidateException($"Invalid '{memberName}' member. Must be of type '{type}'. Value '{value.GetRawText()}' is of type '{value.ValueKind}'.");
+                        throw new JwkValidationException($"Invalid '{memberName}' member. Must be of type '{type}'. Value '{value.GetRawText()}' is of type '{value.ValueKind}'.");
                     }
 
                     return true;
@@ -1271,7 +1271,7 @@ namespace JsonWebToken
                 {
                     if (value.ValueKind != type)
                     {
-                        throw new JwkValidateException($"Invalid '{memberName}' member. Must be of type '{type}'. Value '{value.GetRawText()}' is of type '{value.ValueKind}'.");
+                        throw new JwkValidationException($"Invalid '{memberName}' member. Must be of type '{type}'. Value '{value.GetRawText()}' is of type '{value.ValueKind}'.");
                     }
                 }
             }
@@ -1297,7 +1297,7 @@ namespace JsonWebToken
             {
                 if (!Use.Equals(JwkUseValues.Sig) && !Use.Equals(JwkUseValues.Enc))
                 {
-                    throw new JwkValidateException($"Invalid '{JwkParameterNames.Use}' member.  Value '{Use}' is not supported. Supported values are {string.Join(",", JwkUseValues.All)}.");
+                    throw new JwkValidationException($"Invalid '{JwkParameterNames.Use}' member.  Value '{Use}' is not supported. Supported values are {string.Join(",", JwkUseValues.All)}.");
                 }
 
                 hasUse = true;
@@ -1321,14 +1321,14 @@ namespace JsonWebToken
                         && !item.Equals(JwkKeyOpsValues.Encrypt)
                         && !item.Equals(JwkKeyOpsValues.Decrypt))
                     {
-                        throw new JwkValidateException(@$"Invalid '{JwkParameterNames.KeyOps}' value '{item}'. Supported values are {string.Join(",", JwkKeyOpsValues.All)}.");
+                        throw new JwkValidationException(@$"Invalid '{JwkParameterNames.KeyOps}' value '{item}'. Supported values are {string.Join(",", JwkKeyOpsValues.All)}.");
                     }
 
                     if (item.Equals(JwkKeyOpsValues.Sign) || item.Equals(JwkKeyOpsValues.Verify))
                     {
                         if (hasUse && !Use.Equals(JwkUseValues.Sig))
                         {
-                            throw new JwkValidateException(@$"'{JwkParameterNames.KeyOps}' value '{item}' and '{JwkParameterNames.Use}' value '{Use}' are inconsistent.");
+                            throw new JwkValidationException(@$"'{JwkParameterNames.KeyOps}' value '{item}' and '{JwkParameterNames.Use}' value '{Use}' are inconsistent.");
                         }
 
                         hasSignatureKeyOps = true;
@@ -1341,7 +1341,7 @@ namespace JsonWebToken
                     {
                         if (hasUse && !Use.Equals(JwkUseValues.Enc))
                         {
-                            throw new JwkValidateException(@$"'{JwkParameterNames.KeyOps}' value '{item}' and '{JwkParameterNames.Use}' value '{Use}' are inconsistent.");
+                            throw new JwkValidationException(@$"'{JwkParameterNames.KeyOps}' value '{item}' and '{JwkParameterNames.Use}' value '{Use}' are inconsistent.");
                         }
 
                         hasEncryptionKeyOps = true;
@@ -1353,30 +1353,30 @@ namespace JsonWebToken
             {
                 if (hasUse && !Use.Equals(JwkUseValues.Sig))
                 {
-                    throw new JwkValidateException(@$"'{JwkParameterNames.Use}' value '{use}' and '{JwkParameterNames.Alg}' value '{_alg}' are inconsistent.");
+                    throw new JwkValidationException(@$"'{JwkParameterNames.Use}' value '{use}' and '{JwkParameterNames.Alg}' value '{_alg}' are inconsistent.");
                 }
 
                 if (hasKeyOps && !hasSignatureKeyOps)
                 {
-                    throw new JwkValidateException(@$"'{JwkParameterNames.KeyOps}' value and '{JwkParameterNames.Alg}' value '{_alg}' are inconsistent.");
+                    throw new JwkValidationException(@$"'{JwkParameterNames.KeyOps}' value and '{JwkParameterNames.Alg}' value '{_alg}' are inconsistent.");
                 }
             }
             else if (KeyManagementAlgorithm != null)
             {
                 if (hasUse && !Use.Equals(JwkUseValues.Enc))
                 {
-                    throw new JwkValidateException(@$"'{JwkParameterNames.Use}' value '{use}' and '{JwkParameterNames.Alg}' value '{_alg}' are inconsistent.");
+                    throw new JwkValidationException(@$"'{JwkParameterNames.Use}' value '{use}' and '{JwkParameterNames.Alg}' value '{_alg}' are inconsistent.");
                 }
 
                 if (hasKeyOps && !hasEncryptionKeyOps)
                 {
-                    throw new JwkValidateException(@$"'{JwkParameterNames.KeyOps}' value and '{JwkParameterNames.Alg}' value '{_alg}' are inconsistent.");
+                    throw new JwkValidationException(@$"'{JwkParameterNames.KeyOps}' value and '{JwkParameterNames.Alg}' value '{_alg}' are inconsistent.");
                 }
             }
             else if (_alg.EncodedUtf8Bytes.Length != 0)
             {
                 // 'alg' is defined, but with unknow value
-                throw new JwkValidateException($"Invalid '{JwkParameterNames.Alg}' member.  Value '{_alg}' is not supported. Supported values are {string.Join(",", SignatureAlgorithm.SupportedAlgorithms.Select(a => a.Name))} for signature and  {string.Join(",", KeyManagementAlgorithm.SupportedAlgorithms.Select(a => a.Name))} for key management.");
+                throw new JwkValidationException($"Invalid '{JwkParameterNames.Alg}' member.  Value '{_alg}' is not supported. Supported values are {string.Join(",", SignatureAlgorithm.SupportedAlgorithms.Select(a => a.Name))} for signature and  {string.Join(",", KeyManagementAlgorithm.SupportedAlgorithms.Select(a => a.Name))} for key management.");
 
             }
 
@@ -1391,7 +1391,7 @@ namespace JsonWebToken
 
                 if (length != 0 && length != value.Length * 8)
                 {
-                    throw new JwkValidateException($"Invalid '{memberName}' member. Must be a base64-URL encoded string with a length of {length} bits. Current length is {value.Length * 8} bits.");
+                    throw new JwkValidationException($"Invalid '{memberName}' member. Must be a base64-URL encoded string with a length of {length} bits. Current length is {value.Length * 8} bits.");
                 }
 
                 return 1;

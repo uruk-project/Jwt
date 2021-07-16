@@ -35,27 +35,17 @@ namespace JsonWebToken
         /// <inheritdoc/>
         public override void Encode(EncodingContext context)
         {
-            if (_payload is not null)
-            {
-                using var bufferWriter = new PooledByteBufferWriter();
-                var ctx = new EncodingContext(bufferWriter, context);
-                using var writer = new Utf8JsonWriter(ctx.BufferWriter);
-                _payload.WriteTo(writer);
-                EncryptToken(bufferWriter.WrittenSpan, context);
-            }
-            else
-            {
-                ThrowHelper.ThrowInvalidOperationException_UndefinedPayload();
-            }
+            using var bufferWriter = new PooledByteBufferWriter();
+            var ctx = new EncodingContext(bufferWriter, context);
+            using var writer = new Utf8JsonWriter(ctx.BufferWriter);
+            _payload.WriteTo(writer);
+            EncryptToken(bufferWriter.WrittenSpan, context);
         }
 
         /// <inheritdoc/>
         public override void Validate()
         {
-            if (_payload is not null)
-            {
-                _payload.Validate();
-            }
+            _payload.Validate();
         }
     }
 }

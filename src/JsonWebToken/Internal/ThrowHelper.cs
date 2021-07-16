@@ -261,11 +261,6 @@ namespace JsonWebToken
         private static Exception CreateInvalidOperationException_UnexpectedKeyType(Jwk key, string expectedType) => new InvalidOperationException($"Unexpected key type: '{key.Kty}'. Expected a key of type '{expectedType}'.");
 
         [DoesNotReturn]
-        internal static void ThrowInvalidOperationException_UndefinedPayload() => throw CreateInvalidOperationExceptionUndefinedPayload();
-        [MethodImpl(MethodImplOptions.NoInlining)]
-        private static Exception CreateInvalidOperationExceptionUndefinedPayload() => new InvalidOperationException("The 'Payload' property is not defined.");
-
-        [DoesNotReturn]
         internal static void ThrowArgumentException_DestinationTooSmall(int size, int requiredSize) => throw CreateArgumentException_DestinationTooSmall(size, requiredSize);
         [MethodImpl(MethodImplOptions.NoInlining)]
         private static Exception CreateArgumentException_DestinationTooSmall(int size, int requiredSize) => new ArgumentException($"destination is too small. Required: {requiredSize}. Current: {size}.", "destination");
