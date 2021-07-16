@@ -337,8 +337,15 @@ namespace JsonWebToken
 
         private static void Verify(RSAParameters rsaParameters)
         {
-            if (rsaParameters.Modulus is null) throw new ArgumentNullException(nameof(rsaParameters.Modulus));
-            if (rsaParameters.Exponent is null) throw new ArgumentNullException(nameof(rsaParameters.Exponent));
+            if (rsaParameters.Modulus is null)
+            {
+                throw new ArgumentNullException(nameof(rsaParameters), $"The property '{nameof(rsaParameters.Modulus)}' cannot be null.");
+            }
+
+            if (rsaParameters.Exponent is null)
+            {
+                throw new ArgumentNullException(nameof(rsaParameters), $"The property '{nameof(rsaParameters.Exponent)}' cannot be null.");
+            }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

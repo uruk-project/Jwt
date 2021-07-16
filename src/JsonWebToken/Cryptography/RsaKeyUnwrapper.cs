@@ -9,12 +9,9 @@ using System.Security.Cryptography;
 
 namespace JsonWebToken.Cryptography
 {
-    /// <summary>
-    /// Provides RSA key key unwrapping services.
-    /// </summary>
+    /// <summary>Provides RSA key unwrapping services.</summary>
     internal sealed class RsaKeyUnwrapper : KeyUnwrapper
     {
-        private readonly RsaJwk _key;
         private readonly RSA _rsa;
         private readonly RSAEncryptionPadding _padding;
         private bool _disposed;
@@ -24,7 +21,6 @@ namespace JsonWebToken.Cryptography
         {
             Debug.Assert(key.SupportKeyManagement(algorithm));
             Debug.Assert(algorithm.Category == AlgorithmCategory.Rsa);
-            _key = key;
 #if SUPPORT_SPAN_CRYPTO
             _rsa = RSA.Create(key.ExportParameters());
 #else
@@ -35,15 +31,7 @@ namespace JsonWebToken.Cryptography
 #endif
             _rsa.ImportParameters(key.ExportParameters());
 #endif
-            _padding = algorithm.Id switch
-            {
-                AlgorithmId.RsaOaep => RSAEncryptionPadding.OaepSHA1,
-                AlgorithmId.Rsa1_5 => RSAEncryptionPadding.Pkcs1,
-                AlgorithmId.RsaOaep256 => RSAEncryptionPadding.OaepSHA256,
-                AlgorithmId.RsaOaep384 => RSAEncryptionPadding.OaepSHA384,
-                AlgorithmId.RsaOaep512 => RSAEncryptionPadding.OaepSHA512,
-                _ => throw ThrowHelper.CreateNotSupportedException_AlgorithmForKeyWrap(algorithm)
-            };
+            _padding = RsaHelper.GetEncryptionPadding(algorithm.Id);
         }
 
         /// <inheritsdoc />
@@ -71,7 +59,7 @@ namespace JsonWebToken.Cryptography
                 bool decrypted;
                 if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                 {
-                    int keySizeBytes = _key.KeySizeInBits / 8;
+                    int keySizeBytes = _rsa.KeySize / 8;
 
                     // OpenSSL does not take a length value for the destination, so it can write out of bounds.
                     // To prevent the OOB write, decrypt into a temporary buffer.
@@ -83,7 +71,7 @@ namespace JsonWebToken.Cryptography
                         try
                         {
                             // RSA up through 4096 stackalloc
-                            if (_key.KeySizeInBits <= 4096)
+                            if (_rsa.KeySize <= 4096)
                             {
                                 tmp = stackalloc byte[keySizeBytes];
                             }

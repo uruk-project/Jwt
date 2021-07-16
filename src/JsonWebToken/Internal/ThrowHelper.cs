@@ -10,6 +10,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
 using System.Text.Json;
+using JsonWebToken.Cryptography;
 
 namespace JsonWebToken
 {
@@ -146,6 +147,11 @@ namespace JsonWebToken
         internal static void ThrowNotSupportedException_AlgorithmForKeyWrap(KeyManagementAlgorithm? algorithm) => throw CreateNotSupportedException_AlgorithmForKeyWrap(algorithm);
         [MethodImpl(MethodImplOptions.NoInlining)]
         internal static Exception CreateNotSupportedException_AlgorithmForKeyWrap(KeyManagementAlgorithm? algorithm) => new NotSupportedException($"Key wrap is not supported for algorithm: '{algorithm}'.");
+        
+        [DoesNotReturn]
+        internal static void ThrowNotSupportedException_AlgorithmForKeyWrap(AlgorithmId algorithm) => throw CreateNotSupportedException_AlgorithmForKeyWrap(algorithm);
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        internal static Exception CreateNotSupportedException_AlgorithmForKeyWrap(AlgorithmId algorithm) => new NotSupportedException($"Key wrap is not supported for algorithm: '{algorithm}'.");
 
         [DoesNotReturn]
         internal static void ThrowArgumentOutOfRangeException_InvalidEcdsaKeySize(Jwk key, SignatureAlgorithm algorithm, int validKeySize, int keySize) => throw CreateArgumentOutOfRangeException_InvalidEcdsaKeySize(key, algorithm, validKeySize, keySize);
@@ -191,6 +197,11 @@ namespace JsonWebToken
         internal static void ThrowNotSupportedException_Algorithm(SignatureAlgorithm algorithm) => throw CreateNotSupportedException_Algorithm(algorithm);
         [MethodImpl(MethodImplOptions.NoInlining)]
         internal static Exception CreateNotSupportedException_Algorithm(SignatureAlgorithm algorithm) => new NotSupportedException($"The algorithm '{algorithm}' is not supported for this kind of JWK.");
+
+        [DoesNotReturn]
+        internal static void ThrowNotSupportedException_Algorithm(AlgorithmId algorithm) => throw CreateNotSupportedException_Algorithm(algorithm);
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        internal static Exception CreateNotSupportedException_Algorithm(AlgorithmId algorithm) => new NotSupportedException($"The algorithm '{algorithm}' is not supported.");
 
         [DoesNotReturn]
         internal static void ThrowNotSupportedException_Algorithm(KeyManagementAlgorithm algorithm) => throw CreateNotSupportedException_Algorithm(algorithm);
