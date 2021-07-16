@@ -68,17 +68,16 @@ namespace JsonWebToken
         }
 
         /// <inheritdoc/>
-        public override JwtPayload? Payload
+        public override JwtPayload Payload
         {
             get => _payload;
-            init
+            set
             {
                 if (value is null)
                 {
                     ThrowHelper.ThrowArgumentNullException(ExceptionArgument.value);
                 }
 
-                _payload.CopyTo(value);
                 _payload = value;
             }
         }
@@ -165,17 +164,12 @@ namespace JsonWebToken
         }
 
         internal bool TryGetClaim(JsonEncodedText name, out JwtMember value)
-        {
-            return _payload.TryGetValue(name, out value);
-        }
+            => _payload.TryGetValue(name, out value);
 
-        internal bool TryGetClaim(string name, out JwtMember value)
-        {
-            return _payload.TryGetValue(JsonEncodedText.Encode(name), out value);
-        }
+        internal bool TryGetClaim(string name, out JwtMember value) 
+            => _payload.TryGetValue(JsonEncodedText.Encode(name), out value);
 
         /// <summary>Validates the presence and the type of a required claim.</summary>
-        /// <param name="utf8Name"></param>
         protected void CheckRequiredClaimAsString(JsonEncodedText utf8Name)
         {
             if (!_payload.TryGetValue(utf8Name, out var claim))
@@ -190,7 +184,6 @@ namespace JsonWebToken
         }
 
         /// <summary>Validates the presence and the type of a required claim.</summary>
-        /// <param name="utf8Name"></param>
         protected void CheckRequiredClaimAsNumber(JsonEncodedText utf8Name)
         {
             if (!_payload.TryGetValue(utf8Name, out var claim))
@@ -210,7 +203,6 @@ namespace JsonWebToken
             }
         }
         /// <summary>Validates the presence and the type of a required claim.</summary>
-        /// <param name="utf8Name"></param>
         protected void CheckRequiredClaimAsInteger(JsonEncodedText utf8Name)
         {
             if (!_payload.TryGetValue(utf8Name, out var claim))
@@ -229,7 +221,6 @@ namespace JsonWebToken
         }
 
         /// <summary>Validates the presence and the type of a required claim.</summary>
-        /// <param name="utf8Name"></param>
         protected void CheckRequiredClaimAsStringOrArray(JsonEncodedText utf8Name)
         {
             if (!_payload.TryGetValue(utf8Name, out var claim))
@@ -244,7 +235,6 @@ namespace JsonWebToken
         }
 
         /// <summary>Validates the presence and the type of a required claim.</summary>
-        /// <param name="utf8Name"></param>
         protected void CheckRequiredClaimAsObject(JsonEncodedText utf8Name)
         {
             if (!_payload.TryGetValue(utf8Name, out var claim))
@@ -259,7 +249,6 @@ namespace JsonWebToken
         }
 
         /// <summary>Validates the type of a optional claim.</summary>
-        /// <param name="utf8Name"></param>
         protected void OptionalString(JsonEncodedText utf8Name)
         {
             if (_payload.TryGetValue(utf8Name, out var claim))
@@ -272,7 +261,6 @@ namespace JsonWebToken
         }
 
         /// <summary>Validates the type of a optional claim.</summary>
-        /// <param name="utf8Name"></param>
         protected void CheckOptionalClaimAsNumber(JsonEncodedText utf8Name)
         {
             if (_payload.TryGetValue(utf8Name, out var claim))
@@ -291,7 +279,6 @@ namespace JsonWebToken
         }
 
         /// <summary>Validates the type of a optional claim.</summary>
-        /// <param name="utf8Name"></param>
         protected void CheckOptionalClaimAsInteger(JsonEncodedText utf8Name)
         {
             if (_payload.TryGetValue(utf8Name, out var claim))
@@ -308,7 +295,6 @@ namespace JsonWebToken
         }
 
         /// <summary>Validates the type of a optional claim.</summary>
-        /// <param name="utf8Name"></param>
         protected void CheckOptionalClaimAsStringOrArray(JsonEncodedText utf8Name)
         {
             if (_payload.TryGetValue(utf8Name, out var claim))
@@ -321,7 +307,6 @@ namespace JsonWebToken
         }
 
         /// <summary>Validates the type of a optional claim.</summary>
-        /// <param name="utf8Name"></param>
         protected void CheckOptionalClaimAsObject(JsonEncodedText utf8Name)
         {
             if (_payload.TryGetValue(utf8Name, out var claim))
@@ -331,6 +316,11 @@ namespace JsonWebToken
                     ThrowHelper.ThrowJwtDescriptorException_ClaimMustBeOfType(utf8Name, JwtValueKind.Object);
                 }
             }
+        }
+
+        /// <inheritdoc/>
+        public override void Validate()
+        {
         }
     }
 }

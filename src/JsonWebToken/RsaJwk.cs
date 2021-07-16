@@ -1079,5 +1079,70 @@ namespace JsonWebToken
                 CryptographicOperations.ZeroMemory(_parameters.Q);
             }
         }
+
+        /// <inheritdoc/>
+        public override void Validate()
+        {
+            base.Validate();
+
+            int keyLength = N.Length * 8;
+            if (keyLength % 256 != 0 || keyLength < 512)
+            {
+                throw new JwkValidateException(@$"Invalid key length. Must be a multiple of 256 bits, and at least 512 bits. Current key length is {keyLength}.");
+            }
+
+            if (E.Length == 0)
+            {
+                throw new JwkValidateException(@$"Invalid RSA parameter 'e' (exponent). Must be non empty.");
+            }
+
+            int privateRsaMembers = CheckOptionalBase64UrlMember(_parameters.D, JwkParameterNames.D, keyLength);
+            privateRsaMembers |= CheckOptionalBase64UrlMember(_parameters.P, JwkParameterNames.P, keyLength / 2) << 1;
+            privateRsaMembers |= CheckOptionalBase64UrlMember(_parameters.Q, JwkParameterNames.Q, keyLength / 2) << 2;
+            privateRsaMembers |= CheckOptionalBase64UrlMember(_parameters.DP, JwkParameterNames.DP, keyLength / 2) << 3;
+            privateRsaMembers |= CheckOptionalBase64UrlMember(_parameters.DQ, JwkParameterNames.DQ, keyLength / 2) << 4;
+            privateRsaMembers |= CheckOptionalBase64UrlMember(_parameters.InverseQ, JwkParameterNames.QI, keyLength / 2) << 5;
+            if (privateRsaMembers != 0 && privateRsaMembers != (1 | 2 | 4 | 8 | 16 | 32))
+            {
+                if ((privateRsaMembers & 1) == 0)
+                {
+                    throw new JwkValidateException(@$"Missing '{JwkParameterNames.D}' member.");
+                }
+
+                if ((privateRsaMembers & 2) == 0)
+                {
+                    throw new JwkValidateException(@$"Missing '{JwkParameterNames.P}' member.");
+                }
+
+                if ((privateRsaMembers & 4) == 0)
+                {
+                    throw new JwkValidateException(@$"Missing '{JwkParameterNames.Q}' member.");
+                }
+
+                if ((privateRsaMembers & 8) == 0)
+                {
+                    throw new JwkValidateException(@$"Missing '{JwkParameterNames.DP}' member.");
+                }
+
+                if ((privateRsaMembers & 16) == 0)
+                {
+                    throw new JwkValidateException(@$"Missing '{JwkParameterNames.DQ}' member.");
+                }
+
+                if ((privateRsaMembers & 32) == 0)
+                {
+                    throw new JwkValidateException(@$"Missing '{JwkParameterNames.QI}' member.");
+                }
+            }
+
+            if (SignatureAlgorithm != null && SignatureAlgorithm.Category != AlgorithmCategory.Rsa)
+            {
+                throw new JwkValidateException(@$"JWK of type '{Kty}' and '{JwkParameterNames.Alg}' value '{Alg}' are inconsistent.");
+            }
+            else if (KeyManagementAlgorithm != null && KeyManagementAlgorithm.Category != AlgorithmCategory.Rsa)
+            {
+                throw new JwkValidateException(@$"JWK of type '{Kty}' and '{JwkParameterNames.Alg}' value '{Alg}' are inconsistent.");
+            }
+        }
     }
 }

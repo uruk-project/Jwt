@@ -518,5 +518,29 @@ namespace JsonWebToken
                 CryptographicOperations.ZeroMemory(_k);
             }
         }
+
+        /// <inheritdoc/>
+        public override void Validate()
+        {
+            base.Validate();
+            if (_k.Length == 0)
+            {
+                throw new JwkValidateException($"Key length must be greater than zero.");
+            }
+
+            if (SignatureAlgorithm != null && SignatureAlgorithm.Category != AlgorithmCategory.Hmac)
+            {
+                throw new JwkValidateException
+                    (@$"JWK of type '{Kty}' and '{JwkParameterNames.Alg}' value '{Alg}' are inconsistent.");
+            }
+            else if (KeyManagementAlgorithm != null)
+            {
+                var category = KeyManagementAlgorithm.Category;
+                if (category != AlgorithmCategory.Aes && category != AlgorithmCategory.AesGcm && category != AlgorithmCategory.Direct)
+                {
+                    throw new JwkValidateException(@$"JWK of type '{Kty}' and '{JwkParameterNames.Alg}' value '{Alg}' are inconsistent.");
+                }
+            }
+        }
     }
 }

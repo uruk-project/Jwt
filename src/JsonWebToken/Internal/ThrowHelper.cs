@@ -101,6 +101,16 @@ namespace JsonWebToken
         internal static void ThrowInvalidOperationException_ConcurrentOperationsNotSupported() => throw CreateInvalidOperationException_ConcurrentOperationsNotSupported();
         [MethodImpl(MethodImplOptions.NoInlining)]
         private static Exception CreateInvalidOperationException_ConcurrentOperationsNotSupported() => new InvalidOperationException("Operations that change non-concurrent collections must have exclusive access. A concurrent update was performed on this collection and corrupted its state. The collection's state is no longer correct.");
+        
+        [DoesNotReturn]
+        internal static void ThrowInvalidOperationException_AlreadyInitialized(ExceptionArgument argument) => throw CreateInvalidOperationException_AlreadyInitialized(argument);
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private static Exception CreateInvalidOperationException_AlreadyInitialized(ExceptionArgument argument) => new InvalidOperationException($"The property '{argument}' is already initialized. You cannot set more than once this property.");
+        
+        [DoesNotReturn]
+        internal static void ThrowInvalidOperationException_NotInitialized(ExceptionArgument argument) => throw CreateInvalidOperationException_NotInitialized(argument);
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private static Exception CreateInvalidOperationException_NotInitialized(ExceptionArgument argument) => new InvalidOperationException($"The '{argument}' property is not initialized. You must set a value before to use it.");
 
         [DoesNotReturn]
         internal static void ThrowArgumentOutOfRangeException_MustBeGreaterOrEqualToZero(ExceptionArgument argument, int value) => throw CreateArgumentOutOfRangeException_MustBeGreaterOrEqualToZero(argument, value);
@@ -181,7 +191,7 @@ namespace JsonWebToken
         [DoesNotReturn]
         internal static void ThrowArgumentOutOfRangeException_SigningKeyTooSmall(Jwk key, int minimalValue) => throw CreateArgumentOutOfRangeException_SigningKeyTooSmall(key, minimalValue);
         [MethodImpl(MethodImplOptions.NoInlining)]
-        private static Exception CreateArgumentOutOfRangeException_SigningKeyTooSmall(Jwk key, int minimalValue) => new ArgumentOutOfRangeException(nameof(key.KeySizeInBits), key.Kid.EncodedUtf8Bytes.IsEmpty ? $"The signing key cannot be smaller than '{minimalValue}' bits. Key size: '{key.KeySizeInBits}'." : $"The signing key '{key.Kid}' cannot be smaller than '{minimalValue}' bits. Key size: '{key.KeySizeInBits}'.");
+        private static Exception CreateArgumentOutOfRangeException_SigningKeyTooSmall(Jwk key, int minimalValue) => new ArgumentOutOfRangeException(nameof(key), key.Kid.EncodedUtf8Bytes.IsEmpty ? $"The signing key cannot be smaller than '{minimalValue}' bits. Key size: '{key.KeySizeInBits}'." : $"The signing key '{key.Kid}' cannot be smaller than '{minimalValue}' bits. Key size: '{key.KeySizeInBits}'.");
 
         [DoesNotReturn]
         internal static void ThrowArgumentOutOfRangeException_EncryptionKeyTooSmall(EncryptionAlgorithm algorithm, int minimalValue, int currentKeySize) => throw CreateArgumentOutOfRangeException_EncryptionKeyTooSmall(algorithm, minimalValue, currentKeySize);

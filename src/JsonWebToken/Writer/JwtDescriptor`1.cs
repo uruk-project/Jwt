@@ -11,7 +11,7 @@ namespace JsonWebToken
     public abstract class JwtDescriptor<TPayload> : JwtDescriptor where TPayload : class
     {
         /// <summary>Gets or sets the payload.</summary>
-        public abstract TPayload? Payload { get; init; }
+        public abstract TPayload Payload { get; set; }
 
         private string GetDebuggerDisplay()
         {

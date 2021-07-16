@@ -11,6 +11,7 @@ namespace JsonWebToken
     public abstract partial class JwtDescriptor
     {
         private JwtHeader _header;
+        private bool _headerInitialized;
 
         /// <summary>Initializes a new instance of <see cref="JwtDescriptor"/>.</summary>
         protected JwtDescriptor()
@@ -22,29 +23,31 @@ namespace JsonWebToken
         public JwtHeader Header
         {
             get => _header;
-            init
+            set
             {
                 if (value is null)
                 {
                     ThrowHelper.ThrowArgumentNullException(ExceptionArgument.value);
                 }
 
+                if (_headerInitialized)
+                {
+                    ThrowHelper.ThrowInvalidOperationException_AlreadyInitialized(ExceptionArgument.header);
+                }
+
+                _headerInitialized = true;
                 _header.CopyTo(value);
                 _header = value;
             }
         }
 
         /// <summary>Encodes the current <see cref="JwtDescriptor"/> into it compact representation.</summary>
-        /// <param name="context"></param>
         public abstract void Encode(EncodingContext context);
 
         /// <summary>Validates the current <see cref="JwtDescriptor"/>.</summary>
-        public virtual void Validate()
-        {
-        }
+        public abstract void Validate();
 
         /// <summary>Validates the presence and the type of a required claim.</summary>
-        /// <param name="utf8Name"></param>
         protected void CheckRequiredHeaderParameterAsString(JsonEncodedText utf8Name)
         {
             if (!_header.TryGetValue(utf8Name, out var parameter))
@@ -61,7 +64,6 @@ namespace JsonWebToken
         }
 
         /// <summary>Validates the presence and the type of a required claim.</summary>
-        /// <param name="utf8Name"></param>
         protected void CheckRequiredHeaderParameterAsNumber(JsonEncodedText utf8Name)
         {
             if (!_header.TryGetValue(utf8Name, out var parameter))
@@ -82,7 +84,6 @@ namespace JsonWebToken
         }
 
         /// <summary>Validates the presence and the type of a required claim.</summary>
-        /// <param name="utf8Name"></param>
         protected void CheckRequiredHeaderParameterAsInteger(JsonEncodedText utf8Name)
         {
             if (!_header.TryGetValue(utf8Name, out var parameter))
@@ -101,7 +102,6 @@ namespace JsonWebToken
         }
 
         /// <summary>Validates the presence and the type of a required claim.</summary>
-        /// <param name="utf8Name"></param>
         protected void CheckRequiredHeaderParameterAsStringOrArray(JsonEncodedText utf8Name)
         {
             if (!_header.TryGetValue(utf8Name, out var parameter))
@@ -119,7 +119,6 @@ namespace JsonWebToken
         }
 
         /// <summary>Validates the presence and the type of a required claim.</summary>
-        /// <param name="utf8Name"></param>
         protected void CheckRequiredHeaderParameterAsObject(JsonEncodedText utf8Name)
         {
             if (!_header.TryGetValue(utf8Name, out var parameter))
@@ -134,6 +133,6 @@ namespace JsonWebToken
         }
 
         private string GetDebuggerDisplay()
-            => Header.ToString();
+            => _header.ToString();
     }
 }

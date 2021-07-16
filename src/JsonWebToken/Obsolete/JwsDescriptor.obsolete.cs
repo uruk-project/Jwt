@@ -2,11 +2,8 @@
 // Licensed under the MIT license. See LICENSE in the project root for license information.
 
 using System;
-using System.Buffers;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Diagnostics;
-using System.Text.Json;
 
 namespace JsonWebToken
 {

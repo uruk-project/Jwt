@@ -9,21 +9,37 @@ namespace JsonWebToken
     /// <summary>Defines an encrypted JWT with a <see cref="string"/> payload.</summary>
     public sealed class PlaintextJweDescriptor : JweDescriptor<string>
     {
+        private string _payload;
+
         /// <summary>Initializes a new instance of <see cref="PlaintextJweDescriptor"/>.</summary>
         public PlaintextJweDescriptor(Jwk encryptionKey, KeyManagementAlgorithm alg, EncryptionAlgorithm enc, CompressionAlgorithm? zip = null, string? typ = JwtMediaTypeValues.Plain, string? cty = null)
             : base(encryptionKey, alg, enc, zip, typ, cty)
         {
+            _payload = string.Empty;
         }
 
-        /// <inheritsdoc />
-        public override string? Payload { get; init; }
+
+        /// <inheritdoc/>
+        public override string Payload
+        {
+            get => _payload;
+            set
+            {
+                if (value is null)
+                {
+                    ThrowHelper.ThrowArgumentNullException(ExceptionArgument.value);
+                }
+
+                _payload = value;
+            }
+        }
 
         /// <inheritsdoc />
         public override void Encode(EncodingContext context)
         {
-            if (Payload != null)
+            if (_payload != null)
             {
-                int payloadLength = Utf8.GetMaxByteCount(Payload.Length);
+                int payloadLength = Utf8.GetMaxByteCount(_payload.Length);
                 byte[]? payloadToReturnToPool = null;
                 Span<byte> encodedPayload = payloadLength > Constants.MaxStackallocBytes
                                  ? (payloadToReturnToPool = ArrayPool<byte>.Shared.Rent(payloadLength))
@@ -31,7 +47,7 @@ namespace JsonWebToken
 
                 try
                 {
-                    int bytesWritten = Utf8.GetBytes(Payload, encodedPayload);
+                    int bytesWritten = Utf8.GetBytes(_payload, encodedPayload);
                     EncryptToken(encodedPayload.Slice(0, bytesWritten), context);
                 }
                 finally
@@ -46,6 +62,11 @@ namespace JsonWebToken
             {
                 ThrowHelper.ThrowInvalidOperationException_UndefinedPayload();
             }
+        }
+
+        /// <inheritdoc/>
+        public override void Validate()
+        {
         }
     }
 }

@@ -630,5 +630,15 @@ namespace JsonWebToken
 
             return false;
         }
+
+
+        /// <summary>Validate the keys of the current <see cref="Jwks"/>.</summary>
+        public void Validate()
+        {
+            for (int i = 0; i < Count; i++)
+            {
+                _keys[i].Validate();
+            }
+        }
     }
 }

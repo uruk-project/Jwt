@@ -5,20 +5,21 @@ using System.Text.Json;
 
 namespace JsonWebToken
 {
-    /// <summary>Defines an encrypted JWKS contained within a JWT.</summary>
-    public sealed class JwksJweDescriptor : JweDescriptor<Jwks>
+    /// <summary>Defines an encrypted JWK contained within a JWT.</summary>
+    public sealed class JwkJweDescriptor : JweDescriptor<Jwk>
     {
-        private Jwks _payload;
+        private Jwk _payload;
 
-        /// <summary>Initializes a new instance of the <see cref="JwksJweDescriptor"/> class.</summary>
-        public JwksJweDescriptor(Jwk encryptionKey, KeyManagementAlgorithm alg, EncryptionAlgorithm enc, CompressionAlgorithm? zip = null, string? typ = null, string? cty = JwtContentTypeValues.Jwks)
+        /// <summary>Initializes a new instance of the <see cref="JwkJweDescriptor"/> class.</summary>
+        public JwkJweDescriptor(Jwk encryptionKey, KeyManagementAlgorithm alg, EncryptionAlgorithm enc, CompressionAlgorithm? zip = null, string? typ = null, string? cty = JwtContentTypeValues.Jwk)
             : base(encryptionKey, alg, enc, zip, typ, cty)
         {
-            _payload = new Jwks();
+            _payload = Jwk.None;
         }
 
+
         /// <inheritdoc/>
-        public override Jwks Payload
+        public override Jwk Payload
         {
             get => _payload;
             set
@@ -41,6 +42,7 @@ namespace JsonWebToken
                 var ctx = new EncodingContext(bufferWriter, context);
                 using var writer = new Utf8JsonWriter(ctx.BufferWriter);
                 _payload.WriteTo(writer);
+                writer.Flush();
                 EncryptToken(bufferWriter.WrittenSpan, context);
             }
             else
@@ -52,7 +54,7 @@ namespace JsonWebToken
         /// <inheritdoc/>
         public override void Validate()
         {
-            if (_payload is not null)
+            if (_payload != null)
             {
                 _payload.Validate();
             }

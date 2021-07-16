@@ -19,6 +19,7 @@ namespace JsonWebToken
         private readonly JsonEncodedText _kid;
         private readonly string? _typ;
         private readonly string? _cty;
+
 #if NETSTANDARD2_0 || NET461 || NET47
         private static readonly RandomNumberGenerator _randomNumberGenerator = RandomNumberGenerator.Create();
 #endif
