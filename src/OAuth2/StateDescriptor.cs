@@ -15,8 +15,6 @@ namespace JsonWebToken
 
         public override void Validate()
         {
-            base.Validate();
-
             CheckRequiredClaimAsString(OAuth2Claims.Rfp);
         }
     }

@@ -15,8 +15,6 @@ namespace JsonWebToken
 
         public override void Validate()
         {
-            base.Validate();
-
             CheckRequiredClaimAsString(JwtClaimNames.Iss);
             CheckRequiredClaimAsInteger(JwtClaimNames.Exp);
             CheckRequiredClaimAsStringOrArray(JwtClaimNames.Aud);

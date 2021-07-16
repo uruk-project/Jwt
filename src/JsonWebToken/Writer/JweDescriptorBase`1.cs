@@ -6,19 +6,10 @@ namespace JsonWebToken
     /// <summary>Defines an encrypted JWT with a <typeparamref name="TDescriptor"/> as payload.</summary>
     public abstract partial class JweDescriptorBase<TDescriptor> : JweDescriptor<TDescriptor> where TDescriptor : JwsDescriptor
     {
-        private TDescriptor? _payload;
-
         /// <summary>Initializes a new instance of <see cref="JweDescriptor"/>.</summary>
         public JweDescriptorBase(Jwk encryptionKey, KeyManagementAlgorithm alg, EncryptionAlgorithm enc, CompressionAlgorithm? zip = null, string? typ = null, string? cty = JwtContentTypeValues.Jwt)
             : base(encryptionKey, alg, enc, zip, typ, cty)
         {
-        }
-
-        /// <inheritdoc/>
-        public override TDescriptor? Payload
-        {
-            get => _payload;
-            init => _payload = value;
         }
 
         /// <inheritsdoc />
@@ -26,23 +17,8 @@ namespace JsonWebToken
         {
             using var bufferWriter = new PooledByteBufferWriter();
             var ctx = new EncodingContext(bufferWriter, context);
-            if (_payload is null)
-            {
-                ThrowHelper.ThrowInvalidOperationException_UndefinedPayload();
-            }
-
-            _payload.Encode(ctx);
+            Payload.Encode(ctx);
             EncryptToken(bufferWriter.WrittenSpan, context);
-        }
-
-        /// <inheritsdoc />
-        public override void Validate()
-        {
-            base.Validate();
-            if (!(_payload is null))
-            {
-                _payload.Validate();
-            }
         }
     }
 }
