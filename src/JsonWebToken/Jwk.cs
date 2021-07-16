@@ -1054,7 +1054,7 @@ namespace JsonWebToken
                             throw new JwkValidationException($"Invalid '{JwkParameterNames.X5c}' item. Must be of type 'String'. Value '{item.GetRawText()}' is of type '{item.ValueKind}'.");
                         }
 
-                        if (IsBase64UrlString(item.GetString()!))
+                        if (Base64Url.IsBase64UrlString(item.GetString()!))
                         {
                             throw new JwkValidationException($"Invalid '{JwkParameterNames.X5c}' value '{item.GetString()}'. Must be a valid base64 encoded string.");
                         }
@@ -1077,11 +1077,13 @@ namespace JsonWebToken
                 {
                     throw new JwkValidationException($"Missing '{memberName}' member.");
                 }
+
                 if (value.ValueKind != JsonValueKind.String)
                 {
                     throw new JwkValidationException($"Invalid '{memberName}' member. Must be of type 'String'. Value '{value.GetRawText()}' is of type '{value.ValueKind}'.");
                 }
-                else if (!IsBase64String(value.GetString()!))
+
+                if (!Base64Url.IsBase64String(value.GetString()!))
                 {
                     throw new JwkValidationException($"Invalid '{memberName}' member. Must be a base64-URL encoded string.");
                 }
@@ -1095,7 +1097,8 @@ namespace JsonWebToken
                     {
                         throw new JwkValidationException($"Invalid '{memberName}' member. Must be of type 'String'. Value '{value.GetRawText()}' is of type '{value.ValueKind}'.");
                     }
-                    else if (!IsBase64UrlString(value.GetString()!))
+                    
+                    if (!Base64Url.IsBase64UrlString(value.GetString()!))
                     {
                         throw new JwkValidationException($"Invalid '{memberName}' member. Must be a base64-URL encoded string.");
                     }
@@ -1107,99 +1110,6 @@ namespace JsonWebToken
                 return false;
             }
 
-            static unsafe bool IsBase64UrlString(string value)
-            {
-                int length = value.Length;
-                for (int i = 0; i < length; i++)
-                {
-                    if (!IsValidBase64UrlChar(value[i]))
-                    {
-                        return false;
-                    }
-                }
-
-                return true;
-
-                static bool IsValidBase64UrlChar(char value)
-                {
-                    if (value > byte.MaxValue)
-                    {
-                        return false;
-                    }
-
-                    byte byteValue = (byte)value;
-
-                    // 0-9
-                    if (byteValue >= (byte)'0' && byteValue <= (byte)'9')
-                    {
-                        return true;
-                    }
-
-                    // - or _
-                    if (byteValue == (byte)'-' || byteValue == (byte)'_')
-                    {
-                        return true;
-                    }
-
-                    // a-z or A-Z
-                    byteValue |= 0x20;
-                    if (byteValue >= (byte)'a' && byteValue <= (byte)'z')
-                    {
-                        return true;
-                    }
-
-                    return false;
-                }
-            }
-
-            static unsafe bool IsBase64String(string value)
-            {
-                int length = value.Length;
-                for (int i = 0; i < length; i++)
-                {
-                    char c = value[i];
-                    if (!IsValidBase64Char(c))
-                    {
-                        if (c != '=' || i < length - 2)
-                        {
-                            return false;
-                        }
-                    }
-                }
-
-                return true;
-
-                static bool IsValidBase64Char(char value)
-                {
-                    if (value > byte.MaxValue)
-                    {
-                        return false;
-                    }
-
-                    byte byteValue = (byte)value;
-
-                    // 0-9
-                    if (byteValue >= (byte)'0' && byteValue <= (byte)'9')
-                    {
-                        return true;
-                    }
-
-                    // + or /
-                    if (byteValue == (byte)'+' || byteValue == (byte)'/')
-                    {
-                        return true;
-                    }
-
-                    // a-z or A-Z
-                    byteValue |= 0x20;
-                    if (byteValue >= (byte)'a' && byteValue <= (byte)'z')
-                    {
-                        return true;
-                    }
-
-                    return false;
-                }
-            }
 
             static int CheckOptionalBase64UrlMember(JsonDocument document, JsonEncodedText memberName, int length)
             {
@@ -1211,7 +1121,7 @@ namespace JsonWebToken
                     }
 
                     string s = value.GetString()!;
-                    if (!IsBase64UrlString(s))
+                    if (!Base64Url.IsBase64UrlString(s))
                     {
                         throw new JwkValidationException($"Invalid '{memberName}' member. Must be a base64-URL encoded string.");
                     }
@@ -1441,8 +1351,7 @@ namespace JsonWebToken
                     }
                 }
             }
-            else
-            if (propertyLength == 3 && IntegerMarshal.ReadUInt24(ref propertyNameRef) == x5c)
+            else if (propertyLength == 3 && IntegerMarshal.ReadUInt24(ref propertyNameRef) == x5c)
             {
                 key._x5c = new List<byte[]>();
                 while (reader.Read() && reader.TokenType != JsonTokenType.EndArray)

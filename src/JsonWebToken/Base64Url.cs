@@ -182,20 +182,118 @@ namespace JsonWebToken
 
         /// <summary>Gets the minimum buffer size required for decoding of <paramref name="count"/> characters.</summary>
         /// <param name="count">The number of characters to decode.</param>
-        /// <returns>
-        /// The minimum buffer size required for decoding  of <paramref name="count"/> characters.
-        /// </returns>
+        /// <returns>The minimum buffer size required for decoding  of <paramref name="count"/> characters.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int GetArraySizeRequiredToDecode(int count)
             => Base64.Url.GetMaxDecodedLength(count);
 
         /// <summary>Gets the output buffer size required for encoding <paramref name="count"/> bytes.</summary>
         /// <param name="count">The number of characters to encode.</param>
-        /// <returns>
-        /// The output buffer size required for encoding <paramref name="count"/> <see cref="byte"/>s.
-        /// </returns>
+        /// <returns>The output buffer size required for encoding <paramref name="count"/> <see cref="byte"/>s.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int GetArraySizeRequiredToEncode(int count)
             => Base64.Url.GetEncodedLength(count);
+
+#if NET461 || NET47 || NETSTANDARD
+        internal static unsafe bool IsBase64UrlString(string value)
+            => IsBase64UrlString(value.AsSpan());
+#endif
+
+        internal static unsafe bool IsBase64UrlString(ReadOnlySpan<char> value)
+        {
+            for (int i = 0; i < value.Length; i++)
+            {
+                if (!IsValidBase64UrlChar(value[i]))
+                {
+                    return false;
+                }
+            }
+
+            return true;
+
+            static bool IsValidBase64UrlChar(char value)
+            {
+                if (value > byte.MaxValue)
+                {
+                    return false;
+                }
+
+                byte byteValue = (byte)value;
+
+                // 0-9
+                if (byteValue >= (byte)'0' && byteValue <= (byte)'9')
+                {
+                    return true;
+                }
+
+                // - or _
+                if (byteValue == (byte)'-' || byteValue == (byte)'_')
+                {
+                    return true;
+                }
+
+                // a-z or A-Z
+                byteValue |= 0x20;
+                if (byteValue >= (byte)'a' && byteValue <= (byte)'z')
+                {
+                    return true;
+                }
+
+                return false;
+            }
+        }
+
+#if NET461 || NET47 || NETSTANDARD
+        internal static unsafe bool IsBase64String(string value)
+            => IsBase64String(value.AsSpan());
+#endif
+
+        internal static unsafe bool IsBase64String(ReadOnlySpan<char> value)
+        {
+            for (int i = 0; i < value.Length; i++)
+            {
+                char c = value[i];
+                if (!IsValidBase64Char(c))
+                {
+                    if (c != '=' || i < value.Length - 2)
+                    {
+                        return false;
+                    }
+                }
+            }
+
+            return true;
+
+            static bool IsValidBase64Char(char value)
+            {
+                if (value > byte.MaxValue)
+                {
+                    return false;
+                }
+
+                byte byteValue = (byte)value;
+
+                // 0-9
+                if (byteValue >= (byte)'0' && byteValue <= (byte)'9')
+                {
+                    return true;
+                }
+
+                // + or /
+                if (byteValue == (byte)'+' || byteValue == (byte)'/')
+                {
+                    return true;
+                }
+
+                // a-z or A-Z
+                byteValue |= 0x20;
+                if (byteValue >= (byte)'a' && byteValue <= (byte)'z')
+                {
+                    return true;
+                }
+
+                return false;
+            }
+        }
     }
 }
