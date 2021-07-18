@@ -5,19 +5,19 @@ namespace JsonWebToken.Cryptography
 {
     internal static class Pkcs1
     {
-        public const string PublicRsaKeyPrefix = "-----BEGIN RSA PUBLIC KEY-----";
-        public const string PublicRsaKeySuffix = "-----END RSA PUBLIC KEY-----";
-        public const string PrivateRsaKeyPrefix = "-----BEGIN RSA PRIVATE KEY-----";
-        public const string PrivatRsaKeySuffix = "-----END RSA PRIVATE KEY-----";
+        public static ReadOnlySpan<char> PublicRsaKeyPrefix => new[] { '-', '-', '-', '-', '-', 'B', 'E', 'G', 'I', 'N', ' ', 'R', 'S', 'A', ' ', 'P', 'U', 'B', 'L', 'I', 'C', ' ', 'K', 'E', 'Y', '-', '-', '-', '-', '-' };
+        public static ReadOnlySpan<char> PublicRsaKeySuffix => new[] { '-', '-', '-', '-', '-', 'E', 'N', 'D', ' ', 'R', 'S', 'A', ' ', 'P', 'U', 'B', 'L', 'I', 'C', ' ', 'K', 'E', 'Y', '-', '-', '-', '-', '-' };
+        public static ReadOnlySpan<char> PrivateRsaKeyPrefix => new[] { '-', '-', '-', '-', '-', 'B', 'E', 'G', 'I', 'N', ' ', 'R', 'S', 'A', ' ', 'P', 'R', 'I', 'V', 'A', 'T', 'E', ' ', 'K', 'E', 'Y', '-', '-', '-', '-', '-' };
+        public static ReadOnlySpan<char> PrivatRsaKeySuffix => new[] { '-', '-', '-', '-', '-', 'E', 'N', 'D', ' ', 'R', 'S', 'A', ' ', 'P', 'R', 'I', 'V', 'A', 'T', 'E', ' ', 'K', 'E', 'Y', '-', '-', '-', '-', '-' };
 
 #if SUPPORT_ELLIPTIC_CURVE
-        public const string PrivateECKeyPrefix = "-----BEGIN EC PRIVATE KEY-----";
-        public const string PrivateECKeySuffix = "-----END EC PRIVATE KEY-----";
+        public static ReadOnlySpan<char> PrivateECKeyPrefix => new[] { '-', '-', '-', '-', '-', 'B', 'E', 'G', 'I', 'N', ' ', 'E', 'C', ' ', 'P', 'R', 'I', 'V', 'A', 'T', 'E', ' ', 'K', 'E', 'Y', '-', '-', '-', '-', '-' };
+        public static ReadOnlySpan<char> PrivateECKeySuffix => new[] { '-', '-', '-', '-', '-', 'E', 'N', 'D', ' ', 'E', 'C', ' ', 'P', 'R', 'I', 'V', 'A', 'T', 'E', ' ', 'K', 'E', 'Y', '-', '-', '-', '-', '-' };
 #endif
 
-        // SEQUENCE
-        //   INTEGER N
-        //   INTEGER E
+            // SEQUENCE
+            //   INTEGER N
+            //   INTEGER E
         public static RsaJwk ReadRsaPublicKey(ReadOnlySpan<char> key)
         {
             var data = key.Slice(PublicRsaKeyPrefix.Length, key.Length - PublicRsaKeyPrefix.Length - PublicRsaKeySuffix.Length);

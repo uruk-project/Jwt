@@ -5,10 +5,10 @@ namespace JsonWebToken.Cryptography
 {
     internal static class Pkcs8
     {
-        internal const string PublicKeyPrefix = "-----BEGIN PUBLIC KEY-----";
-        internal const string PublicKeySuffix = "-----END PUBLIC KEY-----";
-        internal const string PrivateKeyPrefix = "-----BEGIN PRIVATE KEY-----";
-        internal const string PrivateKeySuffix = "-----END PRIVATE KEY-----";
+        internal static ReadOnlySpan<char> PublicKeyPrefix => new[] { '-', '-', '-', '-', '-', 'B', 'E', 'G', 'I', 'N', ' ', 'P', 'U', 'B', 'L', 'I', 'C', ' ', 'K', 'E', 'Y', '-', '-', '-', '-', '-' };
+        internal static ReadOnlySpan<char> PublicKeySuffix  => new[] { '-', '-', '-', '-', '-', 'E', 'N', 'D', ' ', 'P', 'U', 'B', 'L', 'I', 'C', ' ', 'K', 'E', 'Y', '-', '-', '-', '-', '-' };
+        internal static ReadOnlySpan<char> PrivateKeyPrefix  => new[] { '-', '-', '-', '-', '-', 'B', 'E', 'G', 'I', 'N', ' ', 'P', 'R', 'I', 'V', 'A', 'T', 'E', ' ', 'K', 'E', 'Y', '-', '-', '-', '-', '-' };
+        internal static ReadOnlySpan<char> PrivateKeySuffix => new[] { '-', '-', '-', '-', '-', 'E', 'N', 'D', ' ', 'P', 'R', 'I', 'V', 'A', 'T', 'E', ' ', 'K', 'E', 'Y', '-', '-', '-', '-', '-' };
 
         public static AsymmetricJwk ReadPublicKey(ReadOnlySpan<char> key)
         {
