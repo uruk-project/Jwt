@@ -1,35 +1,44 @@
 ﻿using System;
+using System.Buffers;
 
 namespace JsonWebToken.Cryptography
 {
     internal static class Pkcs8
     {
-        internal const string PublicKeyPrefix = "-----BEGIN PUBLIC KEY-----";
-        internal const string PublicKeySuffix = "-----END PUBLIC KEY-----";
-        internal const string PrivateKeyPrefix = "-----BEGIN PRIVATE KEY-----";
-        internal const string PrivateKeySuffix = "-----END PRIVATE KEY-----";
+        internal static ReadOnlySpan<char> PublicKeyPrefix => new[] { '-', '-', '-', '-', '-', 'B', 'E', 'G', 'I', 'N', ' ', 'P', 'U', 'B', 'L', 'I', 'C', ' ', 'K', 'E', 'Y', '-', '-', '-', '-', '-' };
+        internal static ReadOnlySpan<char> PublicKeySuffix => new[] { '-', '-', '-', '-', '-', 'E', 'N', 'D', ' ', 'P', 'U', 'B', 'L', 'I', 'C', ' ', 'K', 'E', 'Y', '-', '-', '-', '-', '-' };
+        internal static ReadOnlySpan<char> PrivateKeyPrefix => new[] { '-', '-', '-', '-', '-', 'B', 'E', 'G', 'I', 'N', ' ', 'P', 'R', 'I', 'V', 'A', 'T', 'E', ' ', 'K', 'E', 'Y', '-', '-', '-', '-', '-' };
+        internal static ReadOnlySpan<char> PrivateKeySuffix => new[] { '-', '-', '-', '-', '-', 'E', 'N', 'D', ' ', 'P', 'R', 'I', 'V', 'A', 'T', 'E', ' ', 'K', 'E', 'Y', '-', '-', '-', '-', '-' };
 
-        public static AsymmetricJwk ReadPublicKey(string key)
+        public static AsymmetricJwk ReadPublicKey(ReadOnlySpan<char> key)
         {
-            string base64KeyData = key.Substring(PublicKeyPrefix.Length, key.Length - PublicKeyPrefix.Length - PublicKeySuffix.Length);
-            byte[] keyData = Convert.FromBase64String(base64KeyData);
-
-            var reader = new AsnReader(keyData);
-            reader = reader.ReadSequence();
-            var readerOid = reader.ReadSequence();
-            var oid = readerOid.ReadOid();
-            if (IsRsaKeyOid(oid))
+            var data = key.Slice(PublicKeyPrefix.Length, key.Length - PublicKeyPrefix.Length - PublicKeySuffix.Length);
+            byte[] tmpArray;
+            Span<byte> keyData = tmpArray = ArrayPool<byte>.Shared.Rent(Base64.GetArraySizeRequiredToDecode(data.Length));
+            try
             {
+                int length = Base64.Decode(data, keyData);
+                var reader = new AsnReader(keyData.Slice(0, length));
+                reader = reader.ReadSequence();
+                var readerOid = reader.ReadSequence();
+                var oid = readerOid.ReadOid();
+                if (IsRsaKeyOid(oid))
+                {
+                    return ReadRsaPublicKey(ref reader);
+                }
+#if SUPPORT_ELLIPTIC_CURVE
+                else if (IsECKeyOid(oid))
+                {
+                    var curveOid = readerOid.ReadOid();
+                    return ReadECPublicKey(ref reader, curveOid);
+                }
+#endif
                 return ReadRsaPublicKey(ref reader);
             }
-#if SUPPORT_ELLIPTIC_CURVE
-            else if (IsECKeyOid(oid))
+            finally
             {
-                var curveOid = readerOid.ReadOid();
-                return ReadECPublicKey(ref reader, curveOid);
+                ArrayPool<byte>.Shared.Return(tmpArray);
             }
-#endif
-            return ReadRsaPublicKey(ref reader);
         }
 
         // SEQUENCE
@@ -37,27 +46,35 @@ namespace JsonWebToken.Cryptography
         //   SEQUENCE
         //     OBJECT IDENTIFIER key type OID
         //     NULL or OBJECT IDENTIFIER (EC curve OID)
-        public static AsymmetricJwk ReadPrivateKey(string key)
+        public static AsymmetricJwk ReadPrivateKey(ReadOnlySpan<char> key)
         {
-            string base64KeyData = key.Substring(PrivateKeyPrefix.Length, key.Length - PrivateKeyPrefix.Length - PrivateKeySuffix.Length);
-            byte[] keyData = Convert.FromBase64String(base64KeyData);
-
-            var reader = new AsnReader(keyData);
-            reader = reader.ReadSequence();
-            reader.ReadInteger();
-            var readerOid = reader.ReadSequence();
-            var oid = readerOid.ReadOid();
-            if (IsRsaKeyOid(oid))
+            var data = key.Slice(PrivateKeyPrefix.Length, key.Length - PrivateKeyPrefix.Length - PrivateKeySuffix.Length);
+            byte[] tmpArray;
+            Span<byte> keyData = tmpArray = ArrayPool<byte>.Shared.Rent(Base64.GetArraySizeRequiredToDecode(data.Length));
+            try
             {
-                return ReadRsaPrivateKey(ref reader);
-            }
+                int length = Base64.Decode(data, keyData);
+                var reader = new AsnReader(keyData.Slice(0, length));
+                reader = reader.ReadSequence();
+                reader.ReadInteger();
+                var readerOid = reader.ReadSequence();
+                var oid = readerOid.ReadOid();
+                if (IsRsaKeyOid(oid))
+                {
+                    return ReadRsaPrivateKey(ref reader);
+                }
 #if SUPPORT_ELLIPTIC_CURVE
-            else if (IsECKeyOid(oid))
-            {
-                var curveOid = readerOid.ReadOid();
-                return ReadECPrivateKey(ref reader, curveOid);
-            }
+                else if (IsECKeyOid(oid))
+                {
+                    var curveOid = readerOid.ReadOid();
+                    return ReadECPrivateKey(ref reader, curveOid);
+                }
 #endif
+            }
+            finally
+            {
+                ArrayPool<byte>.Shared.Return(tmpArray);
+            }
 
             ThrowHelper.ThrowInvalidOperationException_InvalidPem();
             return null!;

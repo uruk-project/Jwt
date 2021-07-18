@@ -374,6 +374,7 @@ namespace JsonWebToken
                 case ExceptionArgument.clockSkew: return "clockSkew";
                 case ExceptionArgument.size: return "size";
                 case ExceptionArgument.capacity: return "capacity";
+                case ExceptionArgument.base64: return "base64";
                 case ExceptionArgument.base64url: return "base64url";
                 case ExceptionArgument.descriptor: return "descriptor";
                 case ExceptionArgument.context: return "context";
@@ -442,6 +443,7 @@ namespace JsonWebToken
         clockSkew,
         size,
         capacity,
+        base64,
         base64url,
         descriptor,
         context,
