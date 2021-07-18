@@ -15,9 +15,9 @@ namespace JsonWebToken.Cryptography
         public static ReadOnlySpan<char> PrivateECKeySuffix => new[] { '-', '-', '-', '-', '-', 'E', 'N', 'D', ' ', 'E', 'C', ' ', 'P', 'R', 'I', 'V', 'A', 'T', 'E', ' ', 'K', 'E', 'Y', '-', '-', '-', '-', '-' };
 #endif
 
-            // SEQUENCE
-            //   INTEGER N
-            //   INTEGER E
+        // SEQUENCE
+        //   INTEGER N
+        //   INTEGER E
         public static RsaJwk ReadRsaPublicKey(ReadOnlySpan<char> key)
         {
             var data = key.Slice(PublicRsaKeyPrefix.Length, key.Length - PublicRsaKeyPrefix.Length - PublicRsaKeySuffix.Length);
