@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Buffers;
 
 namespace JsonWebToken.Cryptography
 {
@@ -17,23 +18,32 @@ namespace JsonWebToken.Cryptography
         // SEQUENCE
         //   INTEGER N
         //   INTEGER E
-        public static RsaJwk ReadRsaPublicKey(string key)
+        public static RsaJwk ReadRsaPublicKey(ReadOnlySpan<char> key)
         {
-            string base64KeyData = key.Substring(PublicRsaKeyPrefix.Length, key.Length - PublicRsaKeyPrefix.Length - PublicRsaKeySuffix.Length);
-            byte[] keyData = Convert.FromBase64String(base64KeyData);
-
-            var reader = new AsnReader(keyData);
-            reader = reader.ReadSequence();
-            var n = reader.ReadInteger();
-            var e = reader.ReadInteger();
-            if (reader.Read())
+            var data = key.Slice(PublicRsaKeyPrefix.Length, key.Length - PublicRsaKeyPrefix.Length - PublicRsaKeySuffix.Length);
+            byte[] tmpArray;
+            Span<byte> keyData = tmpArray = ArrayPool<byte>.Shared.Rent(Base64.GetArraySizeRequiredToDecode(data.Length));
+            try
             {
-                ThrowHelper.ThrowInvalidOperationException_InvalidPem();
-            }
+                int length = Base64.Decode(data, keyData);
+                var reader = new AsnReader(keyData.Slice(0, length));
 
-            return RsaJwk.FromByteArray(
-                n: AsnReader.TrimLeadingZeroes(n),
-                e: AsnReader.TrimLeadingZeroes(e, align: false));
+                reader = reader.ReadSequence();
+                var n = reader.ReadInteger();
+                var e = reader.ReadInteger();
+                if (reader.Read())
+                {
+                    ThrowHelper.ThrowInvalidOperationException_InvalidPem();
+                }
+
+                return RsaJwk.FromByteArray(
+                    n: AsnReader.TrimLeadingZeroes(n),
+                    e: AsnReader.TrimLeadingZeroes(e, align: false));
+            }
+            finally
+            {
+                ArrayPool<byte>.Shared.Return(tmpArray);
+            }
         }
 
         // SEQUENCE
@@ -46,41 +56,49 @@ namespace JsonWebToken.Cryptography
         //   INTEGER DP
         //   INTEGER DQ
         //   INTEGER QI
-        public static RsaJwk ReadRsaPrivateKey(string key)
+        public static RsaJwk ReadRsaPrivateKey(ReadOnlySpan<char> key)
         {
-            string base64KeyData = key.Substring(PrivateRsaKeyPrefix.Length, key.Length - PrivateRsaKeyPrefix.Length - PrivatRsaKeySuffix.Length);
-            byte[] keyData = Convert.FromBase64String(base64KeyData);
-
-            var reader = new AsnReader(keyData);
-            reader = reader.ReadSequence();
-            var version = reader.ReadInteger();
-            if (version.Length != 1 || version[0] != 0)
+            var data = key.Slice(PrivateRsaKeyPrefix.Length, key.Length - PrivateRsaKeyPrefix.Length - PrivatRsaKeySuffix.Length);
+            byte[] tmpArray;
+            Span<byte> keyData = tmpArray = ArrayPool<byte>.Shared.Rent(Base64.GetArraySizeRequiredToDecode(data.Length));
+            try
             {
-                ThrowHelper.ThrowInvalidOperationException_InvalidPem();
-            }
+                int length = Base64.Decode(data, keyData);
+                var reader = new AsnReader(keyData.Slice(0, length));
+                reader = reader.ReadSequence();
+                var version = reader.ReadInteger();
+                if (version.Length != 1 || version[0] != 0)
+                {
+                    ThrowHelper.ThrowInvalidOperationException_InvalidPem();
+                }
 
-            var n = reader.ReadInteger();
-            var e = reader.ReadInteger();
-            var d = reader.ReadInteger();
-            var p = reader.ReadInteger();
-            var q = reader.ReadInteger();
-            var dp = reader.ReadInteger();
-            var dq = reader.ReadInteger();
-            var qi = reader.ReadInteger();
-            if (reader.Read())
+                var n = reader.ReadInteger();
+                var e = reader.ReadInteger();
+                var d = reader.ReadInteger();
+                var p = reader.ReadInteger();
+                var q = reader.ReadInteger();
+                var dp = reader.ReadInteger();
+                var dq = reader.ReadInteger();
+                var qi = reader.ReadInteger();
+                if (reader.Read())
+                {
+                    ThrowHelper.ThrowInvalidOperationException_InvalidPem();
+                }
+
+                return RsaJwk.FromByteArray(
+                    n: AsnReader.TrimLeadingZeroes(n),
+                    e: AsnReader.TrimLeadingZeroes(e, align: false),
+                    d: AsnReader.TrimLeadingZeroes(d),
+                    p: AsnReader.TrimLeadingZeroes(p),
+                    q: AsnReader.TrimLeadingZeroes(q),
+                    dp: AsnReader.TrimLeadingZeroes(dp),
+                    dq: AsnReader.TrimLeadingZeroes(dq),
+                    qi: AsnReader.TrimLeadingZeroes(qi));
+            }
+            finally
             {
-                ThrowHelper.ThrowInvalidOperationException_InvalidPem();
+                ArrayPool<byte>.Shared.Return(tmpArray);
             }
-
-            return RsaJwk.FromByteArray(
-                n: AsnReader.TrimLeadingZeroes(n),
-                e: AsnReader.TrimLeadingZeroes(e, align: false),
-                d: AsnReader.TrimLeadingZeroes(d),
-                p: AsnReader.TrimLeadingZeroes(p),
-                q: AsnReader.TrimLeadingZeroes(q),
-                dp: AsnReader.TrimLeadingZeroes(dp),
-                dq: AsnReader.TrimLeadingZeroes(dq),
-                qi: AsnReader.TrimLeadingZeroes(qi));
         }
 
 #if SUPPORT_ELLIPTIC_CURVE
@@ -91,68 +109,79 @@ namespace JsonWebToken.Cryptography
         //     OBJECT IDENTIFIER  1.2.840.10045.3.1.7
         //   [1]
         //     BIT STRING public key
-        public static ECJwk ReadECPrivateKey(string key)
+        public static ECJwk ReadECPrivateKey(ReadOnlySpan<char> key)
         {
-            string base64KeyData = key.Substring(PrivateECKeyPrefix.Length, key.Length - PrivateECKeyPrefix.Length - PrivateECKeySuffix.Length);
-            byte[] keyData = Convert.FromBase64String(base64KeyData);
-            var reader = new AsnReader(keyData);
-            reader = reader.ReadSequence();
-            var version = reader.ReadInteger();
-            if (version.Length != 1 || version[0] != 1)
+            var data = key.Slice(PrivateECKeyPrefix.Length, key.Length - PrivateECKeyPrefix.Length - PrivateECKeySuffix.Length);
+            byte[] tmpArray;
+            Span<byte> keyData = tmpArray = ArrayPool<byte>.Shared.Rent(Base64.GetArraySizeRequiredToDecode(data.Length));
+            try
             {
-                ThrowHelper.ThrowInvalidOperationException_InvalidPem();
-            }
-            var privateKey = reader.ReadOctetStringBytes().ToArray();
-            var readerOid = reader.ReadSequence(true);
-            var curveOid = readerOid.ReadOid();
-            reader = reader.ReadSequence(true);
-            var publicKey = reader.ReadBitStringBytes();
-            if (publicKey.IsEmpty)
-            {
-                ThrowHelper.ThrowInvalidOperationException_InvalidPem();
-            }
+                int length = Base64.Decode(data, keyData);
+                var reader = new AsnReader(keyData.Slice(0, length));
 
-            if (publicKey[0] != 0x04)
-            {
-                ThrowHelper.ThrowInvalidOperationException_InvalidPem();
-            }
+                reader = reader.ReadSequence();
+                var version = reader.ReadInteger();
+                if (version.Length != 1 || version[0] != 1)
+                {
+                    ThrowHelper.ThrowInvalidOperationException_InvalidPem();
+                }
 
-            if (publicKey.Length != 2 * privateKey.Length + 1)
-            {
-                ThrowHelper.ThrowInvalidOperationException_InvalidPem();
-            }
+                var privateKey = reader.ReadOctetStringBytes().ToArray();
+                var readerOid = reader.ReadSequence(true);
+                var curveOid = readerOid.ReadOid();
+                reader = reader.ReadSequence(true);
+                var publicKey = reader.ReadBitStringBytes();
+                if (publicKey.IsEmpty)
+                {
+                    ThrowHelper.ThrowInvalidOperationException_InvalidPem();
+                }
 
-            var x = publicKey.Slice(1, privateKey.Length).ToArray();
-            var y = publicKey.Slice(1 + privateKey.Length).ToArray();
-            if (reader.Read())
-            {
-                ThrowHelper.ThrowInvalidOperationException_InvalidPem();
-            }
+                if (publicKey[0] != 0x04)
+                {
+                    ThrowHelper.ThrowInvalidOperationException_InvalidPem();
+                }
 
-            if (Pkcs8.IsP256(curveOid))
-            {
-                return ECJwk.FromByteArray(EllipticalCurve.P256,
-                    d: privateKey,
-                    x: x,
-                    y: y);
+                if (publicKey.Length != 2 * privateKey.Length + 1)
+                {
+                    ThrowHelper.ThrowInvalidOperationException_InvalidPem();
+                }
+
+                var x = publicKey.Slice(1, privateKey.Length).ToArray();
+                var y = publicKey.Slice(1 + privateKey.Length).ToArray();
+                if (reader.Read())
+                {
+                    ThrowHelper.ThrowInvalidOperationException_InvalidPem();
+                }
+
+                if (Pkcs8.IsP256(curveOid))
+                {
+                    return ECJwk.FromByteArray(EllipticalCurve.P256,
+                        d: privateKey,
+                        x: x,
+                        y: y);
+                }
+                else if (Pkcs8.IsP384(curveOid))
+                {
+                    return ECJwk.FromByteArray(EllipticalCurve.P384,
+                        d: privateKey,
+                        x: x,
+                        y: y);
+                }
+                else if (Pkcs8.IsP521(curveOid))
+                {
+                    return ECJwk.FromByteArray(EllipticalCurve.P521,
+                        d: privateKey,
+                        x: x,
+                        y: y);
+                }
+                else
+                {
+                    throw new NotSupportedException();
+                }
             }
-            else if (Pkcs8.IsP384(curveOid))
+            finally
             {
-                return ECJwk.FromByteArray(EllipticalCurve.P384,
-                    d: privateKey,
-                    x: x,
-                    y: y);
-            }
-            else if (Pkcs8.IsP521(curveOid))
-            {
-                return ECJwk.FromByteArray(EllipticalCurve.P521,
-                    d: privateKey,
-                    x: x,
-                    y: y);
-            }
-            else
-            {
-                throw new NotSupportedException();
+                ArrayPool<byte>.Shared.Return(tmpArray);
             }
         }
 #endif

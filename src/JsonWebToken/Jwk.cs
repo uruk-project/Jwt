@@ -10,7 +10,6 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Security.Cryptography.X509Certificates;
 using System.Text.Json;
-using gfoidl.Base64;
 using JsonWebToken.Cryptography;
 
 namespace JsonWebToken
@@ -1083,7 +1082,7 @@ namespace JsonWebToken
                     throw new JwkValidationException($"Invalid '{memberName}' member. Must be of type 'String'. Value '{value.GetRawText()}' is of type '{value.ValueKind}'.");
                 }
 
-                if (!Base64Url.IsBase64String(value.GetString()!))
+                if (!Base64.IsBase64String(value.GetString()!))
                 {
                     throw new JwkValidationException($"Invalid '{memberName}' member. Must be a base64-URL encoded string.");
                 }
@@ -1097,7 +1096,7 @@ namespace JsonWebToken
                     {
                         throw new JwkValidationException($"Invalid '{memberName}' member. Must be of type 'String'. Value '{value.GetRawText()}' is of type '{value.ValueKind}'.");
                     }
-                    
+
                     if (!Base64Url.IsBase64UrlString(value.GetString()!))
                     {
                         throw new JwkValidationException($"Invalid '{memberName}' member. Must be a base64-URL encoded string.");
@@ -1310,7 +1309,6 @@ namespace JsonWebToken
             return 0;
         }
 
-
         /// <summary>Returns a new instance of <see cref="RsaJwk"/>.</summary>
         /// <param name="pem">A PEM-encoded key in PKCS1 or PKCS8 format.</param>
         /// <remarks>
@@ -1356,10 +1354,9 @@ namespace JsonWebToken
                 key._x5c = new List<byte[]>();
                 while (reader.Read() && reader.TokenType != JsonTokenType.EndArray)
                 {
-                    var value = reader.GetString();
-                    if (value != null)
+                    if (reader.TokenType == JsonTokenType.String)
                     {
-                        key._x5c.Add(Convert.FromBase64String(value));
+                        key._x5c.Add(Base64.Decode(reader.ValueSpan));
                     }
                 }
             }
@@ -1465,7 +1462,21 @@ namespace JsonWebToken
                 writer.WriteStartArray(JwkParameterNames.X5c);
                 for (int i = 0; i < _x5c.Count; i++)
                 {
-                    writer.WriteStringValue(Base64.Default.Encode(_x5c[i]));
+                    var value = _x5c[i];
+                    byte[]? array = null;
+                    try
+                    {
+                        Span<byte> buffer = (array = ArrayPool<byte>.Shared.Rent(Base64.GetArraySizeRequiredToEncode(value.Length)));
+                        int count = Base64.Encode(_x5c[i], buffer);
+                        writer.WriteStringValue(buffer.Slice(0, count));
+                    }
+                    finally
+                    {
+                        if (array != null)
+                        {
+                            ArrayPool<byte>.Shared.Return(array);
+                        }
+                    }
                 }
 
                 writer.WriteEndArray();
