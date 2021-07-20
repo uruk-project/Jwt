@@ -56,6 +56,37 @@ namespace JsonWebToken.Tests
             Assert.Equal(hasPrivateKey, jwk.HasPrivateKey);
         }
 
+        [Theory]
+        [InlineData(@"-----BEGIN PRIVATE KEY-----
+MIIBVQIBADANBgkqhkiG9w0BAQEFAASCAT8wggE7AgEAAkEAtz9Z9e6L1V4kt/8C
+mtFqhUPJbSU+VDGbk1MsQcPBR3uJ2y0vM9e5qHRYSOBqjmg7UERRHhvKNiUn4Xz0
+KzgGFQIDAQABAkEAr+byNi+cr17FpJH4MCEiPXaKnmkH4c4U52EJtL9yg2gijBrp
+Ykat3c2nWb0EGGi5aWgXxQHoi7z97/ACD4X3KQIhAPNyex6GdiBVlNPHOgInTU8a
+mARKKVHIXM0SxvxXrRl7AiEAwLI66OpSqftDTv1KUfNe6+hyoh23ggzUSYiWuVT0
+Ya8CHwiO/cUU9RIt8A2B84gf2ZfuV2nPMaSuZpTPFC/K5UsCIQCsJMzx1JuilQAN
+acPiMCuFTnRSFYAhozpmsqoLyTREqwIhAMLJlZTGjEB2N+sEazH5ToEczQzKqp7t
+9juGNbOPhoEL
+-----END PRIVATE KEY-----", 512, true)]
+        public void CreateFromPem(string pem, int keySize, bool hasPrivateKey)
+        {
+            var jwk = Jwk.FromPem(pem);
+
+            Assert.Equal(keySize, jwk.KeySizeInBits);
+            Assert.Equal(hasPrivateKey, jwk.HasPrivateKey);
+        }
+
+        [Theory]
+        [InlineData(@"-----BEGIN CMS-----
+MIGDBgsqhkiG9w0BCRABCaB0MHICAQAwDQYLKoZIhvcNAQkQAwgwXgYJKoZIhvcN
+AQcBoFEET3icc87PK0nNK9ENqSxItVIoSa0o0S/ISczMs1ZIzkgsKk4tsQ0N1nUM
+dvb05OXi5XLPLEtViMwvLVLwSE0sKlFIVHAqSk3MBkkBAJv0Fx0=
+-----END CMS-----", "CMS")]
+        public void CreateFromPem_Invalid_ThrowsException(string pem, string unkwnowLabel)
+        {
+            var exception = Assert.Throws<ArgumentException>(() => Jwk.FromPem(pem));
+            Assert.Contains(unkwnowLabel, exception.Message);
+        }
+
         public static IEnumerable<object[]> GetJsonKeys()
         {
             var fixture = new KeyFixture();
@@ -253,7 +284,7 @@ namespace JsonWebToken.Tests
     ""alg"": ""RS256"",
     ""kty"": ""oct"",
     ""k"": ""Sm7nSOWIqLc8xMK5CRhEiePi9iNukStXhssrYdSiMk0""
-}")] 
+}")]
         [InlineData("Incorrect signature algorithm for oct key", @"
 {
     ""alg"": ""RSA-OAEP"",
@@ -428,14 +459,14 @@ namespace JsonWebToken.Tests
     ""kty"": ""oct"",
     ""k"": ""Sm7nSOWIqLc8xMK5CRhEiePi9iNukStXhssrYdSiMk0"",
     ""key_ops"": [""sign"", ""X""]
-}")]   
+}")]
         [InlineData("Inconsistent 'key_ops' with signing 'alg'", @"
 {
     ""kty"": ""oct"",
     ""alg"": ""A128KW"",
     ""k"": ""Sm7nSOWIqLc8xMK5CRhEiePi9iNukStXhssrYdSiMk0"",
     ""key_ops"": [""sign""]
-}")]  
+}")]
         [InlineData("Inconsistent 'key_ops' with encryption 'alg'", @"
 {
     ""kty"": ""oct"",
@@ -1002,7 +1033,8 @@ namespace JsonWebToken.Tests
 {
     ""kty"": ""oct"",
     ""k"": ""Sm7nSOWIqLc8xMK5CRhEiePi9iNukStXhssrYdSi%Mk0""
-}")]        [InlineData("Non ASCII encoding", @"
+}")]
+        [InlineData("Non ASCII encoding", @"
 {
     ""kty"": ""oct"",
     ""k"": ""Sm7nSOWIqLc8xMK5CRhEiePi9iNukStXhssrYdSiMk"",
@@ -1086,7 +1118,7 @@ namespace JsonWebToken.Tests
     ""x5t"": ""qUqP5cyxm6YcTAhz05Hph5gvu9M"",
     ""x5t#S256"": ""n4bQgYhMfWWaL-qgxVrQFaO_TxsrC4Is0V1sFbDwCgg"",
     ""x5u"": ""https://example.com""
-}")] 
+}")]
         [InlineData("invalid x5c type", @"
 {
     ""kty"": ""oct"",
@@ -1142,7 +1174,7 @@ namespace JsonWebToken.Tests
     ""k"": ""Sm7nSOWIqLc8xMK5CRhEiePi9iNukStXhssrYdSiMk0"",
     ""key_ops"": [""sign""],
     ""alg"": ""A128KW""
-}")]    
+}")]
         [InlineData("Invalid B64 value", @"
 {
     ""e"": ""AQAB"",

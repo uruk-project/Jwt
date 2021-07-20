@@ -860,7 +860,7 @@ namespace JsonWebToken
                         keyLength = Base64Url.GetArraySizeRequiredToDecode(n.GetString()!.Length) * 8;
                     }
 
-                    if (keyLength % 256 != 0 || keyLength < 512)
+                    if ((keyLength & 255) != 0 || keyLength < 512)
                     {
                         throw new JwkValidationException(@$"Invalid key length. Must be a multiple of 256 bits, and at least 512 bits. Current key length is {keyLength}.");
                     }
@@ -868,11 +868,12 @@ namespace JsonWebToken
                     CheckRequiredBase64UrlMember(document, JwkParameterNames.E);
 
                     int privateRsaMembers = CheckOptionalBase64UrlMember(document, JwkParameterNames.D, keyLength);
-                    privateRsaMembers |= CheckOptionalBase64UrlMember(document, JwkParameterNames.P, keyLength / 2) << 1;
-                    privateRsaMembers |= CheckOptionalBase64UrlMember(document, JwkParameterNames.Q, keyLength / 2) << 2;
-                    privateRsaMembers |= CheckOptionalBase64UrlMember(document, JwkParameterNames.DP, keyLength / 2) << 3;
-                    privateRsaMembers |= CheckOptionalBase64UrlMember(document, JwkParameterNames.DQ, keyLength / 2) << 4;
-                    privateRsaMembers |= CheckOptionalBase64UrlMember(document, JwkParameterNames.QI, keyLength / 2) << 5;
+                    int halfKeyLength = keyLength / 2;
+                    privateRsaMembers |= CheckOptionalBase64UrlMember(document, JwkParameterNames.P, halfKeyLength) << 1;
+                    privateRsaMembers |= CheckOptionalBase64UrlMember(document, JwkParameterNames.Q, halfKeyLength) << 2;
+                    privateRsaMembers |= CheckOptionalBase64UrlMember(document, JwkParameterNames.DP, halfKeyLength) << 3;
+                    privateRsaMembers |= CheckOptionalBase64UrlMember(document, JwkParameterNames.DQ, halfKeyLength) << 4;
+                    privateRsaMembers |= CheckOptionalBase64UrlMember(document, JwkParameterNames.QI, halfKeyLength) << 5;
                     if (privateRsaMembers != 0 && privateRsaMembers != (1 | 2 | 4 | 8 | 16 | 32))
                     {
                         if ((privateRsaMembers & 1) == 0)
@@ -1108,7 +1109,6 @@ namespace JsonWebToken
                 value = default;
                 return false;
             }
-
 
             static int CheckOptionalBase64UrlMember(JsonDocument document, JsonEncodedText memberName, int length)
             {
