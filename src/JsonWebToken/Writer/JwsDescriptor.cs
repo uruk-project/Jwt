@@ -5,6 +5,7 @@ using System;
 using System.Buffers;
 using System.Diagnostics;
 using System.Text.Json;
+using JsonWebToken.Cryptography;
 
 namespace JsonWebToken
 {
@@ -147,10 +148,24 @@ namespace JsonWebToken
                 buffer[offset++] = Constants.ByteDot;
                 offset += Base64Url.Encode(bufferWriter.WrittenSpan.Slice(0, payloadLength), buffer.Slice(offset));
                 buffer[offset] = Constants.ByteDot;
-                Span<byte> signature = stackalloc byte[signer.HashSizeInBytes];
-                bool success = signer.TrySign(buffer.Slice(0, offset++), signature, out int signatureBytesWritten);
-                Debug.Assert(success);
-                Debug.Assert(signature.Length == signatureBytesWritten);
+                byte[]? signatureArray = null;
+                Span<byte> signature = signer.HashSizeInBytes <= Signer.SignatureStackallocThreshold
+                                        ? stackalloc byte[Signer.SignatureStackallocThreshold]
+                                        : (signatureArray = ArrayPool<byte>.Shared.Rent(signer.HashSizeInBytes));
+                signature = signature.Slice(0, signer.HashSizeInBytes);
+                try
+                {
+                    bool success = signer.TrySign(buffer.Slice(0, offset++), signature, out int signatureBytesWritten);
+                    Debug.Assert(success);
+                    Debug.Assert(signature.Length == signatureBytesWritten);
+                }
+                finally
+                {
+                    if (signatureArray != null)
+                    {
+                        ArrayPool<byte>.Shared.Return(signatureArray);
+                    }
+                }
 
                 int bytesWritten = Base64Url.Encode(signature, buffer.Slice(offset));
 

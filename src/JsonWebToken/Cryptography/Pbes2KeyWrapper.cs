@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE in the project root for license information.
 
 using System;
+using System.Buffers;
 using System.Diagnostics;
 using System.Security.Cryptography;
 using System.Text.Json;
@@ -10,6 +11,8 @@ namespace JsonWebToken.Cryptography
 {
     internal sealed class Pbes2KeyWrapper : KeyWrapper
     {
+        private const int KeySizeThreshold = 32;
+
         private readonly JsonEncodedText _algorithm;
         private readonly int _algorithmNameLength;
         private readonly int _keySizeInBytes;
@@ -57,22 +60,46 @@ namespace JsonWebToken.Cryptography
             }
 
             var contentEncryptionKey = CreateSymmetricKey(EncryptionAlgorithm, (SymmetricJwk?)staticKey);
-            Span<byte> buffer = stackalloc byte[_saltSizeInBytes + 1 + _algorithmNameLength];
+            int bufferSize = _saltSizeInBytes + _algorithmNameLength + 1;
+            byte[]? bufferToReturn = null;
+            Span<byte> buffer = bufferSize > Pbkdf2.SaltSizeThreshold + 18 + 1  // 18 = max alg name length
+              ? (bufferToReturn = ArrayPool<byte>.Shared.Rent(bufferSize))
+              : stackalloc byte[Pbkdf2.SaltSizeThreshold + 18 + 1];
+            buffer = buffer.Slice(0, bufferSize);
             _saltGenerator.Generate(buffer.Slice(_algorithmNameLength + 1));
             buffer[_algorithmNameLength] = 0x00;
             _algorithm.EncodedUtf8Bytes.CopyTo(buffer);
 
-            Span<byte> derivedKey = stackalloc byte[_keySizeInBytes];
+            Span<byte> derivedKey = stackalloc byte[KeySizeThreshold].Slice(0, _keySizeInBytes);
             Pbkdf2.DeriveKey(_password, buffer, _hashAlgorithm, _iterationCount, derivedKey);
 
             Span<byte> salt = buffer.Slice(_algorithmNameLength + 1, _saltSizeInBytes);
-            Span<byte> b64Salt = stackalloc byte[Base64Url.GetArraySizeRequiredToEncode(salt.Length)];
-            Base64Url.Encode(salt, b64Salt);
-            header.Add(JwtHeaderParameterNames.P2s, Utf8.GetString(b64Salt));
-            header.Add(JwtHeaderParameterNames.P2c, _iterationCount);
+            int saltLengthB64 = Base64Url.GetArraySizeRequiredToEncode(salt.Length);
+            byte[]? arrayToReturn = null;
+            Span<byte> b64Salt = saltLengthB64 > Pbkdf2.SaltSizeThreshold * 4 / 3
+                ? (arrayToReturn = ArrayPool<byte>.Shared.Rent(saltLengthB64))
+                : stackalloc byte[Pbkdf2.SaltSizeThreshold * 4 / 3];
+            try
+            {
+                int length = Base64Url.Encode(salt, b64Salt);
+                header.Add(JwtHeaderParameterNames.P2s, Utf8.GetString(b64Salt.Slice(0, saltLengthB64)));
+                header.Add(JwtHeaderParameterNames.P2c, _iterationCount);
 
-            using var keyWrapper = new AesKeyWrapper(derivedKey, EncryptionAlgorithm, _keyManagementAlgorithm);
-            return keyWrapper.WrapKey(contentEncryptionKey, header, destination);
+                using var keyWrapper = new AesKeyWrapper(derivedKey, EncryptionAlgorithm, _keyManagementAlgorithm);
+                return keyWrapper.WrapKey(contentEncryptionKey, header, destination);
+            }
+            finally
+            {
+                if (bufferToReturn != null)
+                {
+                    ArrayPool<byte>.Shared.Return(bufferToReturn);
+                }
+
+                if (arrayToReturn != null)
+                {
+                    ArrayPool<byte>.Shared.Return(arrayToReturn);
+                }
+            }
         }
 
         private static HashAlgorithmName GetHashAlgorithm(EncryptionAlgorithm encryptionAlgorithm)

@@ -1006,13 +1006,10 @@ namespace JsonWebToken
 
             // the modulus N is always the biggest field
             int requiredBufferSize = Base64Url.GetArraySizeRequiredToEncode(_parameters.Modulus!.Length);
-            byte[]? arrayToReturn = null;
+            byte[] arrayToReturn;
+            Span<byte> buffer = arrayToReturn = ArrayPool<byte>.Shared.Rent(requiredBufferSize);
             try
             {
-                Span<byte> buffer = requiredBufferSize > Constants.MaxStackallocBytes
-                                    ? stackalloc byte[requiredBufferSize]
-                                    : (arrayToReturn = ArrayPool<byte>.Shared.Rent(requiredBufferSize));
-
                 WriteBase64UrlProperty(writer, buffer, _parameters.Exponent!, JwkParameterNames.E);
                 WriteBase64UrlProperty(writer, buffer, _parameters.Modulus!, JwkParameterNames.N);
 
@@ -1025,10 +1022,7 @@ namespace JsonWebToken
             }
             finally
             {
-                if (arrayToReturn != null)
-                {
-                    ArrayPool<byte>.Shared.Return(arrayToReturn);
-                }
+                ArrayPool<byte>.Shared.Return(arrayToReturn);
             }
 
             writer.WriteEndObject();

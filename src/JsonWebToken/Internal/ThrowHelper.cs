@@ -115,8 +115,8 @@ namespace JsonWebToken
         [DoesNotReturn]
         internal static void ThrowArgumentOutOfRangeException_MustBeGreaterOrEqualToZero(ExceptionArgument argument, int value) => throw CreateArgumentOutOfRangeException_MustBeGreaterOrEqualToZero(argument, value);
         [MethodImpl(MethodImplOptions.NoInlining)]
-        private static Exception CreateArgumentOutOfRangeException_MustBeGreaterOrEqualToZero(ExceptionArgument argument, int value) => new ArgumentOutOfRangeException(GetArgumentName(argument), $"{GetArgumentName(argument)} must be greater equal or zero. value: '{value}'.");
-
+        private static Exception CreateArgumentOutOfRangeException_MustBeGreaterOrEqualToZero(ExceptionArgument argument, int value) => new ArgumentOutOfRangeException(GetArgumentName(argument), $"{GetArgumentName(argument)} must be greater or equal to zero. value: '{value}'.");
+        
         [DoesNotReturn]
         internal static void ThrowInvalidOperationException_NotSupportedJsonType(JwtValueKind type) => throw CreateInvalidOperationException_NotSupportedJsonType(type);
         [MethodImpl(MethodImplOptions.NoInlining)]
@@ -373,6 +373,7 @@ namespace JsonWebToken
                 case ExceptionArgument.count: return "count";
                 case ExceptionArgument.clockSkew: return "clockSkew";
                 case ExceptionArgument.size: return "size";
+                case ExceptionArgument.saltSizeInBytes: return "saltSizeInBytes";
                 case ExceptionArgument.capacity: return "capacity";
                 case ExceptionArgument.base64: return "base64";
                 case ExceptionArgument.base64url: return "base64url";
@@ -442,6 +443,7 @@ namespace JsonWebToken
         count,
         clockSkew,
         size,
+        saltSizeInBytes,
         capacity,
         base64,
         base64url,

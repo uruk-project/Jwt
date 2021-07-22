@@ -25,14 +25,14 @@ namespace JsonWebToken.Cryptography
         public Hmac(Sha2 sha2, ReadOnlySpan<byte> key, Span<byte> hmacKey)
         {
             Debug.Assert(sha2 != null);
-            Debug.Assert(hmacKey.Length == sha2!.BlockSize * 2);
+            Debug.Assert(hmacKey.Length >= sha2.BlockSize * 2);
 
             Sha2 = sha2;
             _keys = hmacKey;
             int blockSize = sha2.BlockSize;
             if (key.Length > blockSize)
             {
-                Span<byte> keyPrime = stackalloc byte[blockSize];
+                Span<byte> keyPrime = stackalloc byte[Sha2.BlockSizeStackallocThreshold * 2].Slice(0, blockSize);
                 HmacHelper.InitializeIOKeys(keyPrime, _keys, blockSize);
                 keyPrime.Clear();
             }
@@ -53,7 +53,7 @@ namespace JsonWebToken.Cryptography
             {
                 Span<byte> W = size > Constants.MaxStackallocBytes
                     ? (arrayToReturn = ArrayPool<byte>.Shared.Rent(size))
-                    : stackalloc byte[size];
+                    : stackalloc byte[Constants.MaxStackallocBytes];
                 Sha2.ComputeHash(source, _keys.Slice(0, blockSize), destination, W);
                 Sha2.ComputeHash(destination, _keys.Slice(blockSize, blockSize), destination, W);
             }

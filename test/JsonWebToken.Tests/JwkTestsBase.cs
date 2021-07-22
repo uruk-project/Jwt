@@ -54,8 +54,8 @@ namespace JsonWebToken.Tests
             key.Kid = JsonEncodedText.Encode( "kid");
             key.Use = JwkUseValues.Sig;
             key.X5c.Add(new byte[0]);
-            key.X5t = Encoding.UTF8.GetBytes("x5t");
-            key.X5tS256 = Encoding.UTF8.GetBytes("x5t#256");
+            key.X5t = Base64Url.Decode("XOf1YEg_zFLX0PtGjiEVvjM1WsA");
+            key.X5tS256 = Base64Url.Decode("ZgPMqAT8BELhXwBa2nIT0OvdWtQCiF_g09nAyHhgCe0");
             key.X5u = "https://example.com/jwks";
             var json = key.Canonicalize();
             var canonicalizedKey = Jwk.FromJson(Encoding.UTF8.GetString(json));

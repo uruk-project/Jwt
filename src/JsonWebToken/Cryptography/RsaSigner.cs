@@ -56,7 +56,7 @@ namespace JsonWebToken.Cryptography
             try
             {
 #if SUPPORT_SPAN_CRYPTO
-                Span<byte> hash = stackalloc byte[_sha.HashSize];
+                Span<byte> hash = stackalloc byte[Sha2.HashSizeStackallocThreshold].Slice(0, _sha.HashSize);
                 _sha.ComputeHash(data, hash);
                 return rsa.TrySignHash(hash, destination, _hashAlgorithm, _signaturePadding, out bytesWritten);
 #else

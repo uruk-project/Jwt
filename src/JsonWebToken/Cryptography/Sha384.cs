@@ -95,7 +95,9 @@ namespace JsonWebToken.Cryptography
             ref byte lastBlockRef = ref MemoryMarshal.GetReference(lastBlock);
 
             // update
-            Span<byte> wTemp = workingSet.Length < IterationCount * sizeof(ulong) ? stackalloc byte[IterationCount * sizeof(ulong)] : workingSet;
+            Span<byte> wTemp = workingSet.Length < IterationCount * sizeof(ulong) 
+                                ? stackalloc byte[IterationCount * sizeof(ulong)] 
+                                : workingSet;
             ref ulong wRef = ref Unsafe.As<byte, ulong>(ref MemoryMarshal.GetReference(wTemp));
             ref ulong stateRef = ref MemoryMarshal.GetReference(state);
             ref byte srcStartRef = ref MemoryMarshal.GetReference(source);

@@ -67,6 +67,8 @@ namespace JsonWebToken
         private JsonEncodedText _use;
         private IList<JsonEncodedText>? _keyOps;
         private List<byte[]>? _x5c;
+        private byte[]? _x5t;
+        private byte[]? _x5tS256;
 
         /// <summary>Initializes a new instance of the <see cref="Jwk"/> class.</summary>
         protected Jwk()
@@ -147,10 +149,34 @@ namespace JsonWebToken
         }
 
         /// <summary>Gets or sets the 'x5t' (X.509 Certificate SHA-1 thumbprint).</summary>
-        public byte[]? X5t { get; set; }
+        public byte[]? X5t
+        {
+            get => _x5t;
+            set
+            {
+                if (value?.Length != 20)
+                {
+                    throw new InvalidOperationException($"The parameter 'x5t' must be a byte array of 160 bits (20 bytes). Current size: {value?.Length*8} bits.");
+                }
+
+                _x5t = value;
+            }
+        }
 
         /// <summary>Gets or sets the 'x5t#S256' (X.509 Certificate SHA-256 thumbprint).</summary>
-        public byte[]? X5tS256 { get; set; }
+        public byte[]? X5tS256
+        {
+            get => _x5tS256;
+            set
+            {
+                if (value?.Length != Sha256.Sha256HashSize)
+                {
+                    throw new InvalidOperationException($"The parameter 'x5t#S256' must be a byte array of 256 bits (32 bytes). Current size: {value?.Length*8} bits.");
+                }
+
+                _x5tS256 = value;
+            }
+        }
 
         /// <summary>Gets or sets the 'x5u' (X.509 URL).</summary>
         public string? X5u { get; set; }
@@ -601,8 +627,8 @@ namespace JsonWebToken
             try
             {
                 Span<byte> buffer = size > Constants.MaxStackallocBytes
-                                    ? stackalloc byte[size]
-                                    : (arrayToReturn = ArrayPool<byte>.Shared.Rent(size));
+                                    ? (arrayToReturn = ArrayPool<byte>.Shared.Rent(size))
+                                    : stackalloc byte[Constants.MaxStackallocBytes];
                 Canonicalize(buffer);
                 return buffer.Slice(0, size).ToArray();
             }
@@ -639,8 +665,8 @@ namespace JsonWebToken
             try
             {
                 Span<byte> buffer = size > Constants.MaxStackallocBytes
-                                    ? stackalloc byte[size]
-                                    : (arrayToReturn = ArrayPool<byte>.Shared.Rent(size));
+                                    ? (arrayToReturn = ArrayPool<byte>.Shared.Rent(size))
+                                    : stackalloc byte[Constants.MaxStackallocBytes];
                 Canonicalize(buffer);
                 Sha256.Shared.ComputeHash(buffer.Slice(0, size), hash);
                 Base64Url.Encode(hash, destination);
@@ -801,7 +827,7 @@ namespace JsonWebToken
             {
                 int length = Utf8.GetMaxByteCount(json.Length);
                 Span<byte> jsonSpan = length <= Constants.MaxStackallocBytes
-                            ? stackalloc byte[length]
+                            ? stackalloc byte[Constants.MaxStackallocBytes]
                             : (jsonToReturn = ArrayPool<byte>.Shared.Rent(length));
                 length = Utf8.GetBytes(json, jsonSpan);
                 jsonSpan = jsonSpan.Slice(0, length);
@@ -1324,7 +1350,7 @@ namespace JsonWebToken
         {
             if (IntegerMarshal.ReadUInt64(ref pPropertyName) == x5t_S256)
             {
-                key.X5tS256 = Base64Url.Decode(reader.ValueSpan);
+                key._x5tS256 = Base64Url.Decode(reader.ValueSpan);
             }
         }
 
@@ -1396,7 +1422,7 @@ namespace JsonWebToken
                     key.Use = JsonEncodedText.Encode(reader.ValueSpan, JsonSerializationBehavior.JsonEncoder);
                     break;
                 case x5t:
-                    key.X5t = Base64Url.Decode(reader.ValueSpan);
+                    key._x5t = Base64Url.Decode(reader.ValueSpan);
                     break;
                 case x5u:
                     key.X5u = reader.GetString();
@@ -1438,18 +1464,44 @@ namespace JsonWebToken
                 writer.WriteEndArray();
             }
 
-            if (X5t != null)
+            if (_x5t != null)
             {
-                Span<byte> buffer = stackalloc byte[Base64Url.GetArraySizeRequiredToEncode(X5t.Length)];
-                Base64Url.Encode(X5t, buffer);
-                writer.WriteString(JwkParameterNames.X5t, buffer);
+                byte[]? array = null;
+                Span<byte> buffer = _x5t.Length == 20
+                                        ? stackalloc byte[27] // 27 = Base64Url.GetArraySizeRequiredToEncode(20)
+                                        : ArrayPool<byte>.Shared.Rent(27);
+                try
+                {
+                    int bytesWritten = Base64Url.Encode(_x5t, buffer);
+                    writer.WriteString(JwkParameterNames.X5t, buffer.Slice(0, bytesWritten));
+                }
+                finally
+                {
+                    if (array != null)
+                    {
+                        ArrayPool<byte>.Shared.Return(array);
+                    }
+                }
             }
 
-            if (X5tS256 != null)
+            if (_x5tS256 != null)
             {
-                Span<byte> buffer = stackalloc byte[Base64Url.GetArraySizeRequiredToEncode(X5tS256.Length)];
-                int bytesWritten = Base64Url.Encode(X5tS256, buffer);
-                writer.WriteString(JwkParameterNames.X5tS256, buffer.Slice(0, bytesWritten));
+                byte[]? array = null;
+                Span<byte> buffer = _x5tS256.Length == 32
+                                        ? stackalloc byte[43] // 43 = Base64Url.GetArraySizeRequiredToEncode(32)
+                                        : ArrayPool<byte>.Shared.Rent(43);
+                try
+                {
+                    int bytesWritten = Base64Url.Encode(_x5tS256, buffer);
+                    writer.WriteString(JwkParameterNames.X5tS256, buffer.Slice(0, bytesWritten));
+                }
+                finally
+                {
+                    if (array != null)
+                    {
+                        ArrayPool<byte>.Shared.Return(array);
+                    }
+                }
             }
 
             if (X5u != null)

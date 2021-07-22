@@ -3,6 +3,7 @@
 
 using System;
 using System.Buffers;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 
 namespace JsonWebToken
@@ -46,7 +47,7 @@ namespace JsonWebToken
             byte[]? arrayToReturn = null;
             var buffer = base64.Length > Constants.MaxStackallocBytes
                 ? (arrayToReturn = ArrayPool<byte>.Shared.Rent(base64.Length))
-                : stackalloc byte[base64.Length];
+                : stackalloc byte[Constants.MaxStackallocBytes];
             try
             {
                 int length = Utf8.GetBytes(base64, buffer);
@@ -83,7 +84,7 @@ namespace JsonWebToken
                 byte[]? utf8ArrayToReturn = null;
                 Span<byte> utf8Data = base64.Length > Constants.MaxStackallocBytes
                     ? (utf8ArrayToReturn = ArrayPool<byte>.Shared.Rent(base64.Length))
-                    : stackalloc byte[base64.Length];
+                    : stackalloc byte[Constants.MaxStackallocBytes];
                 try
                 {
                     int length = 0;
@@ -118,7 +119,7 @@ namespace JsonWebToken
             }
         }
 
-        private static bool IsWhiteSpace(byte c) 
+        private static bool IsWhiteSpace(byte c)
             => c == ' ' || (c >= '\t' && c <= '\r');
 
         private static ReadOnlySpan<byte> WhiteSpace => new byte[] { (byte)' ', (byte)'\t', (byte)'\r', (byte)'\n', (byte)'\v', (byte)'\f' };
@@ -173,7 +174,7 @@ namespace JsonWebToken
                 int length = Utf8.GetMaxByteCount(data.Length);
                 var utf8Data = length > Constants.MaxStackallocBytes
                     ? (utf8ArrayToReturn = ArrayPool<byte>.Shared.Rent(length))
-                    : stackalloc byte[length];
+                    : stackalloc byte[Constants.MaxStackallocBytes];
 
                 int written = Utf8.GetBytes(data, utf8Data);
                 return Encode(utf8Data.Slice(0, written));

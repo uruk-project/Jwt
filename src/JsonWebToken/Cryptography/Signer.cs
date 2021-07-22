@@ -71,5 +71,7 @@ namespace JsonWebToken.Cryptography
             {
             }
         }
+
+        internal const int SignatureStackallocThreshold = 256;
     }
 }

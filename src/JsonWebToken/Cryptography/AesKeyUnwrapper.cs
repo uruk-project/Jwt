@@ -12,6 +12,7 @@ namespace JsonWebToken.Cryptography
     internal sealed class AesKeyUnwrapper : KeyUnwrapper
     {
         private const int BlockSizeInBytes = 8;
+        private const int KeyWrappedSizeThreshold = 64;
 
         // The default initialization vector from RFC3394
         private const ulong _defaultIV = 0XA6A6A6A6A6A6A6A6;
@@ -85,7 +86,7 @@ namespace JsonWebToken.Cryptography
             int n = key.Length - BlockSizeInBytes;
 
             // The set of input blocks
-            Span<byte> r = stackalloc byte[n];
+            Span<byte> r = stackalloc byte[KeyWrappedSizeThreshold].Slice(0, n);
             r.Clear();
             ref byte rRef = ref MemoryMarshal.GetReference(r);
             Unsafe.CopyBlockUnaligned(ref rRef, ref Unsafe.AddByteOffset(ref input, (IntPtr)8), (uint)n);

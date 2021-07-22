@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using JsonWebToken.Cryptography;
 
 namespace JsonWebToken
 {
@@ -109,7 +110,7 @@ namespace JsonWebToken
                 }
 
                 error = SignatureValidationError.InvalidSignature();
-				return false;
+                return false;
             }
         }
 
@@ -130,31 +131,34 @@ namespace JsonWebToken
             {
                 if (signatureSegment.IsEmpty)
                 {
-                    if(contentBytes.IsEmpty)
-					{
-						// This is not a JWS
+                    if (contentBytes.IsEmpty)
+                    {
+                        // This is not a JWS
                         goto Success;
-					}
-					else
-					{
+                    }
+                    else
+                    {
                         error = SignatureValidationError.MissingSignature();
-						goto Error;
-					}
+                        goto Error;
+                    }
                 }
 
+                byte[]? signatureToReturn = null;
                 try
                 {
                     int signatureBytesLength = Base64Url.GetArraySizeRequiredToDecode(signatureSegment.Length);
-                    Span<byte> signatureBytes = stackalloc byte[signatureBytesLength];
+                    Span<byte> signatureBytes = signatureBytesLength <= Constants.MaxStackallocBytes
+                            ? stackalloc byte[Constants.MaxStackallocBytes]
+                            : (signatureToReturn = ArrayPool<byte>.Shared.Rent(signatureBytesLength));
+
                     if (Base64Url.Decode(signatureSegment, signatureBytes, out _, out int bytesWritten) != OperationStatus.Done)
                     {
                         error = SignatureValidationError.MalformedSignature();
-						goto Error;
+                        goto Error;
                     }
 
-                    Debug.Assert(bytesWritten == signatureBytes.Length);
+                    Debug.Assert(signatureBytesLength == bytesWritten);
                     bool keysTried = false;
-
                     var keySet = _keyProvider.GetKeys(header);
                     var algElement = header.Alg;
                     if (keySet != null)
@@ -170,9 +174,9 @@ namespace JsonWebToken
                                 {
                                     if (key.TryGetSignatureVerifier(alg, out var signatureVerifier))
                                     {
-                                        if (signatureVerifier.Verify(contentBytes, signatureBytes))
+                                        if (signatureVerifier.Verify(contentBytes, signatureBytes.Slice(0, signatureBytesLength)))
                                         {
-											goto Success;
+                                            goto Success;
                                         }
                                     }
                                 }
@@ -190,13 +194,20 @@ namespace JsonWebToken
                 {
                     error = SignatureValidationError.MalformedSignature(e);
                 }
-				
-			Error:
-				return false;
-				
-			Success:
-				error = null;
-				return true;
+                finally
+                {
+                    if (signatureToReturn != null)
+                    {
+                        ArrayPool<byte>.Shared.Return(signatureToReturn);
+                    }
+                }
+
+            Error:
+                return false;
+
+            Success:
+                error = null;
+                return true;
             }
         }
 
@@ -204,17 +215,17 @@ namespace JsonWebToken
         {
             public override bool IsEnabled => true;
 
-            public override bool TryValidateSignature(JwtHeaderDocument header, JwtPayloadDocument payload, ReadOnlySpan<byte> contentBytes, ReadOnlySpan<byte> signatureSegment, [NotNullWhen(false)] out SignatureValidationError? error )
+            public override bool TryValidateSignature(JwtHeaderDocument header, JwtPayloadDocument payload, ReadOnlySpan<byte> contentBytes, ReadOnlySpan<byte> signatureSegment, [NotNullWhen(false)] out SignatureValidationError? error)
             {
-                if((contentBytes.Length == 0 && signatureSegment.Length == 0)
+                if ((contentBytes.Length == 0 && signatureSegment.Length == 0)
                     || (signatureSegment.IsEmpty && !header.Alg.IsEmpty && header.Alg.ValueEquals(SignatureAlgorithm.None.Utf8Name)))
-				{
-					error = null;
-					return true;
-				}
+                {
+                    error = null;
+                    return true;
+                }
 
                 error = SignatureValidationError.InvalidSignature();
-				return false;
+                return false;
             }
         }
 
@@ -225,7 +236,7 @@ namespace JsonWebToken
             public override bool TryValidateSignature(JwtHeaderDocument header, JwtPayloadDocument payload, ReadOnlySpan<byte> contentBytes, ReadOnlySpan<byte> signatureSegment, [NotNullWhen(false)] out SignatureValidationError? error)
             {
                 error = null;
-				return true;
+                return true;
             }
         }
 
@@ -236,7 +247,7 @@ namespace JsonWebToken
             public override bool TryValidateSignature(JwtHeaderDocument header, JwtPayloadDocument payload, ReadOnlySpan<byte> contentBytes, ReadOnlySpan<byte> signatureSegment, [NotNullWhen(false)] out SignatureValidationError? error)
             {
                 error = SignatureValidationError.InvalidSignature();
-				return false;
+                return false;
             }
         }
     }

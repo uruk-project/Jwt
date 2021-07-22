@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE in the project root for license information.
 
 using System;
+using System.Buffers;
 using System.Diagnostics;
 using System.Security.Cryptography;
 using System.Text.Json;
@@ -10,6 +11,8 @@ namespace JsonWebToken.Cryptography
 {
     internal sealed class Pbes2KeyUnwrapper : KeyUnwrapper
     {
+        private const int KeySizeThreshold = 32;
+      
         private readonly JsonEncodedText _algorithm;
         private readonly int _algorithmNameLength;
         private readonly int _keySizeInBytes;
@@ -53,18 +56,32 @@ namespace JsonWebToken.Cryptography
             int iterationCount = (int)p2c.GetInt64();
             var b64p2s = p2s.GetRawValue();
             int p2sLength = Base64Url.GetArraySizeRequiredToDecode(b64p2s.Length);
+    
+            int saltLength = p2sLength + 1 + _algorithmNameLength;
+            byte[]? saltArray = null;
+            Span<byte> salt = saltLength <= Pbkdf2.SaltSizeThreshold + 18 + 1
+                                ? stackalloc byte[Pbkdf2.SaltSizeThreshold + 18 + 1]
+                                : (saltArray = ArrayPool<byte>.Shared.Rent(saltLength));
+            try
+            {
+                salt = salt.Slice(0, saltLength);
+                Base64Url.Decode(b64p2s.Span, salt.Slice(_algorithmNameLength + 1));
+                salt[_algorithmNameLength] = 0x00;
+                _algorithm.EncodedUtf8Bytes.CopyTo(salt);
 
+                Span<byte> derivedKey = stackalloc byte[KeySizeThreshold].Slice(0, _keySizeInBytes);
+                Pbkdf2.DeriveKey(_password, salt, _hashAlgorithm, (uint)iterationCount, derivedKey);
 
-            Span<byte> salt = stackalloc byte[p2sLength + 1 + _algorithmNameLength];
-            Base64Url.Decode(b64p2s.Span, salt.Slice(_algorithmNameLength + 1));
-            salt[_algorithmNameLength] = 0x00;
-            _algorithm.EncodedUtf8Bytes.CopyTo(salt);
-
-            Span<byte> derivedKey = stackalloc byte[_keySizeInBytes];
-            Pbkdf2.DeriveKey(_password, salt, _hashAlgorithm, (uint)iterationCount, derivedKey);
-
-            using var keyUnwrapper = new AesKeyUnwrapper(derivedKey, EncryptionAlgorithm, _keyManagementAlgorithm);
-            return keyUnwrapper.TryUnwrapKey(keyBytes, destination, header, out bytesWritten);
+                using var keyUnwrapper = new AesKeyUnwrapper(derivedKey, EncryptionAlgorithm, _keyManagementAlgorithm);
+                return keyUnwrapper.TryUnwrapKey(keyBytes, destination, header, out bytesWritten);
+            }
+            finally
+            {
+                if (saltArray != null)
+                {
+                    ArrayPool<byte>.Shared.Return(saltArray);
+                }
+            }
         }
 
         protected override void Dispose(bool disposing)
