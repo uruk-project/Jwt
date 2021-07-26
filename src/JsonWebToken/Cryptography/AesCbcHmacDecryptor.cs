@@ -33,28 +33,12 @@ namespace JsonWebToken.Cryptography
         }
 
         /// <inheritdoc />
+        public override int GetTagSize()
+            => _encryptionAlgorithm.SignatureAlgorithm.RequiredKeySizeInBits >> 3;
+
+        /// <inheritdoc />
         public override bool TryDecrypt(ReadOnlySpan<byte> key, ReadOnlySpan<byte> ciphertext, ReadOnlySpan<byte> associatedData, ReadOnlySpan<byte> nonce, ReadOnlySpan<byte> authenticationTag, Span<byte> plaintext, out int bytesWritten)
         {
-            if (ciphertext.IsEmpty)
-            {
-                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.ciphertext);
-            }
-
-            if (associatedData.IsEmpty)
-            {
-                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.associatedData);
-            }
-
-            if (nonce.IsEmpty)
-            {
-                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.nonce);
-            }
-
-            if (authenticationTag.IsEmpty)
-            {
-                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.authenticationTag);
-            }
-
             int requiredKeyLength = _encryptionAlgorithm.RequiredKeySizeInBytes >> 1;
             if (key.Length >= requiredKeyLength)
             {
@@ -66,12 +50,17 @@ namespace JsonWebToken.Cryptography
                 }
             }
 
-            bytesWritten = 0;
-            return false;
+            return ThrowHelper.TryWriteError(out bytesWritten);
         }
 
         private bool VerifyAuthenticationTag(ReadOnlySpan<byte> key, ReadOnlySpan<byte> iv, ReadOnlySpan<byte> associatedData, ReadOnlySpan<byte> ciphertext, ReadOnlySpan<byte> authenticationTag)
         {
+            int tagSize = GetTagSize();
+            if (authenticationTag.Length != tagSize)
+            {
+                return false;
+            }
+
             byte[]? byteArrayToReturnToPool = null;
             int macLength = associatedData.Length + iv.Length + ciphertext.Length + sizeof(long);
             Span<byte> macBytes = macLength <= Constants.MaxStackallocBytes
@@ -90,11 +79,11 @@ namespace JsonWebToken.Cryptography
                 Sha2 hashAlgorithm = _encryptionAlgorithm.SignatureAlgorithm.Sha;
                 Span<byte> hmacKey = stackalloc byte[hashAlgorithm.BlockSize * 2];
                 Hmac hmac = new Hmac(hashAlgorithm, key, hmacKey);
-                Span<byte> hash = stackalloc byte[authenticationTag.Length * 2];
+                Span<byte> hash = stackalloc byte[hashAlgorithm.HashSize];
                 hmac.ComputeHash(macBytes, hash);
                 CryptographicOperations.ZeroMemory(hmacKey);
 
-                return CryptographicOperations.FixedTimeEquals(authenticationTag, hash.Slice(0, authenticationTag.Length));
+                return CryptographicOperations.FixedTimeEquals(authenticationTag, hash.Slice(0, tagSize));
             }
             finally
             {

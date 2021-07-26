@@ -2,6 +2,7 @@
 using System.Text;
 using Xunit;
 using JsonWebToken.Cryptography;
+using JsonWebToken.Tests.Cryptography;
 
 namespace JsonWebToken.Tests
 {
@@ -85,6 +86,30 @@ namespace JsonWebToken.Tests
                 Assert.True(decrypted);
                 Assert.Equal(data, plaintext.Slice(0, bytesWritten).ToArray());
                 Assert.Equal(32, tagSize);
+            }
+        }
+
+        [Fact]
+        public void Decrypt_Empty()
+        {
+            if (System.Runtime.Intrinsics.X86.Aes.IsSupported)
+            {
+                Span<byte> data = default;
+                Span<byte> authenticationTag = default;
+                var plaintext = new byte[0];
+                var key = SymmetricJwk.FromByteArray(Encoding.UTF8.GetBytes("ThisIsA128bitKey" + "ThisIsA128bitKey" + "ThisIsA128bitKey" + "ThisIsA128bitKey"));
+                Span<byte> nonce = default;
+                Span<byte> associatedData = default;
+                var decryptor = new AesCbcHmacDecryptor(EncryptionAlgorithm.A256CbcHS512);
+
+                bool decrypted = decryptor.TryDecrypt(key.K, data, nonce, associatedData, authenticationTag, plaintext, out int bytesWritten);
+                Assert.False(decrypted);
+                Assert.Equal(0, bytesWritten);
+
+                var decryptorNi = new AesCbcHmacDecryptor(EncryptionAlgorithm.A256CbcHS512, new Aes256CbcDecryptor());
+                decrypted = decryptorNi.TryDecrypt(key.K, data, nonce, associatedData, authenticationTag, plaintext, out bytesWritten);
+                Assert.False(decrypted);
+                Assert.Equal(0, bytesWritten);
             }
         }
 #endif

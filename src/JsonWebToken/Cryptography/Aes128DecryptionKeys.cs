@@ -3,6 +3,7 @@
 
 #if SUPPORT_SIMD
 using System;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Runtime.Intrinsics;
@@ -28,10 +29,7 @@ namespace JsonWebToken.Cryptography
 
         public Aes128DecryptionKeys(ReadOnlySpan<byte> key)
         {
-            if (key.Length < 16)
-            {
-                ThrowHelper.ThrowArgumentOutOfRangeException_EncryptionKeyTooSmall(EncryptionAlgorithm.A128CbcHS256, 128, key.Length * 8);
-            }
+            Debug.Assert(key.Length >= 16);
 
             var tmp = Unsafe.ReadUnaligned<Vector128<byte>>(ref MemoryMarshal.GetReference(key));
             Key10 = tmp;

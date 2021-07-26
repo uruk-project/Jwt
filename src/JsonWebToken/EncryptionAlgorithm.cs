@@ -501,6 +501,9 @@ namespace JsonWebToken
                 bytesWritten = 0;
                 return true;
             }
+            
+            public override int GetTagSize()
+               => 0;
         }
     }
 }

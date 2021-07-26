@@ -42,7 +42,11 @@ namespace JsonWebToken.Cryptography
                 else
                 {
                     ThrowHelper.ThrowNotSupportedException_AlgorithmForKeyWrap(algorithm);
+#if NET5_0_OR_GREATER
+                    Unsafe.SkipInit(out _decryptor);
+#else
                     _decryptor = new Aes128BlockDecryptor(default);
+#endif
                 }
             }
             else
@@ -50,7 +54,7 @@ namespace JsonWebToken.Cryptography
                 _decryptor = new DefaultAesBlockDecryptor(key);
             }
 #else
-            _decryptor = new DefaultAesBlockDecryptor(key);
+                    _decryptor = new DefaultAesBlockDecryptor(key);
 #endif
         }
 

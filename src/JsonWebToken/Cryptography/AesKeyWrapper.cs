@@ -42,7 +42,11 @@ namespace JsonWebToken.Cryptography
                 else
                 {
                     ThrowHelper.ThrowNotSupportedException_AlgorithmForKeyWrap(algorithm);
+#if NET5_0_OR_GREATER
+                    Unsafe.SkipInit(out _encryptor);
+#else
                     _encryptor = new Aes128BlockEncryptor(default);
+#endif
                 }
             }
             else
