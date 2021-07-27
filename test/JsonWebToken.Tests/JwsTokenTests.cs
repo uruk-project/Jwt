@@ -112,7 +112,7 @@ namespace JsonWebToken.Tests
             yield return new object[] { (string)SignatureAlgorithm.PS256 };
             yield return new object[] { (string)SignatureAlgorithm.PS384 };
             yield return new object[] { (string)SignatureAlgorithm.PS512 };
-#if !NET461
+#if SUPPORT_ELLIPTIC_CURVE_SIGNATURE
             yield return new object[] { (string)SignatureAlgorithm.ES256 };
             yield return new object[] { (string)SignatureAlgorithm.ES384 };
             yield return new object[] { (string)SignatureAlgorithm.ES512 };
