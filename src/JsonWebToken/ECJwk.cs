@@ -826,7 +826,7 @@ namespace JsonWebToken
             writer.WriteString(JwkParameterNames.Crv, Crv.Name);
 
             // X & Y & D have the same length
-            const int ECParameterStackallocThreshold = 128;
+            const int ECParameterStackallocThreshold = 88;
             Span<byte> buffer = stackalloc byte[ECParameterStackallocThreshold]
                 .Slice(0, Base64Url.GetArraySizeRequiredToEncode(_parameters.Q.X!.Length));
 
