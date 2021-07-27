@@ -101,12 +101,12 @@ namespace JsonWebToken
         internal static void ThrowInvalidOperationException_ConcurrentOperationsNotSupported() => throw CreateInvalidOperationException_ConcurrentOperationsNotSupported();
         [MethodImpl(MethodImplOptions.NoInlining)]
         private static Exception CreateInvalidOperationException_ConcurrentOperationsNotSupported() => new InvalidOperationException("Operations that change non-concurrent collections must have exclusive access. A concurrent update was performed on this collection and corrupted its state. The collection's state is no longer correct.");
-        
+
         [DoesNotReturn]
         internal static void ThrowInvalidOperationException_AlreadyInitialized(ExceptionArgument argument) => throw CreateInvalidOperationException_AlreadyInitialized(argument);
         [MethodImpl(MethodImplOptions.NoInlining)]
         private static Exception CreateInvalidOperationException_AlreadyInitialized(ExceptionArgument argument) => new InvalidOperationException($"The property '{argument}' is already initialized. You cannot set more than once this property.");
-        
+
         [DoesNotReturn]
         internal static void ThrowInvalidOperationException_NotInitialized(ExceptionArgument argument) => throw CreateInvalidOperationException_NotInitialized(argument);
         [MethodImpl(MethodImplOptions.NoInlining)]
@@ -116,7 +116,7 @@ namespace JsonWebToken
         internal static void ThrowArgumentOutOfRangeException_MustBeGreaterOrEqualToZero(ExceptionArgument argument, int value) => throw CreateArgumentOutOfRangeException_MustBeGreaterOrEqualToZero(argument, value);
         [MethodImpl(MethodImplOptions.NoInlining)]
         private static Exception CreateArgumentOutOfRangeException_MustBeGreaterOrEqualToZero(ExceptionArgument argument, int value) => new ArgumentOutOfRangeException(GetArgumentName(argument), $"{GetArgumentName(argument)} must be greater or equal to zero. value: '{value}'.");
-        
+
         [DoesNotReturn]
         internal static void ThrowInvalidOperationException_NotSupportedJsonType(JwtValueKind type) => throw CreateInvalidOperationException_NotSupportedJsonType(type);
         [MethodImpl(MethodImplOptions.NoInlining)]
@@ -144,6 +144,11 @@ namespace JsonWebToken
         private static Exception CreateCryptographicException_EncryptionFailed(EncryptionAlgorithm? algorithm, Jwk key, Exception innerException) => new CryptographicException($"Encryption failed for: Algorithm: '{algorithm}', key: '{key.Kid}'. See inner exception.", innerException);
 
         [DoesNotReturn]
+        internal static void ThrowCryptographicException_SignatureFailed(SignatureAlgorithm? algorithm, Jwk key, Exception? innerException = null) => throw CreateCryptographicException_SignatureFailed(algorithm, key, innerException);
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private static Exception CreateCryptographicException_SignatureFailed(SignatureAlgorithm? algorithm, Jwk key, Exception? innerException) => innerException is null ? new CryptographicException($"Encryption failed for: Algorithm: '{algorithm}', key: '{key.Kid}'") : new CryptographicException($"Encryption failed for: Algorithm: '{algorithm}', key: '{key.Kid}'. See inner exception.", innerException);
+
+        [DoesNotReturn]
         internal static void ThrowJsonElementWrongType_InvalidOperationException(JsonTokenType expectedTokenType, JsonTokenType tokenType) => throw CreateJsonElementWrongType_InvalidOperationException(expectedTokenType, tokenType);
         [MethodImpl(MethodImplOptions.NoInlining)]
         private static Exception CreateJsonElementWrongType_InvalidOperationException(JsonTokenType expectedTokenType, JsonTokenType tokenType) => new InvalidOperationException($"The requested operation requires an element of type '{expectedTokenType}', but the target element has type '{tokenType}'.");
@@ -157,7 +162,7 @@ namespace JsonWebToken
         internal static void ThrowNotSupportedException_AlgorithmForKeyWrap(KeyManagementAlgorithm? algorithm) => throw CreateNotSupportedException_AlgorithmForKeyWrap(algorithm);
         [MethodImpl(MethodImplOptions.NoInlining)]
         internal static Exception CreateNotSupportedException_AlgorithmForKeyWrap(KeyManagementAlgorithm? algorithm) => new NotSupportedException($"Key wrap is not supported for algorithm: '{algorithm}'.");
-        
+
         [DoesNotReturn]
         internal static void ThrowNotSupportedException_AlgorithmForKeyWrap(AlgorithmId algorithm) => throw CreateNotSupportedException_AlgorithmForKeyWrap(algorithm);
         [MethodImpl(MethodImplOptions.NoInlining)]

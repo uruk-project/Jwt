@@ -155,8 +155,11 @@ namespace JsonWebToken
                 signature = signature.Slice(0, signer.HashSizeInBytes);
                 try
                 {
-                    bool success = signer.TrySign(buffer.Slice(0, offset++), signature, out int signatureBytesWritten);
-                    Debug.Assert(success);
+                    if(! signer.TrySign(buffer.Slice(0, offset++), signature, out int signatureBytesWritten))
+                    {
+                        ThrowHelper.ThrowCryptographicException_SignatureFailed(alg, _signingKey);
+                    }
+
                     Debug.Assert(signature.Length == signatureBytesWritten);
                 }
                 finally
