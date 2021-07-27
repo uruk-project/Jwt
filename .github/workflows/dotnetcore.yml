@@ -23,9 +23,9 @@ jobs:
         os: [ windows-latest ]
         configuration: [ Debug, Release ]
         include:
-          - os: ubuntu-latest
-            configuration: Release
-            is-main: true
+#          - os: ubuntu-latest
+#            configuration: Release
+#            is-main: true
           - os: windows-latest
             configuration: Release
             is-netfx: true
