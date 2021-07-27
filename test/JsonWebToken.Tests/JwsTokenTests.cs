@@ -26,7 +26,7 @@ namespace JsonWebToken.Tests
             n: "0vx7agoebGcQSuuPiLJXZptN9nndrQmbXEps2aiAFbWhM78LhWx4cbbfAAtVT86zwu1RK7aPFFxuhDR1L6tSoc_BJECPebWKRXjBZCiFV4n3oknjhMstn64tZ_2W-5JsGY4Hc5n9yBXArwl93lqt7_RN5w6Cf0h4QyQ5v-65YGjQR0_FDW2QvzqY368QQMicAtaSqzs8KJZgnYb9c7d0zgdAZHzu6qMQvRL5hajrn1n91CbOpbISD08qNLyrdkt-bFTWhAI4vMQFh6WeZu0fM4lFd2NcRwr3XPksINHaQ-G_xBniIqbw0Ls1jF44-csFCur-kEgU8awapJzKnqDKgw",
             e: "AQAB"
         );
-#if !NET461
+#if SUPPORT_ELLIPTIC_CURVE_SIGNATURE
         private readonly ECJwk _privateEcc256Key = ECJwk.FromBase64Url
         (
             crv: EllipticalCurve.P256,
@@ -45,7 +45,6 @@ namespace JsonWebToken.Tests
         private readonly ECJwk _publicEcc384Key = ECJwk.FromBase64Url
         (
             crv: EllipticalCurve.P384,
-            d: "Wf9qS_1idTtZ13HKUMkNDFPacwsfduJxayYtLlDGYzp8la9YajkWTPQwZT0X-vjq",
             x: "2ius4b5QcXto95wPhpQsX3IGAtnT9mNjMvds18_AgU3wNpOkppfuT6wu-y-fnsVU",
             y: "3HPDrLpplnCJc3ksMBVD9rGFcAld3-c74CIk4ZNleOBnGeAkRZv4wJ4z_btwx_PL"
         );
@@ -145,7 +144,7 @@ namespace JsonWebToken.Tests
                 case "PS512":
                     return (_privateRsa2048Key, _publicRsa2048Key);
 
-#if !NET461
+#if SUPPORT_ELLIPTIC_CURVE_SIGNATURE
                 case "ES256":
                     return (_privateEcc256Key, _publicEcc256Key);
                 case "ES384":
