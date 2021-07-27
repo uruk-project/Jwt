@@ -87,14 +87,14 @@ namespace JsonWebToken.Tests
                 }
             };
 
-            var token = writer.WriteTokenString(descriptor);
-            Assert.False(true, token);
+            var txt = writer.WriteTokenString(descriptor);
+            Assert.False(true, txt);
 
             var policy = new TokenValidationPolicyBuilder()
                 .RequireSignatureByDefault(validationKey, (SignatureAlgorithm)alg)
                 .Build();
 
-            var result = Jwt.TryParse(token, policy, out var jwt);
+            var result = Jwt.TryParse(txt, policy, out var jwt);
             Assert.True(result, jwt?.Error?.ToString());
             Assert.True(jwt.Payload.TryGetClaim("sub", out var sub));
             Assert.Equal("Alice", sub.GetString());
