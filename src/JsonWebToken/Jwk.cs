@@ -826,9 +826,9 @@ namespace JsonWebToken
             try
             {
                 int length = Utf8.GetMaxByteCount(json.Length);
-                Span<byte> jsonSpan = length <= Constants.MaxStackallocBytes
-                            ? stackalloc byte[Constants.MaxStackallocBytes]
-                            : (jsonToReturn = ArrayPool<byte>.Shared.Rent(length));
+                Span<byte> jsonSpan = length > Constants.MaxStackallocBytes
+                            ? (jsonToReturn = ArrayPool<byte>.Shared.Rent(length))
+                            : stackalloc byte[Constants.MaxStackallocBytes];
                 length = Utf8.GetBytes(json, jsonSpan);
                 jsonSpan = jsonSpan.Slice(0, length);
                 var reader = new Utf8JsonReader(jsonSpan, true, default);
@@ -1468,8 +1468,8 @@ namespace JsonWebToken
             {
                 byte[]? array = null;
                 Span<byte> buffer = _x5t.Length == 20
-                                        ? stackalloc byte[27] // 27 = Base64Url.GetArraySizeRequiredToEncode(20)
-                                        : ArrayPool<byte>.Shared.Rent(27);
+                                        ? stackalloc byte[27] // 27 =  Base64Url.GetArraySizeRequiredToEncode(20)
+                                        : ArrayPool<byte>.Shared.Rent(Base64Url.GetArraySizeRequiredToEncode(_x5t.Length));
                 try
                 {
                     int bytesWritten = Base64Url.Encode(_x5t, buffer);
@@ -1489,7 +1489,7 @@ namespace JsonWebToken
                 byte[]? array = null;
                 Span<byte> buffer = _x5tS256.Length == 32
                                         ? stackalloc byte[43] // 43 = Base64Url.GetArraySizeRequiredToEncode(32)
-                                        : ArrayPool<byte>.Shared.Rent(43);
+                                        : ArrayPool<byte>.Shared.Rent(Base64Url.GetArraySizeRequiredToEncode(_x5tS256.Length));
                 try
                 {
                     int bytesWritten = Base64Url.Encode(_x5tS256, buffer);

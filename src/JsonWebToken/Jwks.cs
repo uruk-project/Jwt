@@ -512,9 +512,9 @@ namespace JsonWebToken
             try
             {
                 int length = Utf8.GetMaxByteCount(json.Length);
-                Span<byte> jsonSpan = length <= Constants.MaxStackallocBytes
-                            ? stackalloc byte[Constants.MaxStackallocBytes]
-                            : (jsonToReturn = ArrayPool<byte>.Shared.Rent(length));
+                Span<byte> jsonSpan = length > Constants.MaxStackallocBytes
+                            ? (jsonToReturn = ArrayPool<byte>.Shared.Rent(length))
+                            : stackalloc byte[Constants.MaxStackallocBytes];
                 length = Utf8.GetBytes(json, jsonSpan);
                 return FromJson(issuer, jsonSpan.Slice(0, length));
             }

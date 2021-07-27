@@ -149,9 +149,9 @@ namespace JsonWebToken
                 offset += Base64Url.Encode(bufferWriter.WrittenSpan.Slice(0, payloadLength), buffer.Slice(offset));
                 buffer[offset] = Constants.ByteDot;
                 byte[]? signatureArray = null;
-                Span<byte> signature = signer.HashSizeInBytes <= Signer.SignatureStackallocThreshold
-                                        ? stackalloc byte[Signer.SignatureStackallocThreshold]
-                                        : (signatureArray = ArrayPool<byte>.Shared.Rent(signer.HashSizeInBytes));
+                Span<byte> signature = signer.HashSizeInBytes > Signer.SignatureStackallocThreshold
+                                        ? (signatureArray = ArrayPool<byte>.Shared.Rent(signer.HashSizeInBytes))
+                                        : stackalloc byte[Signer.SignatureStackallocThreshold];
                 signature = signature.Slice(0, signer.HashSizeInBytes);
                 try
                 {

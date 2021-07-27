@@ -89,9 +89,9 @@ namespace JsonWebToken.Cryptography
             try
             {
                 int macLength = associatedData.Length + iv.Length + ciphertext.Length + sizeof(long);
-                Span<byte> macBytes = macLength <= Constants.MaxStackallocBytes
-                    ? stackalloc byte[Constants.MaxStackallocBytes]
-                    : (arrayToReturnToPool = ArrayPool<byte>.Shared.Rent(macLength));
+                Span<byte> macBytes = macLength > Constants.MaxStackallocBytes
+                    ? (arrayToReturnToPool = ArrayPool<byte>.Shared.Rent(macLength))
+                    : stackalloc byte[Constants.MaxStackallocBytes];
 
                 associatedData.CopyTo(macBytes);
                 var bytes = macBytes.Slice(associatedData.Length);

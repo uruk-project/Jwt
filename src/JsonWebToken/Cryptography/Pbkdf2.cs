@@ -36,8 +36,8 @@ namespace JsonWebToken.Cryptography
                 saltWithBlockIndex = saltWithBlockIndex.Slice(0, saltWithBlockLength);
                 salt.CopyTo(saltWithBlockIndex);
 
-                Span<byte> hmacKey = stackalloc byte[Sha2.BlockSizeStackallocThreshold * 2].Slice(0, prf.BlockSize * 2);
-                var hashAlgorithm = new Hmac(prf, password, hmacKey);
+                Span<byte> hmacKey = stackalloc byte[Sha2.BlockSizeStackallocThreshold * 2];
+                var hashAlgorithm = new Hmac(prf, password, hmacKey.Slice(0, prf.BlockSize * 2));
 
                 int wSize = prf.GetWorkingSetSize(int.MaxValue);
                 int blockSize = hashAlgorithm.BlockSize;

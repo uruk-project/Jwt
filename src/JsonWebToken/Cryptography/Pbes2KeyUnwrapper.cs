@@ -59,9 +59,9 @@ namespace JsonWebToken.Cryptography
     
             int saltLength = p2sLength + 1 + _algorithmNameLength;
             byte[]? saltArray = null;
-            Span<byte> salt = saltLength <= Pbkdf2.SaltSizeThreshold + 18 + 1
-                                ? stackalloc byte[Pbkdf2.SaltSizeThreshold + 18 + 1]
-                                : (saltArray = ArrayPool<byte>.Shared.Rent(saltLength));
+            Span<byte> salt = saltLength > Pbkdf2.SaltSizeThreshold + 18 + 1
+                                ? (saltArray = ArrayPool<byte>.Shared.Rent(saltLength))
+                                : stackalloc byte[Pbkdf2.SaltSizeThreshold + 18 + 1];
             try
             {
                 salt = salt.Slice(0, saltLength);

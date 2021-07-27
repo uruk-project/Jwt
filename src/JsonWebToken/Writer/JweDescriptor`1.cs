@@ -157,9 +157,9 @@ namespace JsonWebToken
                 byte[]? buffer64HeaderToReturnToPool = null;
                 byte[]? arrayCiphertextToReturnToPool = null;
                 int keyWrapSize = keyWrapper.GetKeyWrapSize();
-                Span<byte> wrappedKey = keyWrapSize <= KeyWrapper.WrappedKeySizeStackallocThreshold ?
-                    stackalloc byte[KeyWrapper.WrappedKeySizeStackallocThreshold] :
-                    wrappedKeyToReturnToPool = ArrayPool<byte>.Shared.Rent(keyWrapSize);
+                Span<byte> wrappedKey = keyWrapSize > KeyWrapper.WrappedKeySizeStackallocThreshold ?
+                    wrappedKeyToReturnToPool = ArrayPool<byte>.Shared.Rent(keyWrapSize) :
+                    stackalloc byte[KeyWrapper.WrappedKeySizeStackallocThreshold];
                 wrappedKey = wrappedKey.Slice(0, keyWrapSize);
                 var cek = keyWrapper.WrapKey(null, header, wrappedKey);
 
