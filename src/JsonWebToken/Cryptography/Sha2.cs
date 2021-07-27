@@ -30,7 +30,7 @@ namespace JsonWebToken.Cryptography
         public abstract int BlockSize { get; }
 
         internal const int HashSizeStackallocThreshold = Sha512.Sha512HashSize;
-        internal const int BlockSizeStackallocThreshold = Sha256.Sha512BlockSize;
+        internal const int BlockSizeStackallocThreshold = Sha256.Sha256BlockSize;
 
 #if SUPPORT_SIMD
         private static ReadOnlySpan<byte> LittleEndianUInt64 => new byte[32]
