@@ -49,9 +49,9 @@ namespace JsonWebToken.Cryptography
             byte[]? array = null;
             try
             {
-                Span<byte> hash = _sha.HashSize <= Sha2.BlockSizeStackallocThreshold ?
-                    stackalloc byte[Sha2.BlockSizeStackallocThreshold].Slice(0, _sha.HashSize)
-                    : (array = ArrayPool<byte>.Shared.Rent(_sha.HashSize)).AsSpan(0, _sha.HashSize);
+                Span<byte> hash = _sha.HashSize > Sha2.BlockSizeStackallocThreshold 
+                    ? (array = ArrayPool<byte>.Shared.Rent(_sha.HashSize)).AsSpan(0, _sha.HashSize)
+                    : stackalloc byte[Sha2.BlockSizeStackallocThreshold].Slice(0, _sha.HashSize);
                 _sha.ComputeHash(data, hash);
                 return ecdsa.TrySignHash(hash, destination, out bytesWritten);
             }
