@@ -88,7 +88,7 @@ namespace JsonWebToken.Tests
             };
 
             var token = writer.WriteTokenString(descriptor);
-            Assert.NotEqual("", token);
+            Assert.Equal("", token);
 
             var policy = new TokenValidationPolicyBuilder()
                 .RequireSignatureByDefault(validationKey, (SignatureAlgorithm)alg)
