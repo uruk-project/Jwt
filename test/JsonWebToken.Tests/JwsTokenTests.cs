@@ -95,7 +95,7 @@ namespace JsonWebToken.Tests
                 .Build();
 
             var result = Jwt.TryParse(token, policy, out var jwt);
-            Assert.True(result, jwt.Error.ToString());
+            Assert.True(result, jwt?.Error?.ToString());
             Assert.True(result, descriptor.ToString());
             Assert.True(jwt.Payload.TryGetClaim("sub", out var sub));
             Assert.Equal("Alice", sub.GetString());
