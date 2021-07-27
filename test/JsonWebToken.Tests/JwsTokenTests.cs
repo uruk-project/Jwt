@@ -87,7 +87,8 @@ namespace JsonWebToken.Tests
                 }
             };
 
-            var token = writer.WriteToken(descriptor);
+            var token = writer.WriteTokenString(descriptor);
+            Assert.NotEqual("", token);
 
             var policy = new TokenValidationPolicyBuilder()
                 .RequireSignatureByDefault(validationKey, (SignatureAlgorithm)alg)
@@ -95,7 +96,6 @@ namespace JsonWebToken.Tests
 
             var result = Jwt.TryParse(token, policy, out var jwt);
             Assert.True(result, jwt?.Error?.ToString());
-            Assert.True(result, descriptor.ToString());
             Assert.True(jwt.Payload.TryGetClaim("sub", out var sub));
             Assert.Equal("Alice", sub.GetString());
             jwt.Dispose();
