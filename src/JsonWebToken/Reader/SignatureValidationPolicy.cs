@@ -157,7 +157,8 @@ namespace JsonWebToken
                         goto Error;
                     }
 
-                    Debug.Assert(signatureBytesLength == bytesWritten);
+                    signatureBytes = signatureBytes.Slice(0, bytesWritten);
+                    //Debug.Assert(signatureBytesLength == bytesWritten);
                     bool keysTried = false;
                     var keySet = _keyProvider.GetKeys(header);
                     var algElement = header.Alg;

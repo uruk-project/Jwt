@@ -42,6 +42,14 @@ namespace JsonWebToken.Tests
             y: "e8lnCO-AlStT-NJVX-crhB7QRYhiix03illJOVAOyck"
         );
 
+        private readonly ECJwk _privateEcc384Key = ECJwk.FromBase64Url
+        (
+            crv: EllipticalCurve.P384,
+            x: "2ius4b5QcXto95wPhpQsX3IGAtnT9mNjMvds18_AgU3wNpOkppfuT6wu-y-fnsVU",
+            y: "3HPDrLpplnCJc3ksMBVD9rGFcAld3-c74CIk4ZNleOBnGeAkRZv4wJ4z_btwx_PL",
+            d: "Wf9qS_1idTtZ13HKUMkNDFPacwsfduJxayYtLlDGYzp8la9YajkWTPQwZT0X-vjq"
+        );
+
         private readonly ECJwk _publicEcc384Key = ECJwk.FromBase64Url
         (
             crv: EllipticalCurve.P384,
@@ -49,20 +57,12 @@ namespace JsonWebToken.Tests
             y: "3HPDrLpplnCJc3ksMBVD9rGFcAld3-c74CIk4ZNleOBnGeAkRZv4wJ4z_btwx_PL"
         );
 
-        private readonly ECJwk _privateEcc384Key = ECJwk.FromBase64Url
-        (
-            crv: EllipticalCurve.P384,
-            d: "Wf9qS_1idTtZ13HKUMkNDFPacwsfduJxayYtLlDGYzp8la9YajkWTPQwZT0X-vjq",
-            x: "2ius4b5QcXto95wPhpQsX3IGAtnT9mNjMvds18_AgU3wNpOkppfuT6wu-y-fnsVU",
-            y: "3HPDrLpplnCJc3ksMBVD9rGFcAld3-c74CIk4ZNleOBnGeAkRZv4wJ4z_btwx_PL"
-        );
-
         private readonly ECJwk _privateEcc512Key = ECJwk.FromBase64Url
         (
             crv: EllipticalCurve.P521,
-            d: "Adri8PbGJBWN5upp_67cKF8E0ADCF-w9WpI4vAnoE9iZsnRTZI9D20Ji9rzLyyEPp8KriI_HISTMh_RSmFFhTfBH",
             x: "AEeo_Y06znu6MVjyvJW2_SX_JKK2DxbxF3QjAqkZhMTvwgLc3Z073vFwwiCHKcOwK2b5H8H4a7PDN6DGJ6YJjpN0",
-            y: "AEESIwzgMrpPh9p_eq2EuIMUCCTPzaQK_DtXFwjOWsanjacwu1DZ3XSwbkiHvjQLrXDfdP7xZ-iAXQ1lGZqsud8y"
+            y: "AEESIwzgMrpPh9p_eq2EuIMUCCTPzaQK_DtXFwjOWsanjacwu1DZ3XSwbkiHvjQLrXDfdP7xZ-iAXQ1lGZqsud8y",
+            d: "Adri8PbGJBWN5upp_67cKF8E0ADCF-w9WpI4vAnoE9iZsnRTZI9D20Ji9rzLyyEPp8KriI_HISTMh_RSmFFhTfBH"
         );
 
         private readonly ECJwk _publicEcc512Key = ECJwk.FromBase64Url
@@ -78,6 +78,7 @@ namespace JsonWebToken.Tests
         public void Encode_Decode(string alg)
         {
             var (signingKey, validationKey) = SelectKeys(alg);
+
             var writer = new JwtWriter();
             var descriptor = new JwsDescriptor(signingKey, (SignatureAlgorithm)alg)
             {
@@ -87,14 +88,14 @@ namespace JsonWebToken.Tests
                 }
             };
 
-            var txt = writer.WriteTokenString(descriptor);
+            var token = writer.WriteTokenString(descriptor);
 
             var policy = new TokenValidationPolicyBuilder()
                 .RequireSignatureByDefault(validationKey, (SignatureAlgorithm)alg)
                 .Build();
 
-            var result = Jwt.TryParse(txt, policy, out var jwt);
-            Assert.True(result, txt);
+            var result = Jwt.TryParse(token, policy, out var jwt);
+            Assert.True(result);
             Assert.True(jwt.Payload.TryGetClaim("sub", out var sub));
             Assert.Equal("Alice", sub.GetString());
             jwt.Dispose();

@@ -25,7 +25,6 @@ namespace JsonWebToken.Tests
         {
             var staticKey = new byte[] { 111, 27, 25, 52, 66, 29, 20, 78, 92, 176, 56, 240, 65, 208, 82, 112, 161, 131, 36, 55, 202, 236, 185, 172, 129, 23, 153, 194, 195, 48, 253, 182 };
 
-
             var parsed = JwtHeaderDocument.TryParseHeader(Encoding.UTF8.GetBytes($"{{}}"), null, TokenValidationPolicy.NoValidation, out var jwtHeader, out var error);
             Assert.True(parsed);
 

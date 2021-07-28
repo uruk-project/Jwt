@@ -156,7 +156,7 @@ namespace JsonWebToken
             {
                 if (value?.Length != 20)
                 {
-                    throw new InvalidOperationException($"The parameter 'x5t' must be a byte array of 160 bits (20 bytes). Current size: {value?.Length*8} bits.");
+                    throw new InvalidOperationException($"The parameter 'x5t' must be a byte array of 160 bits (20 bytes). Current size: {value?.Length * 8} bits.");
                 }
 
                 _x5t = value;
@@ -171,7 +171,7 @@ namespace JsonWebToken
             {
                 if (value?.Length != Sha256.Sha256HashSize)
                 {
-                    throw new InvalidOperationException($"The parameter 'x5t#S256' must be a byte array of 256 bits (32 bytes). Current size: {value?.Length*8} bits.");
+                    throw new InvalidOperationException($"The parameter 'x5t#S256' must be a byte array of 256 bits (32 bytes). Current size: {value?.Length * 8} bits.");
                 }
 
                 _x5tS256 = value;
@@ -628,7 +628,7 @@ namespace JsonWebToken
             {
                 Span<byte> buffer = size > Constants.MaxStackallocBytes
                                     ? (arrayToReturn = ArrayPool<byte>.Shared.Rent(size))
-                                    : stackalloc byte[Constants.MaxStackallocBytes];
+                                    : stackalloc byte[size];
                 Canonicalize(buffer);
                 return buffer.Slice(0, size).ToArray();
             }
@@ -667,8 +667,9 @@ namespace JsonWebToken
                 Span<byte> buffer = size > Constants.MaxStackallocBytes
                                     ? (arrayToReturn = ArrayPool<byte>.Shared.Rent(size))
                                     : stackalloc byte[Constants.MaxStackallocBytes];
+                buffer = buffer.Slice(0, size);
                 Canonicalize(buffer);
-                Sha256.Shared.ComputeHash(buffer.Slice(0, size), hash);
+                Sha256.Shared.ComputeHash(buffer, hash);
                 Base64Url.Encode(hash, destination);
             }
             finally

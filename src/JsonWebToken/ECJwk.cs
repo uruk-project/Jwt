@@ -521,10 +521,11 @@ namespace JsonWebToken
                 + Middle1CanonicalizeValue.Length
                 + Middle2CanonicalizeValue.Length
                 + EndCanonicalizeValue.Length);
+            Debug.Assert(X.Length == Y.Length);
             return 35
-                + Base64Url.GetArraySizeRequiredToEncode(Crv.Name.EncodedUtf8Bytes.Length)
-                + Base64Url.GetArraySizeRequiredToEncode(X!.Length)
-                + Base64Url.GetArraySizeRequiredToEncode(Y!.Length);
+                + Crv.Name.EncodedUtf8Bytes.Length
+                + Base64Url.GetArraySizeRequiredToEncode(_parameters.Q!.X!.Length) * 2; // X & Y have the same length
+            // TODO : Hardcode value on Crv
         }
 
         /// <summary>Returns a new instance of <see cref="ECJwk"/>.</summary>
