@@ -88,14 +88,13 @@ namespace JsonWebToken.Tests
             };
 
             var txt = writer.WriteTokenString(descriptor);
-            Assert.False(true, txt.Substring(0, 20));
 
             var policy = new TokenValidationPolicyBuilder()
                 .RequireSignatureByDefault(validationKey, (SignatureAlgorithm)alg)
                 .Build();
 
             var result = Jwt.TryParse(txt, policy, out var jwt);
-            Assert.True(result, jwt?.Error?.ToString());
+            Assert.True(result, txt);
             Assert.True(jwt.Payload.TryGetClaim("sub", out var sub));
             Assert.Equal("Alice", sub.GetString());
             jwt.Dispose();
