@@ -42,6 +42,21 @@ namespace JsonWebToken.Tests
             y: "e8lnCO-AlStT-NJVX-crhB7QRYhiix03illJOVAOyck"
         );
 
+        private readonly ECJwk _privateEcc256KKey = ECJwk.FromBase64Url
+        (
+            crv: EllipticalCurve.Secp256k1,
+            x: "6_H-LRU19Rzm4KCJNmzeCGoHPrm1CSBgOp-Npbdjaw0",
+            y: "tp7FPpiX9sAMyGr72y27afvfZxmlANjyRut9StOq9xk",
+            d: "Lra8VqtHiyayZ371elNxSJQg4OrWO0dLvMLiDfIRfc0"
+        );
+
+        private readonly ECJwk _publicEcc256KKey = ECJwk.FromBase64Url
+        (
+            crv: EllipticalCurve.Secp256k1,
+            x: "6_H-LRU19Rzm4KCJNmzeCGoHPrm1CSBgOp-Npbdjaw0",
+            y: "tp7FPpiX9sAMyGr72y27afvfZxmlANjyRut9StOq9xk"
+        );
+
         private readonly ECJwk _privateEcc384Key = ECJwk.FromBase64Url
         (
             crv: EllipticalCurve.P384,
@@ -116,6 +131,7 @@ namespace JsonWebToken.Tests
             yield return new object[] { (string)SignatureAlgorithm.ES256 };
             yield return new object[] { (string)SignatureAlgorithm.ES384 };
             yield return new object[] { (string)SignatureAlgorithm.ES512 };
+            yield return new object[] { (string)SignatureAlgorithm.ES256K };
 #endif
         }
 
@@ -147,6 +163,8 @@ namespace JsonWebToken.Tests
 #if SUPPORT_ELLIPTIC_CURVE_SIGNATURE
                 case "ES256":
                     return (_privateEcc256Key, _publicEcc256Key);
+                case "ES256K":
+                    return (_privateEcc256KKey, _publicEcc256KKey);
                 case "ES384":
                     return (_privateEcc384Key, _publicEcc384Key);
                 case "ES512":

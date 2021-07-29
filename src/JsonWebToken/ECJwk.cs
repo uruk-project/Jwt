@@ -328,7 +328,6 @@ namespace JsonWebToken
             => false;
 #endif
 
-
         /// <inheritdoc />
         public override bool SupportKeyManagement(KeyManagementAlgorithm algorithm)
 #if SUPPORT_ELLIPTIC_CURVE_KEYWRAPPING
@@ -336,7 +335,6 @@ namespace JsonWebToken
 #else
             => false;
 #endif
-
 
         /// <inheritdoc />
         public override bool SupportEncryption(EncryptionAlgorithm algorithm)
@@ -516,16 +514,15 @@ namespace JsonWebToken
         /// <inheritdoc />
         protected internal override int GetCanonicalizeSize()
         {
-            Debug.Assert(35 ==
+            Debug.Assert(Crv.CanonicalizeSize ==
                 StartCanonicalizeValue.Length
                 + Middle1CanonicalizeValue.Length
                 + Middle2CanonicalizeValue.Length
-                + EndCanonicalizeValue.Length);
-            Debug.Assert(X.Length == Y.Length);
-            return 35
-                + Crv.Name.EncodedUtf8Bytes.Length
-                + Base64Url.GetArraySizeRequiredToEncode(_parameters.Q!.X!.Length) * 2; // X & Y have the same length
-            // TODO : Hardcode value on Crv
+                + EndCanonicalizeValue.Length
+                + Base64Url.GetArraySizeRequiredToEncode(X.Length)
+                + Base64Url.GetArraySizeRequiredToEncode(Y.Length)
+                + Crv.Name.EncodedUtf8Bytes.Length);
+            return Crv.CanonicalizeSize;
         }
 
         /// <summary>Returns a new instance of <see cref="ECJwk"/>.</summary>

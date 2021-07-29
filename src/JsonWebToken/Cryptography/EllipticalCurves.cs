@@ -26,25 +26,30 @@ namespace JsonWebToken
         private const ulong ecp256k1 = 3560999532473901925ul;
 
         /// <summary>'P-256'.</summary>
-        public static readonly EllipticalCurve P256 = new EllipticalCurve(1, ECCurve.NamedCurves.nistP256, EllipticalCurveNames.P256, 256, 64, SignatureAlgorithm.ES256);
+        public static readonly EllipticalCurve P256 = new EllipticalCurve(id: 1, namedCurve: ECCurve.NamedCurves.nistP256, name: EllipticalCurveNames.P256,
+            supportedSignatureAlgorithm: SignatureAlgorithm.ES256, keySizeInBits: 256, hashSize: 64, canonicalizeSize: 126);
 
         /// <summary>'P-384'.</summary>
-        public static readonly EllipticalCurve P384 = new EllipticalCurve(2, ECCurve.NamedCurves.nistP384, EllipticalCurveNames.P384, 384, 96, SignatureAlgorithm.ES384);
+        public static readonly EllipticalCurve P384 = new EllipticalCurve(id: 2, namedCurve: ECCurve.NamedCurves.nistP384, name: EllipticalCurveNames.P384,
+            supportedSignatureAlgorithm: SignatureAlgorithm.ES384, keySizeInBits: 384, hashSize: 96, canonicalizeSize: 168);
 
         /// <summary>'P-521'.</summary>    
-        public static readonly EllipticalCurve P521 = new EllipticalCurve(3, ECCurve.NamedCurves.nistP521, EllipticalCurveNames.P521, 521, 132, SignatureAlgorithm.ES512);
+        public static readonly EllipticalCurve P521 = new EllipticalCurve(id: 3, namedCurve: ECCurve.NamedCurves.nistP521, name: EllipticalCurveNames.P521,
+            supportedSignatureAlgorithm: SignatureAlgorithm.ES512, keySizeInBits: 521, hashSize: 132, canonicalizeSize: 216);
 
         /// <summary>'secp256k1'.</summary>    
-        public static readonly EllipticalCurve Secp256k1 = new EllipticalCurve(8, ECCurve.CreateFromValue("1.3.132.0.10"), EllipticalCurveNames.Secp256k1, 256, 64, SignatureAlgorithm.ES256K);
+        public static readonly EllipticalCurve Secp256k1 = new EllipticalCurve(id: 8, namedCurve: ECCurve.CreateFromValue("1.3.132.0.10"), name: EllipticalCurveNames.Secp256k1,
+            supportedSignatureAlgorithm: SignatureAlgorithm.ES256K, keySizeInBits: 256, hashSize: 64, canonicalizeSize: 130);
 
         /// <summary>Initializes a new instance of the <see cref="EllipticalCurve"/> struct.</summary>
-        public EllipticalCurve(byte id, ECCurve namedCurve, JsonEncodedText name, int keySizeInBits, int hashSize, SignatureAlgorithm supportedSignatureAlgorithm)
+        private EllipticalCurve(byte id, ECCurve namedCurve, JsonEncodedText name, SignatureAlgorithm supportedSignatureAlgorithm, int keySizeInBits, int hashSize, int canonicalizeSize)
         {
             Id = id;
             KeySizeInBits = keySizeInBits;
             Name = name;
             CurveParameters = namedCurve;
             HashSize = hashSize;
+            CanonicalizeSize = canonicalizeSize;
             SupportedSignatureAlgorithm = supportedSignatureAlgorithm;
         }
 
@@ -62,6 +67,9 @@ namespace JsonWebToken
 
         /// <summary>The size of the resulting hash.</summary>
         public readonly int HashSize;
+
+        /// <summary>The size of the canonicalized form.</summary>
+        public readonly int CanonicalizeSize;
 
         /// <summary>The supported <see cref="SignatureAlgorithm"/> for this curve.</summary>
         public readonly SignatureAlgorithm SupportedSignatureAlgorithm;
