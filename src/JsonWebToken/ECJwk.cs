@@ -375,14 +375,11 @@ namespace JsonWebToken
         /// <summary>Exports the key parameters.</summary>
         public ECParameters ExportParameters(bool includePrivateParameters = false)
         {
-            var parameters = new ECParameters
+            var parameters = _parameters;
+
+            if (!includePrivateParameters)
             {
-                Q = _parameters.Q,
-                Curve = _parameters.Curve
-            };
-            if (includePrivateParameters)
-            {
-                parameters.D = _parameters.D;
+                parameters.D = null;
             }
 
             return parameters;
