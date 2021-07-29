@@ -19,13 +19,12 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-#        os: [ ubuntu-latest, windows-latest, macos-latest ]
-        os: [ windows-latest ]
+        os: [ ubuntu-latest, windows-latest, macos-latest ]
         configuration: [ Debug, Release ]
         include:
-#          - os: ubuntu-latest
-#            configuration: Release
-#            is-main: true
+          - os: ubuntu-latest
+            configuration: Release
+            is-main: true
           - os: windows-latest
             configuration: Release
             is-netfx: true
