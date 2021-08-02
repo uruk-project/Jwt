@@ -35,6 +35,11 @@ namespace JsonWebToken
         [MethodImpl(MethodImplOptions.NoInlining)]
         private static Exception CreateArgumentNullException(ExceptionArgument argument) => new ArgumentNullException(GetArgumentName(argument));
 
+       [DoesNotReturn]
+        internal static void ThrowArgumentNullException(ExceptionArgument argument, string message) => throw CreateArgumentNullException(argument, message);
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private static Exception CreateArgumentNullException(ExceptionArgument argument, string message) => new ArgumentNullException(GetArgumentName(argument), message);
+
         [DoesNotReturn]
         internal static void ThrowInvalidOperationException_PolicyBuilderRequireSignature() => throw CreateInvalidOperationException_PolicyBuilderRequireSignature();
         [MethodImpl(MethodImplOptions.NoInlining)]
@@ -230,9 +235,9 @@ namespace JsonWebToken
 
 #if SUPPORT_ELLIPTIC_CURVE
         [DoesNotReturn]
-        internal static void ThrowNotSupportedException_SignatureAlgorithm(SignatureAlgorithm? algorithm, in EllipticalCurve curve) => throw CreateNotSupportedException_SignatureAlgorithm(algorithm, curve);
+        internal static void ThrowNotSupportedException_SignatureAlgorithm(SignatureAlgorithm? algorithm, EllipticalCurve curve) => throw CreateNotSupportedException_SignatureAlgorithm(algorithm, curve);
         [MethodImpl(MethodImplOptions.NoInlining)]
-        private static Exception CreateNotSupportedException_SignatureAlgorithm(SignatureAlgorithm? algorithm, in EllipticalCurve curve) => new NotSupportedException($"Signature failed. No support for: Algorithm: '{algorithm}' with curve '{curve}'.");
+        private static Exception CreateNotSupportedException_SignatureAlgorithm(SignatureAlgorithm? algorithm, EllipticalCurve curve) => new NotSupportedException($"Signature failed. No support for: Algorithm: '{algorithm}' with curve '{curve}'.");
 #endif
 
         [DoesNotReturn]
@@ -335,6 +340,7 @@ namespace JsonWebToken
                 case ExceptionArgument.d: return "d";
                 case ExceptionArgument.x: return "x";
                 case ExceptionArgument.y: return "y";
+                case ExceptionArgument.crv: return "crv";
                 case ExceptionArgument.signatureFactory: return "signatureFactory";
                 case ExceptionArgument.keyWrapFactory: return "keyWrapFactory";
                 case ExceptionArgument.authenticatedEncryptionFactory: return "authenticatedEncryptionFactory";
@@ -358,6 +364,7 @@ namespace JsonWebToken
                 case ExceptionArgument.signingKey: return "signingKey";
                 case ExceptionArgument.encryptionKey: return "encryptionKey";
                 case ExceptionArgument.payload: return "payload";
+                case ExceptionArgument.parameters: return "parameters";
                 case ExceptionArgument.decryptionKeyProviders: return "decryptionKeyProviders";
                 case ExceptionArgument.signerFactory: return "signerFactory";
                 case ExceptionArgument.keyWrapperFactory: return "keyWrapperFactory";
@@ -405,6 +412,7 @@ namespace JsonWebToken
         d,
         x,
         y,
+        crv,
         signatureFactory,
         keyWrapFactory,
         authenticatedEncryptionFactory,
@@ -428,6 +436,7 @@ namespace JsonWebToken
         signingKey,
         encryptionKey,
         payload,
+        parameters,
         decryptionKeyProviders,
         signerFactory,
         keyWrapperFactory,

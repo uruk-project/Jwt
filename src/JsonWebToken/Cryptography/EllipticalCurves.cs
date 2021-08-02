@@ -4,6 +4,7 @@
 #if SUPPORT_ELLIPTIC_CURVE
 using System;
 using System.Collections.ObjectModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Text.Json;
@@ -11,7 +12,7 @@ using System.Text.Json;
 namespace JsonWebToken
 {
     /// <summary>Elliptical Curve Types.</summary>
-    public readonly struct EllipticalCurve
+    public sealed class EllipticalCurve
     {
         [MagicNumber("-256")]
         private const uint _256 = 909455917u;
@@ -24,6 +25,10 @@ namespace JsonWebToken
 
         [MagicNumber("ecp256k1")]
         private const ulong ecp256k1 = 3560999532473901925ul;
+
+        /// <summary>No curve defined.</summary>
+        internal static readonly EllipticalCurve Empty = new EllipticalCurve(id: 0, namedCurve: default, name: default,
+            supportedSignatureAlgorithm: SignatureAlgorithm.None, keySizeInBits: 0, hashSize: 0, canonicalizeSize: 35);
 
         /// <summary>'P-256'.</summary>
         public static readonly EllipticalCurve P256 = new EllipticalCurve(id: 1, namedCurve: ECCurve.NamedCurves.nistP256, name: EllipticalCurveNames.P256,
@@ -54,25 +59,25 @@ namespace JsonWebToken
         }
 
         /// <summary>The name of the curve.</summary>
-        public readonly JsonEncodedText Name;
+        public JsonEncodedText Name { get; }
 
         /// <summary>The internal id of the curve.</summary>
-        public readonly byte Id;
+        public byte Id { get; }
 
         /// <summary>The size of the key, in bits.</summary>
-        public readonly int KeySizeInBits;
+        public int KeySizeInBits { get; }
 
         /// <summary>The parameters curve.</summary>
-        public readonly ECCurve CurveParameters;
+        public ECCurve CurveParameters { get; }
 
         /// <summary>The size of the resulting hash.</summary>
-        public readonly int HashSize;
+        public int HashSize { get; }
 
         /// <summary>The size of the canonicalized form.</summary>
-        public readonly int CanonicalizeSize;
+        public int CanonicalizeSize { get; }
 
         /// <summary>The supported <see cref="SignatureAlgorithm"/> for this curve.</summary>
-        public readonly SignatureAlgorithm SupportedSignatureAlgorithm;
+        public SignatureAlgorithm SupportedSignatureAlgorithm { get; }
 
         /// <summary>The supported <see cref="EllipticalCurve"/>s.</summary>
         public static ReadOnlyCollection<EllipticalCurve> SupportedCurves => Array.AsReadOnly(_supportedCurves);
@@ -96,7 +101,6 @@ namespace JsonWebToken
         /// <summary>Returns the <see cref="EllipticalCurve"/> corresponding to the <paramref name="crv"/>.</summary>
         public static EllipticalCurve FromString(string crv)
         {
-
             if (!TryParse(crv, out var curve))
             {
                 ThrowHelper.ThrowNotSupportedException_Curve(crv);
@@ -106,7 +110,7 @@ namespace JsonWebToken
         }
 
         /// <summary>Tries to parse a <see cref="string"/> into a <see cref="EllipticalCurve"/>.</summary>
-        public static bool TryParse(string crv, out EllipticalCurve curve)
+        public static bool TryParse(string crv, [NotNullWhen(true)] out EllipticalCurve? curve)
         {
             switch (crv)
             {
@@ -123,7 +127,7 @@ namespace JsonWebToken
                     curve = Secp256k1;
                     goto Parsed;
                 default:
-                    curve = default;
+                    curve = null;
                     return false;
             }
 
@@ -157,11 +161,11 @@ namespace JsonWebToken
             }
 
             ThrowHelper.ThrowNotSupportedException_Curve(Utf8.GetString(crv));
-            return default;
+            return null;
         }
 
         /// <summary>Gets the supported <see cref="EllipticalCurve"/> for the provided <see cref="SignatureAlgorithm"/>.</summary>
-        public static bool TryGetSupportedCurve(SignatureAlgorithm algorithm, out EllipticalCurve curve)
+        public static bool TryGetSupportedCurve(SignatureAlgorithm algorithm,  [NotNullWhen(true)] out EllipticalCurve? curve)
         {
             for (int i = 0; i < _supportedCurves.Length; i++)
             {
@@ -173,7 +177,7 @@ namespace JsonWebToken
                 }
             }
 
-            curve = default;
+            curve = null;
             return false;
         }
 
