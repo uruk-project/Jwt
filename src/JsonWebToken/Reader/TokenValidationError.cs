@@ -3,6 +3,7 @@
 
 using System;
 using System.Runtime.CompilerServices;
+using System.Text;
 
 namespace JsonWebToken
 {
@@ -51,6 +52,33 @@ namespace JsonWebToken
         {
             Status = status;
             _message = message;
+        }
+
+        /// <inheritdoc/>
+        public override string ToString()
+        {
+            var builder = new StringBuilder();
+            builder.Append("Status: ").AppendLine(Status.ToString());
+            if (Exception is not null)
+            {
+                builder.Append("Exception: ").AppendLine(Exception.ToString());
+            }
+            else if(Message is not null)
+            {
+                builder.Append("Message: ").AppendLine(Message);
+            }
+
+            if (ErrorHeader is not null)
+            {
+                builder.Append("Error Header: ").AppendLine(ErrorHeader);
+            }
+
+            if (ErrorClaim is not null)
+            {
+                builder.Append("Error Claim: ").AppendLine(ErrorClaim);
+            }
+
+            return builder.ToString();
         }
 
         /// <summary>The token has no error.</summary>

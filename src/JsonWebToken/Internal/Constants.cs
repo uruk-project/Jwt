@@ -10,6 +10,7 @@ namespace JsonWebToken
         internal const int JwsSegmentCount = 3;
 
         internal const int MaxStackallocBytes = 256;
+        internal const int MaxStackallocChars = MaxStackallocBytes / 2;
 
         internal const int DecompressionBufferLength = 1024;
 

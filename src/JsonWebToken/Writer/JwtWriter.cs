@@ -89,7 +89,7 @@ namespace JsonWebToken
 
         /// <summary>Writes a JWT in its compact serialization format and returns it a string.</summary>
         /// <param name="descriptor">The descriptor of the JWT.</param>
-        /// <returns>The <see cref="string"/> retpresention of the JWT.</returns>
+        /// <returns>The <see cref="string"/> represention of the JWT.</returns>
         public string WriteTokenString(JwtDescriptor descriptor)
         {
             using var bufferWriter = new PooledByteBufferWriter();

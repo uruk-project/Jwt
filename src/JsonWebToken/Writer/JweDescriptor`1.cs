@@ -6,6 +6,7 @@ using System.Buffers;
 using System.Diagnostics;
 using System.Security.Cryptography;
 using System.Text.Json;
+using JsonWebToken.Cryptography;
 
 namespace JsonWebToken
 {
@@ -156,9 +157,10 @@ namespace JsonWebToken
                 byte[]? buffer64HeaderToReturnToPool = null;
                 byte[]? arrayCiphertextToReturnToPool = null;
                 int keyWrapSize = keyWrapper.GetKeyWrapSize();
-                Span<byte> wrappedKey = keyWrapSize <= Constants.MaxStackallocBytes ?
-                    stackalloc byte[keyWrapSize] :
-                    new Span<byte>(wrappedKeyToReturnToPool = ArrayPool<byte>.Shared.Rent(keyWrapSize), 0, keyWrapSize);
+                Span<byte> wrappedKey = keyWrapSize > KeyWrapper.WrappedKeySizeStackallocThreshold ?
+                    wrappedKeyToReturnToPool = ArrayPool<byte>.Shared.Rent(keyWrapSize) :
+                    stackalloc byte[KeyWrapper.WrappedKeySizeStackallocThreshold];
+                wrappedKey = wrappedKey.Slice(0, keyWrapSize);
                 var cek = keyWrapper.WrapKey(null, header, wrappedKey);
 
                 try
@@ -182,9 +184,9 @@ namespace JsonWebToken
                     }
 
                     Span<byte> base64EncodedHeader = base64EncodedHeaderLength > Constants.MaxStackallocBytes
-                           ? (buffer64HeaderToReturnToPool = ArrayPool<byte>.Shared.Rent(base64EncodedHeaderLength)).AsSpan(0, base64EncodedHeaderLength)
-                             : stackalloc byte[base64EncodedHeaderLength];
-
+                           ? (buffer64HeaderToReturnToPool = ArrayPool<byte>.Shared.Rent(base64EncodedHeaderLength))
+                             : stackalloc byte[Constants.MaxStackallocBytes];
+                    base64EncodedHeader = base64EncodedHeader.Slice(0, base64EncodedHeaderLength);
                     int offset;
                     if (cachedHeader != null)
                     {
@@ -218,7 +220,7 @@ namespace JsonWebToken
                         int bufferSize = ciphertextSize + tagSize;
                         Span<byte> buffer = bufferSize > Constants.MaxStackallocBytes
                                                     ? (arrayCiphertextToReturnToPool = ArrayPool<byte>.Shared.Rent(bufferSize))
-                                                    : stackalloc byte[bufferSize];
+                                                    : stackalloc byte[Constants.MaxStackallocBytes];
                         Span<byte> tag = buffer.Slice(ciphertextSize, tagSize);
                         Span<byte> ciphertext = buffer.Slice(0, ciphertextSize);
 
@@ -226,7 +228,8 @@ namespace JsonWebToken
                         var nonce = new byte[encryptor.GetNonceSize()];
                         _randomNumberGenerator.GetBytes(nonce);
 #else
-                        Span<byte> nonce = stackalloc byte[encryptor.GetNonceSize()];
+                        int nonceSize = encryptor.GetNonceSize();
+                        Span<byte> nonce = stackalloc byte[AuthenticatedEncryptor.NonceSizeStackallocThreshold].Slice(0, nonceSize);
                         RandomNumberGenerator.Fill(nonce);
 #endif
                         encryptor.Encrypt(cek.K, payload, nonce, base64EncodedHeader.Slice(0, offset), ciphertext, tag, out int tagBytesWritten);
@@ -253,7 +256,7 @@ namespace JsonWebToken
                         encryptedToken[bytesWritten++] = Constants.ByteDot;
                         bytesWritten += Base64Url.Encode(tag.Slice(0, tagBytesWritten), encryptedToken.Slice(bytesWritten));
 
-                        Debug.Assert(encryptionLength == bytesWritten);
+                        //                        Debug.Assert(encryptionLength == bytesWritten);
                         output.Advance(encryptionLength);
                     }
                     finally

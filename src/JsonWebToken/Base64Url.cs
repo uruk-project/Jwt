@@ -26,7 +26,7 @@ namespace JsonWebToken
             {
                 Span<byte> tmp = length > Constants.MaxStackallocBytes
                     ? (utf8ArrayToReturn = ArrayPool<byte>.Shared.Rent(length))
-                    : stackalloc byte[length];
+                    : stackalloc byte[Constants.MaxStackallocBytes];
                 int written = Utf8.GetBytes(data, tmp);
                 return Decode(tmp.Slice(0, written));
             }
@@ -70,7 +70,7 @@ namespace JsonWebToken
             byte[]? arrayToReturn = null;
             var buffer = base64Url.Length > Constants.MaxStackallocBytes
                 ? (arrayToReturn = ArrayPool<byte>.Shared.Rent(base64Url.Length))
-                : stackalloc byte[base64Url.Length];
+                : stackalloc byte[Constants.MaxStackallocBytes];
             try
             {
                 int length = Utf8.GetBytes(base64Url, buffer);
@@ -163,7 +163,7 @@ namespace JsonWebToken
                 int length = Utf8.GetMaxByteCount(data.Length);
                 var utf8Data = length > Constants.MaxStackallocBytes
                     ? (utf8ArrayToReturn = ArrayPool<byte>.Shared.Rent(length))
-                    : stackalloc byte[length];
+                    : stackalloc byte[Constants.MaxStackallocBytes];
 
                 int written = Utf8.GetBytes(data, utf8Data);
                 return Encode(utf8Data.Slice(0, written));

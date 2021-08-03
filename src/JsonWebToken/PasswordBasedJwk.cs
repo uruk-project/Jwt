@@ -54,7 +54,7 @@ namespace JsonWebToken
         /// This should not be longer that 128 bytes, and at least 16 bytes for "PBES2-HS256+A128KW", 
         /// 24 bytes for "PBES2-HS384+A192KW" and 32 bytes for "PBES2-HS512+A256KW"</param>
         /// <param name="iterationCount">The number of iterations. Should be at least 1000.</param>
-        /// <param name="saltSizeInBytes">The salt size, in bytes. Should be at least 8 bytes.</param>
+        /// <param name="saltSizeInBytes">The salt size, in bytes. Should be at least 8 bytes. Value greater than 256 bytes is not supported.</param>
         /// <param name="computeThumbprint">Defines whether the thubpring should be computed.</param>
         public static PasswordBasedJwk FromPassphrase(string passphrase, uint iterationCount = 1000, uint saltSizeInBytes = 8, bool computeThumbprint = true)
         {
@@ -62,7 +62,7 @@ namespace JsonWebToken
             {
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.bytes);
             }
-
+            
             var innerKey = SymmetricJwk.FromByteArray(Utf8.GetBytes(passphrase), computeThumbprint);
             return new PasswordBasedJwk(innerKey, iterationCount, saltSizeInBytes);
         }
@@ -75,7 +75,7 @@ namespace JsonWebToken
         /// 24 bytes for "PBES2-HS384+A192KW" and 32 bytes for "PBES2-HS512+A256KW"</param>
         /// <param name="algorithm">The key encryption algorithm. It must be a PBES2 algorithm.</param>
         /// <param name="iterationCount">The number of iterations. Should be at least 1000.</param>
-        /// <param name="saltSizeInBytes">The salt size, in bytes. Should be at least 8 bytes.</param>
+        /// <param name="saltSizeInBytes">The salt size, in bytes. Should be at least 8 bytes. Value greater than 256 bytes is not supported.</param>
         /// <param name="computeThumbprint">Defines whether the thubpring should be computed.</param>
         public static PasswordBasedJwk FromPassphrase(string passphrase, KeyManagementAlgorithm algorithm, uint iterationCount = 1000, uint saltSizeInBytes = 8, bool computeThumbprint = true)
         {

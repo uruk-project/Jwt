@@ -122,7 +122,7 @@ namespace JsonWebToken
                 jwt = new Jwt(TokenValidationError.MalformedToken());
                 return false;
             }
-
+            // Useful for b64?
             int length = Utf8.GetMaxByteCount(token.Length);
             if (length > policy.MaximumTokenSizeInBytes)
             {
@@ -131,9 +131,9 @@ namespace JsonWebToken
             }
 
             byte[]? utf8ArrayToReturnToPool = null;
-            var utf8Token = length <= Constants.MaxStackallocBytes
-                  ? stackalloc byte[length]
-                  : (utf8ArrayToReturnToPool = ArrayPool<byte>.Shared.Rent(length));
+            var utf8Token = length > Constants.MaxStackallocBytes
+                  ? (utf8ArrayToReturnToPool = ArrayPool<byte>.Shared.Rent(length))
+                  : stackalloc byte[Constants.MaxStackallocBytes];
             try
             {
                 int bytesWritten = Utf8.GetBytes(token, utf8Token);
@@ -509,9 +509,9 @@ namespace JsonWebToken
             int headerLength = rawHeader.Length;
             int bufferLength = ciphertextLength + headerLength + initializationVectorLength + authenticationTagLength;
             byte[]? arrayToReturn = null;
-            Span<byte> buffer = bufferLength < Constants.MaxStackallocBytes
-                ? stackalloc byte[bufferLength]
-                : (arrayToReturn = ArrayPool<byte>.Shared.Rent(bufferLength));
+            Span<byte> buffer = bufferLength > Constants.MaxStackallocBytes
+                ? (arrayToReturn = ArrayPool<byte>.Shared.Rent(bufferLength))
+                : stackalloc byte[Constants.MaxStackallocBytes];
 
             Span<byte> ciphertext = buffer.Slice(0, ciphertextLength);
             Span<byte> header = buffer.Slice(ciphertextLength, headerLength);
@@ -526,10 +526,10 @@ namespace JsonWebToken
                 try
                 {
                     int utf8HeaderLength = Utf8.GetMaxCharCount(header.Length);
-                    Span<char> utf8Header = utf8HeaderLength < Constants.MaxStackallocBytes
-                        ? stackalloc char[utf8HeaderLength]
-                        : (headerArrayToReturn = ArrayPool<char>.Shared.Rent(utf8HeaderLength));
-
+                    Span<char> utf8Header = utf8HeaderLength > Constants.MaxStackallocChars
+                        ? (headerArrayToReturn = ArrayPool<char>.Shared.Rent(utf8HeaderLength))
+                        : stackalloc char[Constants.MaxStackallocChars];
+                    
                     utf8HeaderLength = Utf8.GetChars(rawHeader, utf8Header);
                     Ascii.GetBytes(utf8Header.Slice(0, utf8HeaderLength), header);
                 }
@@ -592,10 +592,10 @@ namespace JsonWebToken
                     int decodedSize = Base64Url.GetArraySizeRequiredToDecode(rawEncryptedKey.Length);
 
                     byte[]? encryptedKeyToReturnToPool = null;
-                    byte[]? unwrappedKeyToReturnToPool = null;
-                    Span<byte> encryptedKey = decodedSize <= Constants.MaxStackallocBytes ?
-                        stackalloc byte[decodedSize] :
-                        encryptedKeyToReturnToPool = ArrayPool<byte>.Shared.Rent(decodedSize);
+                    const int KeySizeThreshold = 72;
+                    Span<byte> encryptedKey = decodedSize > KeySizeThreshold
+                        ? encryptedKeyToReturnToPool = ArrayPool<byte>.Shared.Rent(decodedSize)
+                        : stackalloc byte[KeySizeThreshold];
 
                     try
                     {
@@ -626,9 +626,8 @@ namespace JsonWebToken
                         }
 
                         keys = new List<SymmetricJwk>(1);
-                        Span<byte> unwrappedKey = maxKeyUnwrapSize <= Constants.MaxStackallocBytes ?
-                            stackalloc byte[maxKeyUnwrapSize] :
-                            unwrappedKeyToReturnToPool = ArrayPool<byte>.Shared.Rent(maxKeyUnwrapSize);
+                        const int UnwrappedKeySizeThreshold = 64;
+                        Span<byte> unwrappedKey = stackalloc byte[UnwrappedKeySizeThreshold];
                         for (int i = 0; i < keyUnwrappers.Count; i++)
                         {
                             var kpv = keyUnwrappers[i];
@@ -645,11 +644,6 @@ namespace JsonWebToken
                         if (encryptedKeyToReturnToPool != null)
                         {
                             ArrayPool<byte>.Shared.Return(encryptedKeyToReturnToPool, true);
-                        }
-
-                        if (unwrappedKeyToReturnToPool != null)
-                        {
-                            ArrayPool<byte>.Shared.Return(unwrappedKeyToReturnToPool, true);
                         }
                     }
                 }

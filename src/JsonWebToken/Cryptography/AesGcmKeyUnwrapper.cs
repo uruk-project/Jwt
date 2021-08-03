@@ -10,6 +10,9 @@ namespace JsonWebToken.Cryptography
 {
     internal sealed class AesGcmKeyUnwrapper : KeyUnwrapper
     {
+        private const int IVSize = 12;
+        private const int TagSize = 16;
+
         private readonly SymmetricJwk _key;
 
         public AesGcmKeyUnwrapper(SymmetricJwk key, EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm algorithm)
@@ -38,9 +41,9 @@ namespace JsonWebToken.Cryptography
             }
 
             var rawIV = encodedIV.GetRawValue();
-            Span<byte> nonce = stackalloc byte[Base64Url.GetArraySizeRequiredToDecode(rawIV.Length)];
+            Span<byte> nonce = stackalloc byte[IVSize];
             var rawTag = encodedTag.GetRawValue();
-            Span<byte> tag = stackalloc byte[Base64Url.GetArraySizeRequiredToDecode(rawTag.Length)];
+            Span<byte> tag = stackalloc byte[TagSize];
             try
             {
                 Base64Url.Decode(rawIV.Span, nonce);

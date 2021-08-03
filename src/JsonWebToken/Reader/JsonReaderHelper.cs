@@ -182,22 +182,6 @@ namespace JsonWebToken
         public static bool IsInRangeInclusive(int value, int lowerBound, int upperBound)
             => (uint)(value - lowerBound) <= (uint)(upperBound - lowerBound);
 
-        ///// <summary>
-        ///// Returns <see langword="true"/> if <paramref name="value"/> is between
-        ///// <paramref name="lowerBound"/> and <paramref name="upperBound"/>, inclusive.
-        ///// </summary>
-        //[MethodImpl(MethodImplOptions.AggressiveInlining)]
-        //public static bool IsInRangeInclusive(long value, long lowerBound, long upperBound)
-        //    => (ulong)(value - lowerBound) <= (ulong)(upperBound - lowerBound);
-
-        ///// <summary>
-        ///// Returns <see langword="true"/> if <paramref name="value"/> is between
-        ///// <paramref name="lowerBound"/> and <paramref name="upperBound"/>, inclusive.
-        ///// </summary>
-        //[MethodImpl(MethodImplOptions.AggressiveInlining)]
-        //public static bool IsInRangeInclusive(JsonTokenType value, JsonTokenType lowerBound, JsonTokenType upperBound)
-        //    => (value - lowerBound) <= (upperBound - lowerBound);
-
         public static bool UnescapeAndCompare(ReadOnlySpan<byte> utf8Source, ReadOnlySpan<byte> other)
         {
             Debug.Assert(utf8Source.Length >= other.Length && utf8Source.Length / JsonConstants.MaxExpansionFactorWhileEscaping <= other.Length);
@@ -205,7 +189,7 @@ namespace JsonWebToken
             byte[]? unescapedArray = null;
 
             Span<byte> utf8Unescaped = utf8Source.Length <= JsonConstants.StackallocThreshold ?
-                stackalloc byte[utf8Source.Length] :
+                stackalloc byte[JsonConstants.StackallocThreshold] :
                 (unescapedArray = ArrayPool<byte>.Shared.Rent(utf8Source.Length));
 
             Unescape(utf8Source, utf8Unescaped, 0, out int written);
@@ -233,7 +217,7 @@ namespace JsonWebToken
             byte[]? pooledName = null;
 
             Span<byte> utf8Unescaped = length <= JsonConstants.StackallocThreshold ?
-                stackalloc byte[length] :
+                stackalloc byte[JsonConstants.StackallocThreshold] :
                 (pooledName = ArrayPool<byte>.Shared.Rent(length));
 
             Unescape(utf8Source, utf8Unescaped, idx, out int written);
