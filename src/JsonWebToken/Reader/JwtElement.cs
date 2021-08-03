@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Runtime.CompilerServices;
 using System.Text.Json;
 
 namespace JsonWebToken
@@ -269,7 +270,11 @@ namespace JsonWebToken
         {
             if (_parent is null)
             {
-                value = null;
+#if NET5_0_OR_GREATER
+                Unsafe.SkipInit(out value);
+#else
+                value = default;
+#endif
                 return false;
             }
 
@@ -784,7 +789,11 @@ namespace JsonWebToken
                 return true;
 
             Error:
-                document = null;
+#if NET5_0_OR_GREATER
+                Unsafe.SkipInit(out document);
+#else
+                document = default;
+#endif
                 return false;
             }
         }
@@ -937,7 +946,11 @@ namespace JsonWebToken
                 return true;
 
             Error:
-                document = null;
+#if NET5_0_OR_GREATER
+                Unsafe.SkipInit(out document);
+#else
+                document = default;
+#endif
                 return false;
             }
         }
@@ -1085,7 +1098,11 @@ namespace JsonWebToken
                 return true;
 
             Error:
-                document = null;
+#if NET5_0_OR_GREATER
+                Unsafe.SkipInit(out document);
+#else
+                document = default;
+#endif
                 return false;
             }
         }

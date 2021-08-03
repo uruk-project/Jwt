@@ -471,7 +471,11 @@ namespace JsonWebToken
             else
             {
                 ThrowHelper.ThrowNotSupportedException_Algorithm(algorithm);
+#if NET5_0_OR_GREATER
+                Unsafe.SkipInit(out curve);
+#else
                 curve = default;
+#endif
             }
 
             ECParameters parameters = GenerateParameters(curve, withPrivateKey);

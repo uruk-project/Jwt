@@ -582,7 +582,11 @@ namespace JsonWebToken
             var alg = header.Alg;
             if (alg.IsEmpty)
             {
-                keys = null;
+#if NET5_0_OR_GREATER
+                Unsafe.SkipInit(out keys);
+#else
+                keys = default;
+#endif
                 return false;
             }
             else
@@ -649,7 +653,11 @@ namespace JsonWebToken
                 }
                 else
                 {
-                    keys = null;
+#if NET5_0_OR_GREATER
+                    Unsafe.SkipInit(out keys);
+#else
+                    keys = default;
+#endif
                     return false;
                 }
             }

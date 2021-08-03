@@ -182,7 +182,11 @@ namespace JsonWebToken
                 }
             }
 
-            error = null;
+#if NET5_0_OR_GREATER
+            Unsafe.SkipInit(out error);
+#else
+            error = default;
+#endif
             return true;
 
         Error:
@@ -217,7 +221,11 @@ namespace JsonWebToken
                 }
             }
 
-            error = null;
+#if NET5_0_OR_GREATER
+            Unsafe.SkipInit(out error);
+#else
+            error = default;
+#endif
             return true;
 
         Error:
@@ -241,7 +249,11 @@ namespace JsonWebToken
 
             public bool TryGetHeader(ReadOnlySpan<byte> buffer, [NotNullWhen(true)] out JwtHeaderDocument? header)
             {
-                header = null;
+#if NET5_0_OR_GREATER
+                Unsafe.SkipInit(out header);
+#else
+                header = default;
+#endif
                 return false;
             }
         }

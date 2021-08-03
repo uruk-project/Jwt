@@ -3,6 +3,7 @@
 
 using System;
 using System.Diagnostics.CodeAnalysis;
+using System.Runtime.CompilerServices;
 using System.Text.Json;
 
 namespace JsonWebToken
@@ -19,13 +20,21 @@ namespace JsonWebToken
 
         public bool TryGetHeader(JwtHeader header, SignatureAlgorithm alg, JsonEncodedText kid, string? typ, [NotNullWhen(true)] out byte[]? base64UrlHeader)
         {
-            base64UrlHeader = null;
+#if NET5_0_OR_GREATER
+            Unsafe.SkipInit(out base64UrlHeader);
+#else
+            base64UrlHeader = default;
+#endif
             return false;
         }
 
         public bool TryGetHeader(JwtHeader header, KeyManagementAlgorithm alg, EncryptionAlgorithm enc, JsonEncodedText kid, string? typ, string? cty, [NotNullWhen(true)] out byte[]? base64UrlHeader)
         {
-            base64UrlHeader = null;
+#if NET5_0_OR_GREATER
+            Unsafe.SkipInit(out base64UrlHeader);
+#else
+            base64UrlHeader = default;
+#endif
             return false;
         }
     }

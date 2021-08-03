@@ -3,6 +3,7 @@
 
 using System;
 using System.Diagnostics.CodeAnalysis;
+using System.Runtime.CompilerServices;
 using System.Threading;
 
 namespace JsonWebToken
@@ -66,7 +67,11 @@ namespace JsonWebToken
                 node = node.Next;
             }
 
-            header = null;
+#if NET5_0_OR_GREATER
+            Unsafe.SkipInit(out header);
+#else
+            header = default;
+#endif
             return false;
         }
 

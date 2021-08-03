@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using JsonWebToken.Cryptography;
 
 namespace JsonWebToken
@@ -84,7 +85,11 @@ namespace JsonWebToken
                     }
                 }
 
-                policy = null;
+#if NET5_0_OR_GREATER
+                Unsafe.SkipInit(out policy);
+#else
+                policy = default;
+#endif
                 return false;
             }
         }
@@ -207,7 +212,11 @@ namespace JsonWebToken
                 return false;
 
             Success:
-                error = null;
+#if NET5_0_OR_GREATER
+                Unsafe.SkipInit(out error);
+#else
+                error = default;
+#endif
                 return true;
             }
         }
@@ -221,7 +230,11 @@ namespace JsonWebToken
                 if ((contentBytes.Length == 0 && signatureSegment.Length == 0)
                     || (signatureSegment.IsEmpty && !header.Alg.IsEmpty && header.Alg.ValueEquals(SignatureAlgorithm.None.Utf8Name)))
                 {
-                    error = null;
+#if NET5_0_OR_GREATER
+                    Unsafe.SkipInit(out error);
+#else
+                    error = default;
+#endif
                     return true;
                 }
 
@@ -236,7 +249,11 @@ namespace JsonWebToken
 
             public override bool TryValidateSignature(JwtHeaderDocument header, JwtPayloadDocument payload, ReadOnlySpan<byte> contentBytes, ReadOnlySpan<byte> signatureSegment, [NotNullWhen(false)] out SignatureValidationError? error)
             {
-                error = null;
+#if NET5_0_OR_GREATER
+                Unsafe.SkipInit(out error);
+#else
+                error = default;
+#endif
                 return true;
             }
         }

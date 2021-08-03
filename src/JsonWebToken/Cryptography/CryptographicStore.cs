@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Runtime.CompilerServices;
 
 namespace JsonWebToken.Cryptography
 {
@@ -77,7 +78,11 @@ namespace JsonWebToken.Cryptography
             public bool TryGetValue(int key, [NotNullWhen(true)] out TMapValue? value)
             {
                 // Nothing here
-                value = null;
+#if NET5_0_OR_GREATER
+                Unsafe.SkipInit(out value);
+#else
+                value = default;
+#endif
                 return false;
             }
         }
@@ -123,7 +128,11 @@ namespace JsonWebToken.Cryptography
                 }
                 else
                 {
-                    value = null;
+#if NET5_0_OR_GREATER
+                    Unsafe.SkipInit(out value);
+#else
+                    value = default;
+#endif
                     return false;
                 }
             }
@@ -180,7 +189,11 @@ namespace JsonWebToken.Cryptography
                 }
                 else
                 {
-                    value = null;
+#if NET5_0_OR_GREATER
+                    Unsafe.SkipInit(out value);
+#else
+                    value = default;
+#endif
                     return false;
                 }
 
@@ -255,7 +268,11 @@ namespace JsonWebToken.Cryptography
                 }
                 else
                 {
-                    value = null;
+#if NET5_0_OR_GREATER
+                    Unsafe.SkipInit(out value);
+#else
+                    value = default;
+#endif
                     return false;
                 }
 
@@ -330,7 +347,11 @@ namespace JsonWebToken.Cryptography
                     }
                 }
 
-                value = null;
+#if NET5_0_OR_GREATER
+                Unsafe.SkipInit(out value);
+#else
+                value = default;
+#endif
                 return false;
             }
 

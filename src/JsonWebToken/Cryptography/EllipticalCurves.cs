@@ -5,6 +5,7 @@
 using System;
 using System.Collections.ObjectModel;
 using System.Diagnostics.CodeAnalysis;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Text.Json;
@@ -127,11 +128,49 @@ namespace JsonWebToken
                     curve = Secp256k1;
                     goto Parsed;
                 default:
-                    curve = null;
+#if NET5_0_OR_GREATER
+                    Unsafe.SkipInit(out curve);
+#else
+                    curve = default;
+#endif
                     return false;
             }
 
         Parsed:
+            return true;
+        }
+
+        /// <summary>Parses the <see cref="JsonElement"/> into its <see cref="EllipticalCurve"/> representation.</summary>
+        public static bool TryParse(JsonElement value, [NotNullWhen(true)] out EllipticalCurve? curve)
+        {
+            if (value.ValueEquals(P256.Name.EncodedUtf8Bytes))
+            {
+                curve = P256;
+                goto Found;
+            }
+            else if (value.ValueEquals(P384.Name.EncodedUtf8Bytes))
+            {
+                curve = P384;
+                goto Found;
+            }
+            else if (value.ValueEquals(P521.Name.EncodedUtf8Bytes))
+            {
+                curve = P521;
+                goto Found;
+            }
+            else if (value.ValueEquals(Secp256k1.Name.EncodedUtf8Bytes))
+            {
+                curve = Secp256k1;
+                goto Found;
+            }
+
+#if NET5_0_OR_GREATER
+            Unsafe.SkipInit(out curve);
+#else
+            curve = default;
+#endif
+            return false;
+        Found:
             return true;
         }
 
@@ -177,7 +216,11 @@ namespace JsonWebToken
                 }
             }
 
-            curve = null;
+#if NET5_0_OR_GREATER
+            Unsafe.SkipInit(out curve);
+#else
+            curve = default;
+#endif
             return false;
         }
 

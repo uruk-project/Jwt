@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE in the project root for license information.
 
 using System.Diagnostics.CodeAnalysis;
+using System.Runtime.CompilerServices;
 
 namespace JsonWebToken
 {
@@ -26,7 +27,11 @@ namespace JsonWebToken
 
             if (payload.ContainsClaim(_claim))
             {
-                error = null;
+#if NET5_0_OR_GREATER
+                Unsafe.SkipInit(out error);
+#else
+                error = default;
+#endif
                 return true;
             }
 

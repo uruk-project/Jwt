@@ -173,11 +173,19 @@ namespace JsonWebToken
             database.CompleteAllocations();
 
             payload = new JwtPayloadDocument(new JwtDocument(utf8Payload, database, buffer), control, issIdx);
-            error = null;
+#if NET5_0_OR_GREATER
+            Unsafe.SkipInit(out error);
+#else
+            error = default;
+#endif
             return true;
 
         Error:
-            payload = null;
+#if NET5_0_OR_GREATER
+            Unsafe.SkipInit(out payload);
+#else
+            payload = default;
+#endif
             return false;
         }
 

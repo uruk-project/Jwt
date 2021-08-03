@@ -48,7 +48,7 @@ namespace JsonWebToken.Cryptography
 
                             byte[] tempOutputBuffer = ArrayPool<byte>.Shared.Rent(numWholeBlocksInBytes);
 
-                            Span<byte> outputSpan = default;
+                            Span<byte> outputSpan;
                             try
                             {
                                 numOutputBytes = transform.TransformBlock(buffer, currentInputIndex, numWholeBlocksInBytes, tempOutputBuffer, 0);
@@ -59,10 +59,10 @@ namespace JsonWebToken.Cryptography
 
                                 currentInputIndex += numWholeBlocksInBytes;
                                 bytesToWrite -= numWholeBlocksInBytes;
+                                CryptographicOperations.ZeroMemory(outputSpan);
                             }
                             finally
                             {
-                                CryptographicOperations.ZeroMemory(outputSpan);
                                 ArrayPool<byte>.Shared.Return(tempOutputBuffer);
                             }
                         }
