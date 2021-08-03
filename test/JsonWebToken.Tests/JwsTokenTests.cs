@@ -131,8 +131,12 @@ namespace JsonWebToken.Tests
             yield return new object[] { (string)SignatureAlgorithm.ES256 };
             yield return new object[] { (string)SignatureAlgorithm.ES384 };
             yield return new object[] { (string)SignatureAlgorithm.ES512 };
-            yield return new object[] { (string)SignatureAlgorithm.ES256K };
-#endif
+
+            if (!OperatingSystem.IsMacOS())
+            {
+                // MacOS does not support ES256K
+                yield return new object[] { (string)SignatureAlgorithm.ES256K };
+            }
         }
 
         private (Jwk, Jwk) SelectKeys(string alg)
