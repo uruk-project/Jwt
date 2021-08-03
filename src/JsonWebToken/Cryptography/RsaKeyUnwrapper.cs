@@ -71,9 +71,9 @@ namespace JsonWebToken.Cryptography
                         try
                         {
                             // RSA up through 4096 stackalloc
-                            if (_rsa.KeySize <= 4096)
+                            if (_rsa.KeySize <= Constants.MaxStackallocBytes * 8 * 2)
                             {
-                                tmp = stackalloc byte[keySizeBytes];
+                                tmp = stackalloc byte[Constants.MaxStackallocBytes * 2];
                             }
                             else
                             {

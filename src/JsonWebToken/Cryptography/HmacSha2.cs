@@ -40,7 +40,7 @@ namespace JsonWebToken.Cryptography
             _outerPadKey = new ReadOnlyMemory<byte>(_keys, blockSize, blockSize);
             if (key.Length > blockSize)
             {
-                Span<byte> keyPrime = stackalloc byte[sha2.HashSize];
+                Span<byte> keyPrime = stackalloc byte[Sha2.HashSizeStackallocThreshold].Slice(0, sha2.HashSize);
                 Sha2.ComputeHash(key, default, keyPrime, default);
                 HmacHelper.InitializeIOKeys(keyPrime, _keys, blockSize);
                 keyPrime.Clear();
@@ -61,7 +61,7 @@ namespace JsonWebToken.Cryptography
             {
                 Span<byte> W = size > Constants.MaxStackallocBytes
                     ? (arrayToReturn = ArrayPool<byte>.Shared.Rent(size))
-                    : stackalloc byte[size];
+                    : stackalloc byte[Constants.MaxStackallocBytes];
                 Sha2.ComputeHash(source, _innerPadKey.Span, destination, W);
                 Sha2.ComputeHash(destination, _outerPadKey.Span, destination, W);
             }

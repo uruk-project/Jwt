@@ -3,6 +3,7 @@
 
 #if SUPPORT_ELLIPTIC_CURVE_SIGNATURE
 using System;
+using System.Buffers;
 using System.Diagnostics;
 using System.Security.Cryptography;
 
@@ -45,9 +46,10 @@ namespace JsonWebToken.Cryptography
 
             var ecdsa = _ecdsaPool.Get();
 #if SUPPORT_SPAN_CRYPTO
-            Span<byte> hash = stackalloc byte[_sha.HashSize];
-            _sha.ComputeHash(data, hash);
-            return ecdsa.TrySignHash(hash, destination, out bytesWritten);
+                Span<byte> hash = stackalloc byte[Sha2.HashSizeStackallocThreshold];
+                hash = hash.Slice(0, _sha.HashSize);
+                _sha.ComputeHash(data, hash);
+                return ecdsa.TrySignHash(hash, destination, out bytesWritten);
 #else
             byte[] hash = new byte[_sha.HashSize];
             _sha.ComputeHash(data, hash);
@@ -72,6 +74,6 @@ namespace JsonWebToken.Cryptography
             }
         }
 
-    }   
+    }
 }
 #endif

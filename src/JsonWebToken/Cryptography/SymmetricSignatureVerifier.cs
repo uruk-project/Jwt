@@ -63,7 +63,7 @@ namespace JsonWebToken.Cryptography
         {
             Debug.Assert(!_disposed);
 
-            Span<byte> hash = stackalloc byte[_hashSizeInBytes];
+            Span<byte> hash = stackalloc byte[Sha2.HashSizeStackallocThreshold].Slice(0, _hashSizeInBytes);
             _hashAlgorithm.ComputeHash(input, hash);
             return CryptographicOperations.FixedTimeEquals(signature, hash);
         }

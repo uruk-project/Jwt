@@ -14,6 +14,8 @@ namespace JsonWebToken.Cryptography
     // http://csrc.nist.gov/publications/nistpubs/800-132/nist-sp800-132.pdf
     internal static class Pbkdf2
     {
+        internal  const int SaltSizeThreshold = 32;
+
         public static void DeriveKey(byte[] password, ReadOnlySpan<byte> salt, Sha2 prf, uint iterationCount, Span<byte> destination)
         {
             Debug.Assert(password != null);
@@ -23,22 +25,29 @@ namespace JsonWebToken.Cryptography
             int numBytesWritten = 0;
             int numBytesRemaining = destination.Length;
 
-            Span<byte> saltWithBlockIndex = stackalloc byte[checked(salt.Length + sizeof(uint))];
-            salt.CopyTo(saltWithBlockIndex);
-
-            Span<byte> hmacKey = stackalloc byte[prf.BlockSize * 2];
-            var hashAlgorithm = new Hmac(prf, password, hmacKey);
-
-            int wSize = prf.GetWorkingSetSize(int.MaxValue);
-            int blockSize = hashAlgorithm.BlockSize;
+            int saltWithBlockLength = salt.Length + sizeof(uint);
+            byte[]? saltArray = null;
             byte[]? arrayToReturn = null;
             try
             {
+                Span<byte> saltWithBlockIndex = saltWithBlockLength > SaltSizeThreshold
+                    ? (saltArray = ArrayPool<byte>.Shared.Rent(saltWithBlockLength))
+                    : stackalloc byte[SaltSizeThreshold];
+                saltWithBlockIndex = saltWithBlockIndex.Slice(0, saltWithBlockLength);
+                salt.CopyTo(saltWithBlockIndex);
+
+                Span<byte> hmacKey = stackalloc byte[Sha2.BlockSizeStackallocThreshold * 2];
+                var hashAlgorithm = new Hmac(prf, password, hmacKey.Slice(0, prf.BlockSize * 2));
+
+                int wSize = prf.GetWorkingSetSize(int.MaxValue);
+                int blockSize = hashAlgorithm.BlockSize;
+
                 Span<byte> W = wSize > Constants.MaxStackallocBytes
                     ? (arrayToReturn = ArrayPool<byte>.Shared.Rent(wSize))
-                    : stackalloc byte[wSize];
-                Span<byte> currentBlock = stackalloc byte[hashAlgorithm.HashSize];
-                Span<byte> iterationBlock = stackalloc byte[hashAlgorithm.HashSize];
+                    : stackalloc byte[Constants.MaxStackallocBytes];
+                W = W.Slice(0, wSize);
+                Span<byte> currentBlock = stackalloc byte[Sha2.HashSizeStackallocThreshold].Slice(0, hashAlgorithm.HashSize);
+                Span<byte> iterationBlock = stackalloc byte[Sha2.HashSizeStackallocThreshold].Slice(0, hashAlgorithm.HashSize);
                 Span<byte> blockIndexDestination = saltWithBlockIndex.Slice(saltWithBlockIndex.Length - sizeof(uint));
                 for (uint blockIndex = 1; numBytesRemaining > 0; blockIndex++)
                 {
@@ -59,6 +68,11 @@ namespace JsonWebToken.Cryptography
             }
             finally
             {
+                if (saltArray != null)
+                {
+                    ArrayPool<byte>.Shared.Return(saltArray);
+                }
+
                 if (arrayToReturn != null)
                 {
                     ArrayPool<byte>.Shared.Return(arrayToReturn);

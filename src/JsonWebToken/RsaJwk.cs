@@ -27,38 +27,37 @@ namespace JsonWebToken
 
         private RSAParameters _parameters;
 
-#nullable disable
         /// <summary>Initializes a new instance of <see cref="RsaJwk"/>.</summary>
-        private RsaJwk(RSAParameters rsaParameters)
+        private RsaJwk(in RSAParameters parameters)
         {
-            Verify(rsaParameters);
-            _parameters = rsaParameters;
+            Verify(parameters);
+            _parameters = parameters;
         }
 
         /// <summary>Initializes a new instance of <see cref="RsaJwk"/>.</summary>
-        private RsaJwk(RSAParameters rsaParameters, KeyManagementAlgorithm alg)
+        private RsaJwk(in RSAParameters parameters, KeyManagementAlgorithm alg)
             : base(alg)
         {
-            Verify(rsaParameters);
+            Verify(parameters);
             if (!SupportKeyManagement(alg))
             {
                 ThrowHelper.ThrowNotSupportedException_Algorithm(alg);
             }
 
-            _parameters = rsaParameters;
+            _parameters = parameters;
         }
 
         /// <summary>Initializes a new instance of <see cref="RsaJwk"/>.</summary>
-        private RsaJwk(RSAParameters rsaParameters, SignatureAlgorithm alg)
+        private RsaJwk(in RSAParameters parameters, SignatureAlgorithm alg)
             : base(alg)
         {
-            Verify(rsaParameters);
+            Verify(parameters);
             if (!SupportSignature(alg))
             {
                 ThrowHelper.ThrowNotSupportedException_Algorithm(alg);
             }
 
-            _parameters = rsaParameters;
+            _parameters = parameters;
         }
 
         /// <summary>Initializes a new instance of <see cref="RsaJwk"/>.</summary>
@@ -229,7 +228,6 @@ namespace JsonWebToken
         private RsaJwk()
         {
         }
-#nullable enable
 
         private void Initialize(byte[] n, byte[] e, byte[] d, byte[] p, byte[] q, byte[] dp, byte[] dq, byte[] qi)
         {
@@ -335,16 +333,16 @@ namespace JsonWebToken
             _parameters.Exponent = Base64Url.Decode(e);
         }
 
-        private static void Verify(RSAParameters rsaParameters)
+        private static void Verify(in RSAParameters parameters)
         {
-            if (rsaParameters.Modulus is null)
+            if (parameters.Modulus is null)
             {
-                throw new ArgumentNullException(nameof(rsaParameters), $"The property '{nameof(rsaParameters.Modulus)}' cannot be null.");
+                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.parameters, $"The property '{nameof(parameters.Modulus)}' cannot be null.");
             }
 
-            if (rsaParameters.Exponent is null)
+            if (parameters.Exponent is null)
             {
-                throw new ArgumentNullException(nameof(rsaParameters), $"The property '{nameof(rsaParameters.Exponent)}' cannot be null.");
+                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.parameters, $"The property '{nameof(parameters.Exponent)}' cannot be null.");
             }
         }
 
@@ -517,9 +515,7 @@ namespace JsonWebToken
             rsa.KeySize= sizeInBits;
 #endif
 #endif
-            RSAParameters rsaParameters = rsa.ExportParameters(withPrivateKey);
-
-            return FromParameters(rsaParameters, computeThumbprint);
+            return FromParameters(rsa.ExportParameters(withPrivateKey), computeThumbprint);
         }
 
         /// <summary>Generates a new random <see cref="RsaJwk"/>.</summary>
@@ -813,7 +809,7 @@ namespace JsonWebToken
         /// <param name="parameters">A <see cref="RSAParameters"/> that contains the key parameters.</param>
         /// <param name="alg">The <see cref="KeyManagementAlgorithm"/></param>
         /// <param name="computeThumbprint">Defines whether the thumbprint of the key should be computed </param>
-        public static RsaJwk FromParameters(RSAParameters parameters, KeyManagementAlgorithm alg, bool computeThumbprint = true)
+        public static RsaJwk FromParameters(in RSAParameters parameters, KeyManagementAlgorithm alg, bool computeThumbprint = true)
         {
             var key = new RsaJwk(parameters, alg);
             if (computeThumbprint)
@@ -828,7 +824,7 @@ namespace JsonWebToken
         /// <param name="parameters">A <see cref="RSAParameters"/> that contains the key parameters.</param>
         /// <param name="alg">The <see cref="SignatureAlgorithm"/></param>
         /// <param name="computeThumbprint">Defines whether the thumbprint of the key should be computed </param>
-        public static RsaJwk FromParameters(RSAParameters parameters, SignatureAlgorithm alg, bool computeThumbprint)
+        public static RsaJwk FromParameters(in RSAParameters parameters, SignatureAlgorithm alg, bool computeThumbprint)
         {
             var key = new RsaJwk(parameters, alg);
             if (computeThumbprint)
@@ -842,7 +838,7 @@ namespace JsonWebToken
         /// <summary>Returns a new instance of <see cref="RsaJwk"/>.</summary>
         /// <param name="parameters">A <see cref="RSAParameters"/> that contains the key parameters.</param>
         /// <param name="computeThumbprint">Defines whether the thumbprint of the key should be computed </param>
-        public static RsaJwk FromParameters(RSAParameters parameters, bool computeThumbprint = true)
+        public static RsaJwk FromParameters(in RSAParameters parameters, bool computeThumbprint = true)
         {
             var key = new RsaJwk(parameters);
             if (computeThumbprint)
@@ -1006,13 +1002,10 @@ namespace JsonWebToken
 
             // the modulus N is always the biggest field
             int requiredBufferSize = Base64Url.GetArraySizeRequiredToEncode(_parameters.Modulus!.Length);
-            byte[]? arrayToReturn = null;
+            byte[] arrayToReturn;
+            Span<byte> buffer = arrayToReturn = ArrayPool<byte>.Shared.Rent(requiredBufferSize);
             try
             {
-                Span<byte> buffer = requiredBufferSize > Constants.MaxStackallocBytes
-                                    ? stackalloc byte[requiredBufferSize]
-                                    : (arrayToReturn = ArrayPool<byte>.Shared.Rent(requiredBufferSize));
-
                 WriteBase64UrlProperty(writer, buffer, _parameters.Exponent!, JwkParameterNames.E);
                 WriteBase64UrlProperty(writer, buffer, _parameters.Modulus!, JwkParameterNames.N);
 
@@ -1025,10 +1018,7 @@ namespace JsonWebToken
             }
             finally
             {
-                if (arrayToReturn != null)
-                {
-                    ArrayPool<byte>.Shared.Return(arrayToReturn);
-                }
+                ArrayPool<byte>.Shared.Return(arrayToReturn);
             }
 
             writer.WriteEndObject();

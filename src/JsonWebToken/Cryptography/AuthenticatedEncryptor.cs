@@ -30,5 +30,9 @@ namespace JsonWebToken.Cryptography
 
         /// <summary>Gets the required size of the base64-URL nonce.</summary>
         public abstract int GetBase64NonceSize();
+
+        internal const int TagSizeStackallocThreshold = 64;
+
+        internal const int NonceSizeStackallocThreshold = 16;
     }
 }

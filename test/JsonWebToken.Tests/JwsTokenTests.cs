@@ -26,7 +26,7 @@ namespace JsonWebToken.Tests
             n: "0vx7agoebGcQSuuPiLJXZptN9nndrQmbXEps2aiAFbWhM78LhWx4cbbfAAtVT86zwu1RK7aPFFxuhDR1L6tSoc_BJECPebWKRXjBZCiFV4n3oknjhMstn64tZ_2W-5JsGY4Hc5n9yBXArwl93lqt7_RN5w6Cf0h4QyQ5v-65YGjQR0_FDW2QvzqY368QQMicAtaSqzs8KJZgnYb9c7d0zgdAZHzu6qMQvRL5hajrn1n91CbOpbISD08qNLyrdkt-bFTWhAI4vMQFh6WeZu0fM4lFd2NcRwr3XPksINHaQ-G_xBniIqbw0Ls1jF44-csFCur-kEgU8awapJzKnqDKgw",
             e: "AQAB"
         );
-#if !NET461
+#if SUPPORT_ELLIPTIC_CURVE_SIGNATURE
         private readonly ECJwk _privateEcc256Key = ECJwk.FromBase64Url
         (
             crv: EllipticalCurve.P256,
@@ -42,18 +42,32 @@ namespace JsonWebToken.Tests
             y: "e8lnCO-AlStT-NJVX-crhB7QRYhiix03illJOVAOyck"
         );
 
-        private readonly ECJwk _publicEcc384Key = ECJwk.FromBase64Url
+        private readonly ECJwk _privateEcc256KKey = ECJwk.FromBase64Url
         (
-            crv: EllipticalCurve.P384,
-            d: "Wf9qS_1idTtZ13HKUMkNDFPacwsfduJxayYtLlDGYzp8la9YajkWTPQwZT0X-vjq",
-            x: "2ius4b5QcXto95wPhpQsX3IGAtnT9mNjMvds18_AgU3wNpOkppfuT6wu-y-fnsVU",
-            y: "3HPDrLpplnCJc3ksMBVD9rGFcAld3-c74CIk4ZNleOBnGeAkRZv4wJ4z_btwx_PL"
+            crv: EllipticalCurve.Secp256k1,
+            x: "6_H-LRU19Rzm4KCJNmzeCGoHPrm1CSBgOp-Npbdjaw0",
+            y: "tp7FPpiX9sAMyGr72y27afvfZxmlANjyRut9StOq9xk",
+            d: "Lra8VqtHiyayZ371elNxSJQg4OrWO0dLvMLiDfIRfc0"
+        );
+
+        private readonly ECJwk _publicEcc256KKey = ECJwk.FromBase64Url
+        (
+            crv: EllipticalCurve.Secp256k1,
+            x: "6_H-LRU19Rzm4KCJNmzeCGoHPrm1CSBgOp-Npbdjaw0",
+            y: "tp7FPpiX9sAMyGr72y27afvfZxmlANjyRut9StOq9xk"
         );
 
         private readonly ECJwk _privateEcc384Key = ECJwk.FromBase64Url
         (
             crv: EllipticalCurve.P384,
-            d: "Wf9qS_1idTtZ13HKUMkNDFPacwsfduJxayYtLlDGYzp8la9YajkWTPQwZT0X-vjq",
+            x: "2ius4b5QcXto95wPhpQsX3IGAtnT9mNjMvds18_AgU3wNpOkppfuT6wu-y-fnsVU",
+            y: "3HPDrLpplnCJc3ksMBVD9rGFcAld3-c74CIk4ZNleOBnGeAkRZv4wJ4z_btwx_PL",
+            d: "Wf9qS_1idTtZ13HKUMkNDFPacwsfduJxayYtLlDGYzp8la9YajkWTPQwZT0X-vjq"
+        );
+
+        private readonly ECJwk _publicEcc384Key = ECJwk.FromBase64Url
+        (
+            crv: EllipticalCurve.P384,
             x: "2ius4b5QcXto95wPhpQsX3IGAtnT9mNjMvds18_AgU3wNpOkppfuT6wu-y-fnsVU",
             y: "3HPDrLpplnCJc3ksMBVD9rGFcAld3-c74CIk4ZNleOBnGeAkRZv4wJ4z_btwx_PL"
         );
@@ -61,9 +75,9 @@ namespace JsonWebToken.Tests
         private readonly ECJwk _privateEcc512Key = ECJwk.FromBase64Url
         (
             crv: EllipticalCurve.P521,
-            d: "Adri8PbGJBWN5upp_67cKF8E0ADCF-w9WpI4vAnoE9iZsnRTZI9D20Ji9rzLyyEPp8KriI_HISTMh_RSmFFhTfBH",
             x: "AEeo_Y06znu6MVjyvJW2_SX_JKK2DxbxF3QjAqkZhMTvwgLc3Z073vFwwiCHKcOwK2b5H8H4a7PDN6DGJ6YJjpN0",
-            y: "AEESIwzgMrpPh9p_eq2EuIMUCCTPzaQK_DtXFwjOWsanjacwu1DZ3XSwbkiHvjQLrXDfdP7xZ-iAXQ1lGZqsud8y"
+            y: "AEESIwzgMrpPh9p_eq2EuIMUCCTPzaQK_DtXFwjOWsanjacwu1DZ3XSwbkiHvjQLrXDfdP7xZ-iAXQ1lGZqsud8y",
+            d: "Adri8PbGJBWN5upp_67cKF8E0ADCF-w9WpI4vAnoE9iZsnRTZI9D20Ji9rzLyyEPp8KriI_HISTMh_RSmFFhTfBH"
         );
 
         private readonly ECJwk _publicEcc512Key = ECJwk.FromBase64Url
@@ -79,6 +93,7 @@ namespace JsonWebToken.Tests
         public void Encode_Decode(string alg)
         {
             var (signingKey, validationKey) = SelectKeys(alg);
+
             var writer = new JwtWriter();
             var descriptor = new JwsDescriptor(signingKey, (SignatureAlgorithm)alg)
             {
@@ -88,7 +103,7 @@ namespace JsonWebToken.Tests
                 }
             };
 
-            var token = writer.WriteToken(descriptor);
+            var token = writer.WriteTokenString(descriptor);
 
             var policy = new TokenValidationPolicyBuilder()
                 .RequireSignatureByDefault(validationKey, (SignatureAlgorithm)alg)
@@ -112,10 +127,13 @@ namespace JsonWebToken.Tests
             yield return new object[] { (string)SignatureAlgorithm.PS256 };
             yield return new object[] { (string)SignatureAlgorithm.PS384 };
             yield return new object[] { (string)SignatureAlgorithm.PS512 };
-#if !NET461
+#if SUPPORT_ELLIPTIC_CURVE_SIGNATURE
             yield return new object[] { (string)SignatureAlgorithm.ES256 };
             yield return new object[] { (string)SignatureAlgorithm.ES384 };
             yield return new object[] { (string)SignatureAlgorithm.ES512 };
+#if !TARGET_MACOS
+            yield return new object[] { (string)SignatureAlgorithm.ES256K };
+#endif
 #endif
         }
 
@@ -144,9 +162,11 @@ namespace JsonWebToken.Tests
                 case "PS512":
                     return (_privateRsa2048Key, _publicRsa2048Key);
 
-#if !NET461
+#if SUPPORT_ELLIPTIC_CURVE_SIGNATURE
                 case "ES256":
                     return (_privateEcc256Key, _publicEcc256Key);
+                case "ES256K":
+                    return (_privateEcc256KKey, _publicEcc256KKey);
                 case "ES384":
                     return (_privateEcc384Key, _publicEcc384Key);
                 case "ES512":

@@ -35,6 +35,11 @@ namespace JsonWebToken
         [MethodImpl(MethodImplOptions.NoInlining)]
         private static Exception CreateArgumentNullException(ExceptionArgument argument) => new ArgumentNullException(GetArgumentName(argument));
 
+       [DoesNotReturn]
+        internal static void ThrowArgumentNullException(ExceptionArgument argument, string message) => throw CreateArgumentNullException(argument, message);
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private static Exception CreateArgumentNullException(ExceptionArgument argument, string message) => new ArgumentNullException(GetArgumentName(argument), message);
+
         [DoesNotReturn]
         internal static void ThrowInvalidOperationException_PolicyBuilderRequireSignature() => throw CreateInvalidOperationException_PolicyBuilderRequireSignature();
         [MethodImpl(MethodImplOptions.NoInlining)]
@@ -101,12 +106,12 @@ namespace JsonWebToken
         internal static void ThrowInvalidOperationException_ConcurrentOperationsNotSupported() => throw CreateInvalidOperationException_ConcurrentOperationsNotSupported();
         [MethodImpl(MethodImplOptions.NoInlining)]
         private static Exception CreateInvalidOperationException_ConcurrentOperationsNotSupported() => new InvalidOperationException("Operations that change non-concurrent collections must have exclusive access. A concurrent update was performed on this collection and corrupted its state. The collection's state is no longer correct.");
-        
+
         [DoesNotReturn]
         internal static void ThrowInvalidOperationException_AlreadyInitialized(ExceptionArgument argument) => throw CreateInvalidOperationException_AlreadyInitialized(argument);
         [MethodImpl(MethodImplOptions.NoInlining)]
         private static Exception CreateInvalidOperationException_AlreadyInitialized(ExceptionArgument argument) => new InvalidOperationException($"The property '{argument}' is already initialized. You cannot set more than once this property.");
-        
+
         [DoesNotReturn]
         internal static void ThrowInvalidOperationException_NotInitialized(ExceptionArgument argument) => throw CreateInvalidOperationException_NotInitialized(argument);
         [MethodImpl(MethodImplOptions.NoInlining)]
@@ -115,7 +120,7 @@ namespace JsonWebToken
         [DoesNotReturn]
         internal static void ThrowArgumentOutOfRangeException_MustBeGreaterOrEqualToZero(ExceptionArgument argument, int value) => throw CreateArgumentOutOfRangeException_MustBeGreaterOrEqualToZero(argument, value);
         [MethodImpl(MethodImplOptions.NoInlining)]
-        private static Exception CreateArgumentOutOfRangeException_MustBeGreaterOrEqualToZero(ExceptionArgument argument, int value) => new ArgumentOutOfRangeException(GetArgumentName(argument), $"{GetArgumentName(argument)} must be greater equal or zero. value: '{value}'.");
+        private static Exception CreateArgumentOutOfRangeException_MustBeGreaterOrEqualToZero(ExceptionArgument argument, int value) => new ArgumentOutOfRangeException(GetArgumentName(argument), $"{GetArgumentName(argument)} must be greater or equal to zero. value: '{value}'.");
 
         [DoesNotReturn]
         internal static void ThrowInvalidOperationException_NotSupportedJsonType(JwtValueKind type) => throw CreateInvalidOperationException_NotSupportedJsonType(type);
@@ -144,6 +149,11 @@ namespace JsonWebToken
         private static Exception CreateCryptographicException_EncryptionFailed(EncryptionAlgorithm? algorithm, Jwk key, Exception innerException) => new CryptographicException($"Encryption failed for: Algorithm: '{algorithm}', key: '{key.Kid}'. See inner exception.", innerException);
 
         [DoesNotReturn]
+        internal static void ThrowCryptographicException_SignatureFailed(SignatureAlgorithm? algorithm, Jwk key, Exception? innerException = null) => throw CreateCryptographicException_SignatureFailed(algorithm, key, innerException);
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private static Exception CreateCryptographicException_SignatureFailed(SignatureAlgorithm? algorithm, Jwk key, Exception? innerException) => innerException is null ? new CryptographicException($"Encryption failed for: Algorithm: '{algorithm}', key: '{key.Kid}'") : new CryptographicException($"Encryption failed for: Algorithm: '{algorithm}', key: '{key.Kid}'. See inner exception.", innerException);
+
+        [DoesNotReturn]
         internal static void ThrowJsonElementWrongType_InvalidOperationException(JsonTokenType expectedTokenType, JsonTokenType tokenType) => throw CreateJsonElementWrongType_InvalidOperationException(expectedTokenType, tokenType);
         [MethodImpl(MethodImplOptions.NoInlining)]
         private static Exception CreateJsonElementWrongType_InvalidOperationException(JsonTokenType expectedTokenType, JsonTokenType tokenType) => new InvalidOperationException($"The requested operation requires an element of type '{expectedTokenType}', but the target element has type '{tokenType}'.");
@@ -157,7 +167,7 @@ namespace JsonWebToken
         internal static void ThrowNotSupportedException_AlgorithmForKeyWrap(KeyManagementAlgorithm? algorithm) => throw CreateNotSupportedException_AlgorithmForKeyWrap(algorithm);
         [MethodImpl(MethodImplOptions.NoInlining)]
         internal static Exception CreateNotSupportedException_AlgorithmForKeyWrap(KeyManagementAlgorithm? algorithm) => new NotSupportedException($"Key wrap is not supported for algorithm: '{algorithm}'.");
-        
+
         [DoesNotReturn]
         internal static void ThrowNotSupportedException_AlgorithmForKeyWrap(AlgorithmId algorithm) => throw CreateNotSupportedException_AlgorithmForKeyWrap(algorithm);
         [MethodImpl(MethodImplOptions.NoInlining)]
@@ -225,9 +235,9 @@ namespace JsonWebToken
 
 #if SUPPORT_ELLIPTIC_CURVE
         [DoesNotReturn]
-        internal static void ThrowNotSupportedException_SignatureAlgorithm(SignatureAlgorithm? algorithm, in EllipticalCurve curve) => throw CreateNotSupportedException_SignatureAlgorithm(algorithm, curve);
+        internal static void ThrowNotSupportedException_SignatureAlgorithm(SignatureAlgorithm? algorithm, EllipticalCurve curve) => throw CreateNotSupportedException_SignatureAlgorithm(algorithm, curve);
         [MethodImpl(MethodImplOptions.NoInlining)]
-        private static Exception CreateNotSupportedException_SignatureAlgorithm(SignatureAlgorithm? algorithm, in EllipticalCurve curve) => new NotSupportedException($"Signature failed. No support for: Algorithm: '{algorithm}' with curve '{curve}'.");
+        private static Exception CreateNotSupportedException_SignatureAlgorithm(SignatureAlgorithm? algorithm, EllipticalCurve curve) => new NotSupportedException($"Signature failed. No support for: Algorithm: '{algorithm}' with curve '{curve}'.");
 #endif
 
         [DoesNotReturn]
@@ -330,6 +340,7 @@ namespace JsonWebToken
                 case ExceptionArgument.d: return "d";
                 case ExceptionArgument.x: return "x";
                 case ExceptionArgument.y: return "y";
+                case ExceptionArgument.crv: return "crv";
                 case ExceptionArgument.signatureFactory: return "signatureFactory";
                 case ExceptionArgument.keyWrapFactory: return "keyWrapFactory";
                 case ExceptionArgument.authenticatedEncryptionFactory: return "authenticatedEncryptionFactory";
@@ -353,6 +364,7 @@ namespace JsonWebToken
                 case ExceptionArgument.signingKey: return "signingKey";
                 case ExceptionArgument.encryptionKey: return "encryptionKey";
                 case ExceptionArgument.payload: return "payload";
+                case ExceptionArgument.parameters: return "parameters";
                 case ExceptionArgument.decryptionKeyProviders: return "decryptionKeyProviders";
                 case ExceptionArgument.signerFactory: return "signerFactory";
                 case ExceptionArgument.keyWrapperFactory: return "keyWrapperFactory";
@@ -373,6 +385,7 @@ namespace JsonWebToken
                 case ExceptionArgument.count: return "count";
                 case ExceptionArgument.clockSkew: return "clockSkew";
                 case ExceptionArgument.size: return "size";
+                case ExceptionArgument.saltSizeInBytes: return "saltSizeInBytes";
                 case ExceptionArgument.capacity: return "capacity";
                 case ExceptionArgument.base64: return "base64";
                 case ExceptionArgument.base64url: return "base64url";
@@ -399,6 +412,7 @@ namespace JsonWebToken
         d,
         x,
         y,
+        crv,
         signatureFactory,
         keyWrapFactory,
         authenticatedEncryptionFactory,
@@ -422,6 +436,7 @@ namespace JsonWebToken
         signingKey,
         encryptionKey,
         payload,
+        parameters,
         decryptionKeyProviders,
         signerFactory,
         keyWrapperFactory,
@@ -442,6 +457,7 @@ namespace JsonWebToken
         count,
         clockSkew,
         size,
+        saltSizeInBytes,
         capacity,
         base64,
         base64url,

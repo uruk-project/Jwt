@@ -74,11 +74,12 @@ namespace JsonWebToken.Cryptography
         {
             byte[]? byteArrayToReturnToPool = null;
             int macLength = associatedData.Length + iv.Length + ciphertext.Length + sizeof(long);
-            Span<byte> macBytes = macLength <= Constants.MaxStackallocBytes
-                                    ? stackalloc byte[macLength]
-                                    : (byteArrayToReturnToPool = ArrayPool<byte>.Shared.Rent(macLength)).AsSpan(0, macLength);
+            Span<byte> macBytes = macLength > Constants.MaxStackallocBytes
+                                    ? (byteArrayToReturnToPool = ArrayPool<byte>.Shared.Rent(macLength))
+                                    : stackalloc byte[Constants.MaxStackallocBytes];
             try
             {
+                macBytes = macBytes.Slice(0, macLength);
                 associatedData.CopyTo(macBytes);
                 var bytes = macBytes.Slice(associatedData.Length);
                 iv.CopyTo(bytes);
@@ -88,9 +89,11 @@ namespace JsonWebToken.Cryptography
                 BinaryPrimitives.WriteInt64BigEndian(bytes, associatedData.Length << 3);
 
                 Sha2 hashAlgorithm = _encryptionAlgorithm.SignatureAlgorithm.Sha;
-                Span<byte> hmacKey = stackalloc byte[hashAlgorithm.BlockSize * 2];
+                Span<byte> hmacKey = stackalloc byte[Sha2.BlockSizeStackallocThreshold * 2]
+                    .Slice(0, hashAlgorithm.BlockSize * 2); 
                 Hmac hmac = new Hmac(hashAlgorithm, key, hmacKey);
-                Span<byte> hash = stackalloc byte[authenticationTag.Length * 2];
+                Span<byte> hash = stackalloc byte[AuthenticatedEncryptor.TagSizeStackallocThreshold]
+                    .Slice(0, authenticationTag.Length * 2);
                 hmac.ComputeHash(macBytes, hash);
                 CryptographicOperations.ZeroMemory(hmacKey);
 

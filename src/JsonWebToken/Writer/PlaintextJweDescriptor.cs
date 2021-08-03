@@ -41,7 +41,7 @@ namespace JsonWebToken
             byte[]? payloadToReturnToPool = null;
             Span<byte> encodedPayload = payloadLength > Constants.MaxStackallocBytes
                              ? (payloadToReturnToPool = ArrayPool<byte>.Shared.Rent(payloadLength))
-                             : stackalloc byte[payloadLength];
+                             : stackalloc byte[Constants.MaxStackallocBytes];
 
             try
             {
