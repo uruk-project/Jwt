@@ -161,7 +161,11 @@ namespace JsonWebToken
             public bool TryGetValue(JsonEncodedText key, [NotNullWhen(true)] out JwtMember value)
             {
                 // Nothing here
+#if NET5_0_OR_GREATER
+                Unsafe.SkipInit(out value);
+#else
                 value = default;
+#endif
                 return false;
             }
 
@@ -199,7 +203,11 @@ namespace JsonWebToken
             public bool TryGetValue(JsonEncodedText key, [NotNullWhen(true)] out JwtMember value)
             {
                 // Nothing here
+#if NET5_0_OR_GREATER
+                Unsafe.SkipInit(out value);
+#else
                 value = default;
+#endif
                 return false;
             }
 
@@ -282,7 +290,11 @@ namespace JsonWebToken
                 }
                 else
                 {
+#if NET5_0_OR_GREATER
+                    Unsafe.SkipInit(out value);
+#else
                     value = default;
+#endif
                     return false;
                 }
             }
@@ -387,7 +399,11 @@ namespace JsonWebToken
                 }
                 else
                 {
+#if NET5_0_OR_GREATER
+                    Unsafe.SkipInit(out value);
+#else
                     value = default;
+#endif
                     return false;
                 }
 
@@ -506,7 +522,11 @@ namespace JsonWebToken
                 }
                 else
                 {
+#if NET5_0_OR_GREATER
+                    Unsafe.SkipInit(out value);
+#else
                     value = default;
+#endif
                     return false;
                 }
 
@@ -647,7 +667,11 @@ namespace JsonWebToken
                 }
                 else
                 {
+#if NET5_0_OR_GREATER
+                    Unsafe.SkipInit(out value);
+#else
                     value = default;
+#endif
                     return false;
                 }
 
@@ -787,7 +811,11 @@ namespace JsonWebToken
                     }
                 }
 
+#if NET5_0_OR_GREATER
+                Unsafe.SkipInit(out value);
+#else
                 value = default;
+#endif
                 return false;
             }
 

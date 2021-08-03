@@ -3,6 +3,7 @@
 
 using System;
 using System.Diagnostics.CodeAnalysis;
+using System.Runtime.CompilerServices;
 using System.Text.Json;
 using JsonWebToken.Compression;
 using JsonWebToken.Cryptography;
@@ -121,7 +122,11 @@ namespace JsonWebToken
                 return true;
             }
 
-            algorithm = null;
+#if NET5_0_OR_GREATER
+            Unsafe.SkipInit(out algorithm);
+#else
+            algorithm = default;
+#endif
             return false;
         }
 
@@ -138,7 +143,11 @@ namespace JsonWebToken
                 }
             }
 
-            algorithm = null;
+#if NET5_0_OR_GREATER
+            Unsafe.SkipInit(out algorithm);
+#else
+            algorithm = default;
+#endif
             return false;
         }
 
@@ -151,7 +160,11 @@ namespace JsonWebToken
                 return true;
             }
 
-            algorithm = null;
+#if NET5_0_OR_GREATER
+            Unsafe.SkipInit(out algorithm);
+#else
+            algorithm = default;
+#endif
             return false;
         }
 
@@ -164,7 +177,11 @@ namespace JsonWebToken
                 return true;
             }
 
-            algorithm = null;
+#if NET5_0_OR_GREATER
+            Unsafe.SkipInit(out algorithm);
+#else
+            algorithm = default;
+#endif
             return false;
         }
 

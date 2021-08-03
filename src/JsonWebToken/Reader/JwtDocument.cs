@@ -4,6 +4,7 @@ using System.Buffers.Text;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text.Json;
 using System.Threading;
@@ -110,7 +111,11 @@ namespace JsonWebToken
             }
 
             // None of the property names were within the range that the UTF-8 encoding would have been.
+#if NET5_0_OR_GREATER
+            Unsafe.SkipInit(out value);
+#else
             value = default;
+#endif
             return false;
         }
 
@@ -198,7 +203,11 @@ namespace JsonWebToken
                 index += JsonRow.Size * 2;
             }
 
+#if NET5_0_OR_GREATER
+            Unsafe.SkipInit(out value);
+#else
             value = default;
+#endif
             return false;
         }
 
@@ -508,7 +517,11 @@ namespace JsonWebToken
                 return true;
             }
 
-            value = null;
+#if NET5_0_OR_GREATER
+            Unsafe.SkipInit(out value);
+#else
+            value = default;
+#endif
             return false;
         }
 

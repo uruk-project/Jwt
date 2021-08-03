@@ -277,7 +277,11 @@ namespace JsonWebToken
                 }
 
             NotFound:
-                base64UrlHeader = null;
+#if NET5_0_OR_GREATER
+                Unsafe.SkipInit(out base64UrlHeader);
+#else
+                base64UrlHeader = default;
+#endif
                 return false;
 
             Found:
@@ -436,7 +440,11 @@ namespace JsonWebToken
                 }
 
             NotFound:
-                base64UrlHeader = null;
+#if NET5_0_OR_GREATER
+                Unsafe.SkipInit(out base64UrlHeader);
+#else
+                base64UrlHeader = default;
+#endif
                 return false;
 
             Found:

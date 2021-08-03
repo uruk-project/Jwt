@@ -3,6 +3,7 @@
 
 #if SUPPORT_SIMD
 using System;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Runtime.Intrinsics;
@@ -32,10 +33,7 @@ namespace JsonWebToken.Cryptography
 
         public Aes256DecryptionKeys(ReadOnlySpan<byte> key)
         {
-            if (key.Length < 32)
-            {
-                ThrowHelper.ThrowArgumentOutOfRangeException_EncryptionKeyTooSmall(EncryptionAlgorithm.A256CbcHS512, 256, key.Length * 8);
-            }
+            Debug.Assert(key.Length >= 32);
 
             ref var keyRef = ref MemoryMarshal.GetReference(key);
 

@@ -141,7 +141,11 @@ namespace JsonWebToken
                 }
             }
 
-            algorithm = null;
+#if NET5_0_OR_GREATER
+            Unsafe.SkipInit(out algorithm);
+#else
+            algorithm = default;
+#endif
             return false;
         }
 
@@ -179,7 +183,11 @@ namespace JsonWebToken
                 }
             }
 
-            algorithm = null;
+#if NET5_0_OR_GREATER
+            Unsafe.SkipInit(out algorithm);
+#else
+            algorithm = default;
+#endif
             return false;
         Found:
             return true;
@@ -211,7 +219,11 @@ namespace JsonWebToken
                     goto Found;
             }
 
-            algorithm = null;
+#if NET5_0_OR_GREATER
+            Unsafe.SkipInit(out algorithm);
+#else
+            algorithm = default;
+#endif
             return false;
         Found:
             return true;
@@ -253,7 +265,11 @@ namespace JsonWebToken
             }
             else
             {
-                algorithm = null;
+#if NET5_0_OR_GREATER
+                Unsafe.SkipInit(out algorithm);
+#else
+                algorithm = default;
+#endif
                 found = false;
             }
 
@@ -296,7 +312,11 @@ namespace JsonWebToken
             }
             else
             {
-                algorithm = null;
+#if NET5_0_OR_GREATER
+                Unsafe.SkipInit(out algorithm);
+#else
+                algorithm = default;
+#endif
                 found = false;
             }
 
@@ -501,6 +521,9 @@ namespace JsonWebToken
                 bytesWritten = 0;
                 return true;
             }
+            
+            public override int GetTagSize()
+               => 0;
         }
     }
 }

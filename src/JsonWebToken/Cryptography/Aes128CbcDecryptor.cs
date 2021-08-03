@@ -3,6 +3,7 @@
 
 #if SUPPORT_SIMD
 using System;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Runtime.Intrinsics;
@@ -14,70 +15,75 @@ namespace JsonWebToken.Cryptography
     {
         public override unsafe bool TryDecrypt(ReadOnlySpan<byte> key, ReadOnlySpan<byte> ciphertext, ReadOnlySpan<byte> nonce, Span<byte> plaintext, out int bytesWritten)
         {
+            Debug.Assert(ciphertext.Length % BlockSize == 0);
             if (nonce.Length != 16)
             {
-                ThrowHelper.ThrowArgumentOutOfRangeException_MustBeAtLeast(ExceptionArgument.nonce, 16);
+                goto Invalid;
+            }
+
+            if (ciphertext.IsEmpty)
+            {
+                goto Invalid;
             }
 
             ref byte output = ref MemoryMarshal.GetReference(plaintext);
+#if NET5_0_OR_GREATER
+            Vector128<byte> state;
+            Unsafe.SkipInit(out state);
+#else
             Vector128<byte> state = default;
-            if (!ciphertext.IsEmpty)
+#endif
+            var keys = new Aes128DecryptionKeys(key);
+            ref byte input = ref MemoryMarshal.GetReference(ciphertext);
+            var feedback = nonce.AsVector128<byte>();
+            ref byte inputEnd = ref Unsafe.AddByteOffset(ref input, (IntPtr)ciphertext.Length - BlockSize + 1);
+
+            try
             {
-                var keys = new Aes128DecryptionKeys(key);
-                ref byte input = ref MemoryMarshal.GetReference(ciphertext);
-                var feedback = nonce.AsVector128<byte>();
-                ref byte inputEnd = ref Unsafe.AddByteOffset(ref input, (IntPtr)ciphertext.Length - BlockSize + 1);
-
-                try
+                while (Unsafe.IsAddressLessThan(ref input, ref inputEnd))
                 {
-                    while (Unsafe.IsAddressLessThan(ref input, ref inputEnd))
-                    {
-                        var block = Unsafe.ReadUnaligned<Vector128<byte>>(ref input);
-                        var lastIn = block;
-                        state = Sse2.Xor(block, keys.Key0);
+                    var block = Unsafe.ReadUnaligned<Vector128<byte>>(ref input);
+                    var lastIn = block;
+                    state = Sse2.Xor(block, keys.Key0);
 
-                        state = Aes.Decrypt(state, keys.Key1);
-                        state = Aes.Decrypt(state, keys.Key2);
-                        state = Aes.Decrypt(state, keys.Key3);
-                        state = Aes.Decrypt(state, keys.Key4);
-                        state = Aes.Decrypt(state, keys.Key5);
-                        state = Aes.Decrypt(state, keys.Key6);
-                        state = Aes.Decrypt(state, keys.Key7);
-                        state = Aes.Decrypt(state, keys.Key8);
-                        state = Aes.Decrypt(state, keys.Key9);
-                        state = Aes.DecryptLast(state, Sse2.Xor(keys.Key10, feedback));
+                    state = Aes.Decrypt(state, keys.Key1);
+                    state = Aes.Decrypt(state, keys.Key2);
+                    state = Aes.Decrypt(state, keys.Key3);
+                    state = Aes.Decrypt(state, keys.Key4);
+                    state = Aes.Decrypt(state, keys.Key5);
+                    state = Aes.Decrypt(state, keys.Key6);
+                    state = Aes.Decrypt(state, keys.Key7);
+                    state = Aes.Decrypt(state, keys.Key8);
+                    state = Aes.Decrypt(state, keys.Key9);
+                    state = Aes.DecryptLast(state, Sse2.Xor(keys.Key10, feedback));
 
-                        Unsafe.WriteUnaligned(ref output, state);
+                    Unsafe.WriteUnaligned(ref output, state);
 
-                        feedback = lastIn;
+                    feedback = lastIn;
 
-                        input = ref Unsafe.AddByteOffset(ref input, (IntPtr)BlockSize);
-                        output = ref Unsafe.AddByteOffset(ref output, (IntPtr)BlockSize);
-                    }
+                    input = ref Unsafe.AddByteOffset(ref input, (IntPtr)BlockSize);
+                    output = ref Unsafe.AddByteOffset(ref output, (IntPtr)BlockSize);
                 }
-                finally
-                {
-                    keys.Clear();
-                }
-
-                byte padding = Unsafe.SubtractByteOffset(ref output, (IntPtr)1);
-                if (padding > BlockSize)
-                {
-                    goto Invalid;
-                }
-
-                var mask = GetPaddingMask(padding);
-                if (!Sse2.And(mask, state).Equals(mask))
-                {
-                    goto Invalid;
-                }
-
-                bytesWritten = ciphertext.Length - padding;
-                return true;
+            }
+            finally
+            {
+                keys.Clear();
             }
 
-            int left = plaintext.Length & BlockSize - 1;
+            byte padding = Unsafe.SubtractByteOffset(ref output, (IntPtr)1);
+            if (padding > BlockSize)
+            {
+                goto Invalid;
+            }
 
+            var mask = GetPaddingMask(padding);
+            if (!Sse2.And(mask, state).Equals(mask))
+            {
+                goto Invalid;
+            }
+
+            bytesWritten = ciphertext.Length - padding;
+            return true;
 
         Invalid:
             bytesWritten = 0;
@@ -102,10 +108,11 @@ namespace JsonWebToken.Cryptography
 
             public Aes128DecryptionKeys(ReadOnlySpan<byte> key)
             {
-                if (key.Length < 16)
-                {
-                    ThrowHelper.ThrowArgumentOutOfRangeException_EncryptionKeyTooSmall(EncryptionAlgorithm.A128CbcHS256, 128, key.Length * 8);
-                }
+                Debug.Assert(key.Length >= 16);
+                //if (key.Length < 16)
+                //{
+                //    ThrowHelper.ThrowArgumentOutOfRangeException_EncryptionKeyTooSmall(EncryptionAlgorithm.A128CbcHS256, 128, key.Length * 8);
+                //}
 
                 var tmp = Unsafe.ReadUnaligned<Vector128<byte>>(ref MemoryMarshal.GetReference(key));
                 Key10 = tmp;

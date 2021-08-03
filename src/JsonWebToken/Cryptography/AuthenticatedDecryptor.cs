@@ -18,5 +18,8 @@ namespace JsonWebToken.Cryptography
         /// <param name="bytesWritten">The bytes written in the <paramref name="plaintext"/>.</param>
         /// <returns></returns>
         public abstract bool TryDecrypt(ReadOnlySpan<byte> key, ReadOnlySpan<byte> ciphertext, ReadOnlySpan<byte> associatedData, ReadOnlySpan<byte> nonce, ReadOnlySpan<byte> authenticationTag, Span<byte> plaintext, out int bytesWritten);
+
+        /// <summary>Gets the size of the authentication tag.</summary>
+        public abstract int GetTagSize();
     }
 }

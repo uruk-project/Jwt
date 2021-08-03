@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Runtime.CompilerServices;
 using System.Text.Json;
 
 namespace JsonWebToken
@@ -165,11 +166,19 @@ namespace JsonWebToken
             database.CompleteAllocations();
 
             header = new JwtHeaderDocument(new JwtDocument(utf8Payload, database, buffer), algIdx, encIdx, kidIdx, critIdx);
-            error = null;
+#if NET5_0_OR_GREATER
+            Unsafe.SkipInit(out error);
+#else
+            error = default;
+#endif
             return true;
 
         Error:
-            header = null;
+#if NET5_0_OR_GREATER
+            Unsafe.SkipInit(out header);
+#else
+            header = default;
+#endif
             return false;
         }
 

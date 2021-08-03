@@ -461,7 +461,11 @@ namespace JsonWebToken
                 }
             }
 
-            signer = null;
+#if NET5_0_OR_GREATER
+            Unsafe.SkipInit(out signer);
+#else
+            signer = default;
+#endif
             return false;
 
         Found:
@@ -506,7 +510,11 @@ namespace JsonWebToken
                 }
             }
 
-            signatureVerifier = null;
+#if NET5_0_OR_GREATER
+            Unsafe.SkipInit(out signatureVerifier);
+#else
+            signatureVerifier = default;
+#endif
             return false;
 
         Found:
@@ -554,7 +562,11 @@ namespace JsonWebToken
                 }
             }
 
-            keyWrapper = null;
+#if NET5_0_OR_GREATER
+            Unsafe.SkipInit(out keyWrapper);
+#else
+            keyWrapper = default;
+#endif
             return false;
 
         Found:
@@ -602,7 +614,11 @@ namespace JsonWebToken
                 }
             }
 
-            keyUnwrapper = null;
+#if NET5_0_OR_GREATER
+            Unsafe.SkipInit(out keyUnwrapper);
+#else
+            keyUnwrapper = default;
+#endif
             return false;
 
         Found:
@@ -937,7 +953,7 @@ namespace JsonWebToken
                 else if (kty.ValueEquals(JwkTypeNames.EllipticCurve.EncodedUtf8Bytes))
                 {
                     CheckRequiredStringMember(document, JwkParameterNames.Crv, out JsonElement crv);
-                    if (!EllipticalCurve.TryParse(crv.GetString()!, out var c))
+                    if (!EllipticalCurve.TryParse(crv, out var c))
                     {
                         throw new JwkValidationException(@$"Invalid '{JwkParameterNames.Crv}' member. Supported values are {string.Join(",", EllipticalCurveNames.All)}.");
                     }
@@ -1132,7 +1148,11 @@ namespace JsonWebToken
                     return true;
                 }
 
+#if NET5_0_OR_GREATER
+                Unsafe.SkipInit(out value);
+#else
                 value = default;
+#endif
                 return false;
             }
 

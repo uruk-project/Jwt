@@ -87,6 +87,30 @@ namespace JsonWebToken.Tests
                 Assert.Equal(16, tagSize);
             }
         }
+
+        [Fact]
+        public void Decrypt_Empty()
+        {
+            if (System.Runtime.Intrinsics.X86.Aes.IsSupported)
+            {
+                Span<byte> data = default;
+                Span<byte> authenticationTag = default;
+                var plaintext = new byte[0];
+                var key = SymmetricJwk.FromByteArray(Encoding.UTF8.GetBytes("ThisIsA128bitKey" + "ThisIsA128bitKey"));
+                Span<byte> nonce = default;
+                Span<byte> associatedData = default;
+                var decryptor = new AesCbcHmacDecryptor(EncryptionAlgorithm.A128CbcHS256);
+
+                bool decrypted = decryptor.TryDecrypt(key.K, data, nonce, associatedData, authenticationTag, plaintext, out int bytesWritten);
+                Assert.False(decrypted);
+                Assert.Equal(0, bytesWritten);
+
+                var decryptorNi = new AesCbcHmacDecryptor(EncryptionAlgorithm.A128CbcHS256, new Aes128CbcDecryptor());
+                decrypted = decryptorNi.TryDecrypt(key.K, data, nonce, associatedData, authenticationTag, plaintext, out bytesWritten);
+                Assert.False(decrypted);
+                Assert.Equal(0, bytesWritten);
+            }
+        }
 #endif
 
         [Fact]

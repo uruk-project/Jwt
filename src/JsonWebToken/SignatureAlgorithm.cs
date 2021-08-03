@@ -4,6 +4,7 @@
 using System;
 using System.Collections.ObjectModel;
 using System.Diagnostics.CodeAnalysis;
+using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
 using System.Text.Json;
 using JsonWebToken.Cryptography;
@@ -232,7 +233,11 @@ namespace JsonWebToken
                 }
             }
 
-            algorithm = null;
+#if NET5_0_OR_GREATER
+            Unsafe.SkipInit(out algorithm);
+#else
+            algorithm = default;
+#endif
             return false;
         }
 
@@ -293,7 +298,11 @@ namespace JsonWebToken
                 goto Found;
             }
 
-            algorithm = null;
+#if NET5_0_OR_GREATER
+            Unsafe.SkipInit(out algorithm);
+#else
+            algorithm = default;
+#endif
             return false;
         Found:
             return true;
@@ -348,13 +357,17 @@ namespace JsonWebToken
                     goto Found;
             }
 
-            algorithm = null;
+#if NET5_0_OR_GREATER
+            Unsafe.SkipInit(out algorithm);
+#else
+            algorithm = default;
+#endif
             return false;
         Found:
             return true;
         }
 
-        /// <summary>Parses the <see cref="string"/> into its <see cref="SignatureAlgorithm"/> representation.</summary>
+        /// <summary>Parses the <see cref="JsonElement"/> into its <see cref="SignatureAlgorithm"/> representation.</summary>
         public static bool TryParse(JsonElement value, [NotNullWhen(true)] out SignatureAlgorithm? algorithm)
         {
             if (value.ValueEquals(HS256._name.EncodedUtf8Bytes))
@@ -428,7 +441,11 @@ namespace JsonWebToken
                 goto Found;
             }
 
-            algorithm = null;
+#if NET5_0_OR_GREATER
+            Unsafe.SkipInit(out algorithm);
+#else
+            algorithm = default;
+#endif
             return false;
         Found:
             return true;
