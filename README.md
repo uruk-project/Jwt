@@ -129,7 +129,7 @@ The main reason of the efficiency of this library is the usage of the new API pr
 | ES256        | ECDSA using curve P-256 and SHA-256                  | netcoreapp2.1
 | ES384        | ECDSA using curve P-384 and SHA-384                  | netcoreapp2.1
 | ES512        | ECDSA using curve P-521 and SHA-512                  | netcoreapp2.1
-| ES256K       | ECDSA using curve secp256k1  and SHA-256             | netcoreapp2.1
+| ES256K       | ECDSA using curve secp256k1  and SHA-256             | netcoreapp2.1 (not available on MacOS)
 | PS256        | RSASSA-PSS using SHA-256 and MGF1 with SHA-256 | netstandard2.0
 | PS384        | RSASSA-PSS using SHA-384 and MGF1 with SHA-384 | netstandard2.0
 | PS512        | RSASSA-PSS using SHA-512 and MGF1 with SHA-512 | netstandard2.0
