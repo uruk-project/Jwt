@@ -189,6 +189,9 @@ namespace JsonWebToken.Tests
         [Theory]
         public void Validate_Valid_DoesNotThrowException(string description, string json)
         {
+            Jwk.Validate(json);
+            Assert.True(true, description);
+
             var jwk = Jwk.FromJson(json);
             jwk.Validate();
             Assert.True(true, description);
@@ -500,6 +503,9 @@ namespace JsonWebToken.Tests
         [Theory]
         public void Validate_Invalid_ThrowsJwkCheckException(string description, string json)
         {
+            Assert.ThrowsAny<JwkValidationException>(() => Jwk.Validate(json));
+            Assert.True(true, description);
+
             var jwk = Jwk.FromJson(json);
             Assert.ThrowsAny<JwkValidationException>(() => jwk.Validate());
             Assert.True(true, description);
@@ -1082,7 +1088,7 @@ namespace JsonWebToken.Tests
 {
     ""kty"": ""oct"",
     ""k"": ""Sm7nSOWIqLc8xMK5CRhEiePi9iNukStXhssrYdSiMk0"",
-    ""x5c"": [""fake""],
+    ""x5c"": [""####""],
     ""x5t"": ""qUqP5cyxm6YcTAhz05Hph5gvu9M"",
     ""x5t#S256"": ""n4bQgYhMfWWaL-qgxVrQFaO_TxsrC4Is0V1sFbDwCgg"",
     ""x5u"": ""https://example.com""
