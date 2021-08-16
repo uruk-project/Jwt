@@ -210,33 +210,36 @@ namespace JsonWebToken
 
             static bool IsValidBase64UrlChar(char value)
             {
-                if (value > byte.MaxValue)
+                bool result = false;
+                if (value <= byte.MaxValue)
                 {
-                    return false;
+                    byte byteValue = (byte)value;
+
+                    // 0-9
+                    if (byteValue >= (byte)'0' && byteValue <= (byte)'9')
+                    {
+                        result = true;
+                    }
+                    else
+                    {
+                        // a-z or A-Z
+                        byte letter = (byte)(byteValue | 0x20);
+                        if (letter >= (byte)'a' && letter <= (byte)'z')
+                        {
+                            result = true;
+                        }
+                        else
+                        {
+                            // - or _
+                            if (byteValue == (byte)'-' || byteValue == (byte)'_')
+                            {
+                                result = true;
+                            }
+                        }
+                    }
                 }
 
-                byte byteValue = (byte)value;
-
-                // 0-9
-                if (byteValue >= (byte)'0' && byteValue <= (byte)'9')
-                {
-                    return true;
-                }
-
-                // - or _
-                if (byteValue == (byte)'-' || byteValue == (byte)'_')
-                {
-                    return true;
-                }
-
-                // a-z or A-Z
-                byteValue |= 0x20;
-                if (byteValue >= (byte)'a' && byteValue <= (byte)'z')
-                {
-                    return true;
-                }
-
-                return false;
+                return result;
             }
         }
     }

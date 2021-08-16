@@ -1096,7 +1096,7 @@ namespace JsonWebToken
                             throw new JwkValidationException($"Invalid '{JwkParameterNames.X5c}' item. Must be of type 'String'. Value '{item.GetRawText()}' is of type '{item.ValueKind}'.");
                         }
 
-                        if (Base64Url.IsBase64UrlString(item.GetString()!))
+                        if (!Base64.IsBase64String(item.GetString()!))
                         {
                             throw new JwkValidationException($"Invalid '{JwkParameterNames.X5c}' value '{item.GetString()}'. Must be a valid base64 encoded string.");
                         }
@@ -1106,7 +1106,6 @@ namespace JsonWebToken
                 CheckOptionalBase64UrlMember(document, JwkParameterNames.X5t, 160);
                 CheckOptionalBase64UrlMember(document, JwkParameterNames.X5tS256, 256);
                 CheckOptionalStringMember(document, JwkParameterNames.X5u);
-
             }
             catch (JsonException e)
             {
@@ -1125,7 +1124,7 @@ namespace JsonWebToken
                     throw new JwkValidationException($"Invalid '{memberName}' member. Must be of type 'String'. Value '{value.GetRawText()}' is of type '{value.ValueKind}'.");
                 }
 
-                if (!Base64.IsBase64String(value.GetString()!))
+                if (!Base64Url.IsBase64UrlString(value.GetString()!))
                 {
                     throw new JwkValidationException($"Invalid '{memberName}' member. Must be a base64-URL encoded string.");
                 }

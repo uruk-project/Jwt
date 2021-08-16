@@ -60,10 +60,10 @@ namespace JsonWebToken.Tests
                     {
                         { "jti", "756E69717565206964656E746966696572"},
                         { "iss", "https://idp.example.com/"},
-                        { "iat", 1508184845},
+                        { "iat", EpochTime.UtcNow },
                         { "aud", "636C69656E745F6964"},
-                        { "exp", 1628184845},
-                        { "nbf",  1508184845}
+                        { "exp", EpochTime.UtcNow + EpochTime.OneDay },
+                        { "nbf",  EpochTime.UtcNow }
                     }
                 },
                 {
@@ -71,10 +71,10 @@ namespace JsonWebToken.Tests
                     {
                         { "jti", "756E69717565206964656E746966696572"},
                         { "iss", "https://idp.example.com/"},
-                        { "iat", 1508184845},
+                        { "iat", EpochTime.UtcNow },
                         { "aud", new JArray("636C69656E745F6964", "X", "Y" ) },
-                        { "exp", 1628184845},
-                        { "nbf",  1508184845}
+                        { "exp", EpochTime.UtcNow + EpochTime.OneDay},
+                        { "nbf",  EpochTime.UtcNow }
                     }
                 },
                 {
@@ -82,9 +82,9 @@ namespace JsonWebToken.Tests
                     {
                         { "jti", "756E69717565206964656E746966696572"},
                         { "iss", "https://idp.example.com/"},
-                        { "iat", 1508184845},
+                        { "iat", EpochTime.UtcNow },
                         { "aud", "636C69656E745F6964"},
-                        { "exp", 1628184845}
+                        { "exp", EpochTime.UtcNow + EpochTime.OneDay}
                     }
                 },
                 {
@@ -92,10 +92,10 @@ namespace JsonWebToken.Tests
                     {
                         { "jti", "756E69717565206964656E746966696572"},
                         { "iss", "https://idp.example.com/"},
-                        { "iat", 1508184845},
+                        { "iat", EpochTime.UtcNow },
                         { "aud", "636C69656E745F6964"},
-                        { "exp", 1628184845},
-                        { "nbf",  1508184845},
+                        { "exp", EpochTime.UtcNow + EpochTime.OneDay},
+                        { "nbf",  EpochTime.UtcNow },
                         { "claim1", "value1ABCDEFGH" },
                         { "claim2", "value1ABCDEFGH" },
                         { "claim3", "value1ABCDEFGH" },
@@ -119,10 +119,10 @@ namespace JsonWebToken.Tests
                     {
                         { "jti", "756E69717565206964656E746966696572" },
                         { "iss", "https://idp.example.com/" },
-                        { "iat", 1508184845 },
+                        { "iat", EpochTime.UtcNow },
                         { "aud", "636C69656E745F6964" },
-                        { "exp", 1628184845 },
-                        { "nbf",  1508184845},
+                        { "exp", EpochTime.UtcNow + EpochTime.OneDay },
+                        { "nbf",  EpochTime.UtcNow },
                         { "big_claim", Convert.ToBase64String(bigData) }
                     }
                 },

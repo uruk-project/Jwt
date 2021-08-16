@@ -79,7 +79,11 @@ namespace JsonWebToken
         public static OperationStatus Decode(ReadOnlySpan<byte> base64, Span<byte> data, out int bytesConsumed, out int bytesWritten)
         {
             int lastWhitespace = base64.LastIndexOfAny(WhiteSpace);
-            if (lastWhitespace != -1)
+            if (lastWhitespace == -1)
+            {
+                return gfoidl.Base64.Base64.Default.Decode(base64, data, out bytesConsumed, out bytesWritten);
+            }
+            else
             {
                 byte[]? utf8ArrayToReturn = null;
                 Span<byte> utf8Data = base64.Length > Constants.MaxStackallocBytes
@@ -87,20 +91,34 @@ namespace JsonWebToken
                     : stackalloc byte[Constants.MaxStackallocBytes];
                 try
                 {
+                    int firstWhitespace = base64.IndexOfAny(WhiteSpace);
                     int length = 0;
-                    int i = 0;
-                    for (; i <= lastWhitespace; i++)
+                    Span<byte> buffer = utf8Data;
+                    if (firstWhitespace != lastWhitespace)
                     {
-                        var current = base64[i];
-                        if (!IsWhiteSpace(current))
+                        while (firstWhitespace != -1)
                         {
-                            utf8Data[length++] = current;
-                        }
-                    }
+                            base64.Slice(0, firstWhitespace).CopyTo(buffer);
+                            buffer = buffer.Slice(firstWhitespace);
+                            length += firstWhitespace;
 
-                    for (; i < base64.Length; i++)
+                            // Skip whitespaces
+                            int i = firstWhitespace;
+                            while (++i < base64.Length && IsWhiteSpace(base64[i])) ;
+
+                            base64 = base64.Slice(i);
+                            firstWhitespace = base64.IndexOfAny(WhiteSpace);
+                        }
+
+                        //// Copy the remaining
+                        base64.CopyTo(buffer);
+                        length += base64.Length;
+                    }
+                    else
                     {
-                        utf8Data[length++] = base64[i];
+                        base64.Slice(0, firstWhitespace).CopyTo(buffer);
+                        base64.Slice(firstWhitespace + 1).CopyTo(buffer.Slice(firstWhitespace));
+                        length = base64.Length - 1;
                     }
 
                     return gfoidl.Base64.Base64.Default.Decode(utf8Data.Slice(0, length), data, out bytesConsumed, out bytesWritten);
@@ -113,16 +131,13 @@ namespace JsonWebToken
                     }
                 }
             }
-            else
-            {
-                return gfoidl.Base64.Base64.Default.Decode(base64, data, out bytesConsumed, out bytesWritten);
-            }
         }
 
         private static bool IsWhiteSpace(byte c)
             => c == ' ' || (c >= '\t' && c <= '\r');
 
-        private static ReadOnlySpan<byte> WhiteSpace => new byte[] { (byte)' ', (byte)'\t', (byte)'\r', (byte)'\n', (byte)'\v', (byte)'\f' };
+        private static ReadOnlySpan<byte> WhiteSpace
+            => new byte[] { (byte)' ', (byte)'\t', (byte)'\n', (byte)'\v', (byte)'\f', (byte)'\r' };
 
         /// <summary>Encodes a span of UTF-8 text into a span of bytes.</summary>
         /// <returns>The number of the bytes written to <paramref name="base64"/>.</returns>
@@ -225,33 +240,36 @@ namespace JsonWebToken
 
             static bool IsValidBase64Char(char value)
             {
-                if (value > byte.MaxValue)
+                bool result = false;
+                if (value <= byte.MaxValue)
                 {
-                    return false;
+                    byte byteValue = (byte)value;
+
+                    // 0-9
+                    if (byteValue >= (byte)'0' && byteValue <= (byte)'9')
+                    {
+                        result = true;
+                    }
+                    else
+                    {
+                        // a-z or A-Z
+                        byte letter = (byte)(byteValue | 0x20);
+                        if (letter >= (byte)'a' && letter <= (byte)'z')
+                        {
+                            result = true;
+                        }
+                        else
+                        {
+                            // + or / or whitespaces
+                            if (byteValue == (byte)'+' || byteValue == (byte)'/' || IsWhiteSpace(byteValue))
+                            {
+                                result = true;
+                            }
+                        }
+                    }
                 }
 
-                byte byteValue = (byte)value;
-
-                // 0-9
-                if (byteValue >= (byte)'0' && byteValue <= (byte)'9')
-                {
-                    return true;
-                }
-
-                // + or /
-                if (byteValue == (byte)'+' || byteValue == (byte)'/')
-                {
-                    return true;
-                }
-
-                // a-z or A-Z
-                byteValue |= 0x20;
-                if (byteValue >= (byte)'a' && byteValue <= (byte)'z')
-                {
-                    return true;
-                }
-
-                return false;
+                return result;
             }
         }
     }
