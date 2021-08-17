@@ -27,7 +27,125 @@ namespace JsonWebToken.Tests
                 Assert.Equal(expected, json);
             }
         }
+
+        [Fact]
+        public void EnumerateArrayOfObject()
+        {
+            JwtHeaderDocument.TryParseHeader(Utf8.GetBytes("{\"array\":[ 1, {}, {\"x\":true}, true, false, null, \"text\", [], [true, false]]}"), null, TokenValidationPolicy.NoValidation, out var header, out _);
+            header.TryGetHeaderParameter("array", out var element);
         
+            var enumerator = element.EnumerateArray();
+            enumerator.MoveNext();
+            Assert.Equal(JsonValueKind.Number, enumerator.Current.ValueKind);
+            enumerator.MoveNext();
+            Assert.Equal(JsonValueKind.Object, enumerator.Current.ValueKind);
+            enumerator.MoveNext();
+            Assert.Equal(JsonValueKind.Object, enumerator.Current.ValueKind);
+            enumerator.MoveNext();
+            Assert.Equal(JsonValueKind.True, enumerator.Current.ValueKind);
+            enumerator.MoveNext();
+            Assert.Equal(JsonValueKind.False, enumerator.Current.ValueKind);
+            enumerator.MoveNext();
+            Assert.Equal(JsonValueKind.Null, enumerator.Current.ValueKind);
+            enumerator.MoveNext();
+            Assert.Equal(JsonValueKind.String, enumerator.Current.ValueKind);
+            enumerator.MoveNext();
+            Assert.Equal(JsonValueKind.Array, enumerator.Current.ValueKind);
+            enumerator.MoveNext();
+            Assert.Equal(JsonValueKind.Array, enumerator.Current.ValueKind);
+        }
+
+        [Fact]
+        public void EnumerateArrayOfObject_NotAnArrayFail()
+        {
+            JwtHeaderDocument.TryParseHeader(Utf8.GetBytes("{\"array\":{\"x\":true}}"), null, TokenValidationPolicy.NoValidation, out var header, out _);
+            header.TryGetHeaderParameter("array", out var element);
+        
+            Assert.Throws<InvalidOperationException>(() => element.EnumerateArray());
+        }
+
+        [Fact]
+        public void EnumerateArrayOfInteger()
+        {
+            JwtHeaderDocument.TryParseHeader(Utf8.GetBytes("{\"array\":[1, 2, 3, 4, 5]}"), null, TokenValidationPolicy.NoValidation, out var header, out _);
+            header.TryGetHeaderParameter("array", out var element);
+
+            var enumerator = element.EnumerateArray<long>();
+            enumerator.MoveNext();
+            Assert.Equal(1, enumerator.Current.GetInt64());
+            enumerator.MoveNext();
+            Assert.Equal(2, enumerator.Current.GetInt64());
+            enumerator.MoveNext();
+            Assert.Equal(3, enumerator.Current.GetInt64());
+            enumerator.MoveNext();
+            Assert.Equal(4, enumerator.Current.GetInt64());
+            enumerator.MoveNext();
+            Assert.Equal(5, enumerator.Current.GetInt64());
+        }
+
+        [Fact]
+        public void EnumerateArrayOfInteger_NotAnArray_Fail()
+        {
+            JwtHeaderDocument.TryParseHeader(Utf8.GetBytes("{\"array\":{\"x\":1}}"), null, TokenValidationPolicy.NoValidation, out var header, out _);
+            header.TryGetHeaderParameter("array", out var element);
+
+            Assert.Throws<InvalidOperationException>(() => element.EnumerateArray<long>());
+        }
+
+        [Fact]
+        public void EnumerateArrayOfString()
+        {
+            JwtHeaderDocument.TryParseHeader(Utf8.GetBytes("{\"array\":[\"text1\", \"text2\", \"text3\", \"text4\", \"text5\"]}"), null, TokenValidationPolicy.NoValidation, out var header, out _);
+            header.TryGetHeaderParameter("array", out var element);
+            var enumerator = element.EnumerateArray<string>();
+            enumerator.MoveNext();
+            Assert.Equal("text1", enumerator.Current.GetString());
+            enumerator.MoveNext();
+            Assert.Equal("text2", enumerator.Current.GetString());
+            enumerator.MoveNext();
+            Assert.Equal("text3", enumerator.Current.GetString());
+            enumerator.MoveNext();
+            Assert.Equal("text4", enumerator.Current.GetString());
+            enumerator.MoveNext();
+            Assert.Equal("text5", enumerator.Current.GetString());
+        }
+
+        [Fact]
+        public void EnumerateObjects()
+        {
+            JwtHeaderDocument.TryParseHeader(Utf8.GetBytes("{\"object\":{\"p1\":1, \"p2\":{}, \"p3\":{\"x\":true}, \"p4\":true, \"p5\":false, \"p6\":null, \"p7\":\"text\", \"p8\":[], \"p8\":[true, false]}}"), null, TokenValidationPolicy.NoValidation, out var header, out _);
+            header.TryGetHeaderParameter("object", out var element);
+
+            var enumerator = element.EnumerateObject();
+            enumerator.MoveNext();
+            Assert.Equal(JsonValueKind.Number, enumerator.Current.Value.ValueKind);
+            enumerator.MoveNext();
+            Assert.Equal(JsonValueKind.Object, enumerator.Current.Value.ValueKind);
+            enumerator.MoveNext();
+            Assert.Equal(JsonValueKind.Object, enumerator.Current.Value.ValueKind);
+            enumerator.MoveNext();
+            Assert.Equal(JsonValueKind.True, enumerator.Current.Value.ValueKind);
+            enumerator.MoveNext();
+            Assert.Equal(JsonValueKind.False, enumerator.Current.Value.ValueKind);
+            enumerator.MoveNext();
+            Assert.Equal(JsonValueKind.Null, enumerator.Current.Value.ValueKind);
+            enumerator.MoveNext();
+            Assert.Equal(JsonValueKind.String, enumerator.Current.Value.ValueKind);
+            enumerator.MoveNext();
+            Assert.Equal(JsonValueKind.Array, enumerator.Current.Value.ValueKind);
+            enumerator.MoveNext();
+            Assert.Equal(JsonValueKind.Array, enumerator.Current.Value.ValueKind);
+        }
+
+        [Fact]
+        public void EnumerateObjects_NoAnObject_Fail()
+        {
+            JwtHeaderDocument.TryParseHeader(Utf8.GetBytes("{\"object\":[1, 2, 3, 4, 5]}"), null, TokenValidationPolicy.NoValidation, out var header, out _);
+            header.TryGetHeaderParameter("object", out var element);
+
+            Assert.Throws<InvalidOperationException>(() => element.EnumerateObject());
+        }
+
         [Fact]
         public void Ctor_NotSupported()
         {
