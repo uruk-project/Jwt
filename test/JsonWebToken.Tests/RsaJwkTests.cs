@@ -13,6 +13,232 @@ namespace JsonWebToken.Tests
     public class RsaJwkTests : JwkTestsBase
     {
         [Fact]
+        public void Factory()
+        {
+            var kid = JsonEncodedText.Encode("RuGrMG6-Xv3nZp-KaC_WmcwN1W7epSOnZXjIEDKugTE");
+            var s_e = "AQAB";
+            var s_n = "uyNaTUSDYSzexCCtHEcC8aTrAn80iSueyawKxkc58y_66H4NasGBPCoj2ldfvs35DIR-FcoOmtFH9bOTjq7iXQ";
+            var s_d = "JuoHESI6H67w89_Hn6W0mwMsS2ygRBXqAw3ff7O3_TWV74dI6D32xssm5Kw9dZ-glQTHLb1Ze3zsETOS0DpqEQ";
+            var s_dp ="quGD4O4sGxrwjtudAEQrJLqVd1dTKuXxKI5nwaLqL2k";
+            var s_dq ="SlA1yPjn7trMdIJh4CeniYhilBK_kS6IoPH0bgdx_nE";
+            var s_p = "1sEtUC-Bbg60vg_OfvmObWcpL-CiIRK7wY3V3EZbPgM";
+            var s_q = "3xRbedccU7VGQOanMbxcggQU-KbU_RHYODiI9Vn2IB8";
+            var s_qi = "nqROjNAHls0Kh6CxcswXgyD0pDwl-p4QQYH4O4qUdNw";
+             
+            var e = Base64Url.Decode(s_e);
+            var n = Base64Url.Decode(s_n);
+            var d = Base64Url.Decode(s_d);
+            var dp = Base64Url.Decode(s_dp);
+            var dq = Base64Url.Decode(s_dq);
+            var p = Base64Url.Decode(s_p);
+            var q = Base64Url.Decode(s_q);
+            var qi = Base64Url.Decode(s_qi);
+
+            // FromBase64Url
+            var key = RsaJwk.FromBase64Url(n: s_n, e: s_e, KeyManagementAlgorithm.RsaOaep, computeThumbprint: true);
+            Assert.True(key.N.SequenceEqual(n));
+            Assert.True(key.E.SequenceEqual(e));
+            Assert.True(key.D.IsEmpty);
+            Assert.True(key.P.IsEmpty);
+            Assert.True(key.Q.IsEmpty);
+            Assert.True(key.DP.IsEmpty);
+            Assert.True(key.DQ.IsEmpty);
+            Assert.True(key.QI.IsEmpty);
+            Assert.Equal(kid, key.Kid);
+
+            key = RsaJwk.FromBase64Url(n: s_n, e: s_e, KeyManagementAlgorithm.RsaOaep, computeThumbprint: false);
+            Assert.True(key.N.SequenceEqual(n));
+            Assert.True(key.E.SequenceEqual(e));
+            Assert.True(key.D.IsEmpty);
+            Assert.True(key.P.IsEmpty);
+            Assert.True(key.Q.IsEmpty);
+            Assert.True(key.DP.IsEmpty);
+            Assert.True(key.DQ.IsEmpty);
+            Assert.True(key.QI.IsEmpty);
+            Assert.True(key.Kid.EncodedUtf8Bytes.IsEmpty);
+
+            key = RsaJwk.FromBase64Url(n: s_n, e: s_e, d: s_d, p: s_p, q: s_q, dp: s_dp, dq: s_dq, qi: s_qi, KeyManagementAlgorithm.RsaOaep, computeThumbprint: true);
+            Assert.True(key.N.SequenceEqual(n));
+            Assert.True(key.E.SequenceEqual(e));
+            Assert.True(key.D.SequenceEqual(d));
+            Assert.True(key.P.SequenceEqual(p));
+            Assert.True(key.Q.SequenceEqual(q));
+            Assert.True(key.DP.SequenceEqual(dp));
+            Assert.True(key.DQ.SequenceEqual(dq));
+            Assert.True(key.QI.SequenceEqual(qi));
+            Assert.Equal(kid, key.Kid);
+
+            key = RsaJwk.FromBase64Url(n: s_n, e: s_e, d: s_d, p: s_p, q: s_q, dp: s_dp, dq: s_dq, qi: s_qi, KeyManagementAlgorithm.RsaOaep, computeThumbprint: false);
+            Assert.True(key.N.SequenceEqual(n));
+            Assert.True(key.E.SequenceEqual(e));
+            Assert.True(key.D.SequenceEqual(d));
+            Assert.True(key.P.SequenceEqual(p));
+            Assert.True(key.Q.SequenceEqual(q));
+            Assert.True(key.DP.SequenceEqual(dp));
+            Assert.True(key.DQ.SequenceEqual(dq));
+            Assert.True(key.QI.SequenceEqual(qi));
+            Assert.True(key.Kid.EncodedUtf8Bytes.IsEmpty);
+
+            key = RsaJwk.FromBase64Url(n: s_n, e: s_e, SignatureAlgorithm.RS256, computeThumbprint: true);
+            Assert.True(key.N.SequenceEqual(n));
+            Assert.True(key.E.SequenceEqual(e));
+            Assert.True(key.D.IsEmpty);
+            Assert.True(key.P.IsEmpty);
+            Assert.True(key.Q.IsEmpty);
+            Assert.True(key.DP.IsEmpty);
+            Assert.True(key.DQ.IsEmpty);
+            Assert.True(key.QI.IsEmpty);
+            Assert.Equal(kid, key.Kid);
+
+            key = RsaJwk.FromBase64Url(n: s_n, e: s_e, SignatureAlgorithm.RS256, computeThumbprint: false);
+            Assert.True(key.N.SequenceEqual(n));
+            Assert.True(key.E.SequenceEqual(e));
+            Assert.True(key.D.IsEmpty);
+            Assert.True(key.P.IsEmpty);
+            Assert.True(key.Q.IsEmpty);
+            Assert.True(key.DP.IsEmpty);
+            Assert.True(key.DQ.IsEmpty);
+            Assert.True(key.QI.IsEmpty);
+            Assert.True(key.Kid.EncodedUtf8Bytes.IsEmpty);
+
+            key = RsaJwk.FromBase64Url(n: s_n, e: s_e, d: s_d, p: s_p, q: s_q, dp: s_dp, dq: s_dq, qi: s_qi, SignatureAlgorithm.RS256, computeThumbprint: true);
+            Assert.True(key.N.SequenceEqual(n));
+            Assert.True(key.E.SequenceEqual(e));
+            Assert.True(key.D.SequenceEqual(d));
+            Assert.True(key.P.SequenceEqual(p));
+            Assert.True(key.Q.SequenceEqual(q));
+            Assert.True(key.DP.SequenceEqual(dp));
+            Assert.True(key.DQ.SequenceEqual(dq));
+            Assert.True(key.QI.SequenceEqual(qi));
+            Assert.Equal(kid, key.Kid);
+
+            key = RsaJwk.FromBase64Url(n: s_n, e: s_e, d: s_d, p: s_p, q: s_q, dp: s_dp, dq: s_dq, qi: s_qi, SignatureAlgorithm.RS256, computeThumbprint: false);
+            Assert.True(key.N.SequenceEqual(n));
+            Assert.True(key.E.SequenceEqual(e));
+            Assert.True(key.D.SequenceEqual(d));
+            Assert.True(key.P.SequenceEqual(p));
+            Assert.True(key.Q.SequenceEqual(q));
+            Assert.True(key.DP.SequenceEqual(dp));
+            Assert.True(key.DQ.SequenceEqual(dq));
+            Assert.True(key.QI.SequenceEqual(qi));
+            Assert.True(key.Kid.EncodedUtf8Bytes.IsEmpty);
+
+
+            // FromByteArray
+            key = RsaJwk.FromByteArray(n: n, e: e, KeyManagementAlgorithm.RsaOaep, computeThumbprint: true);
+            Assert.True(key.N.SequenceEqual(n));
+            Assert.True(key.E.SequenceEqual(e));
+            Assert.True(key.D.IsEmpty);
+            Assert.True(key.P.IsEmpty);
+            Assert.True(key.Q.IsEmpty);
+            Assert.True(key.DP.IsEmpty);
+            Assert.True(key.DQ.IsEmpty);
+            Assert.True(key.QI.IsEmpty);
+            Assert.Equal(kid, key.Kid);
+
+            key = RsaJwk.FromByteArray(n: n, e: e, KeyManagementAlgorithm.RsaOaep, computeThumbprint: false);
+            Assert.True(key.N.SequenceEqual(n));
+            Assert.True(key.E.SequenceEqual(e));
+            Assert.True(key.D.IsEmpty);
+            Assert.True(key.P.IsEmpty);
+            Assert.True(key.Q.IsEmpty);
+            Assert.True(key.DP.IsEmpty);
+            Assert.True(key.DQ.IsEmpty);
+            Assert.True(key.QI.IsEmpty);
+            Assert.True(key.Kid.EncodedUtf8Bytes.IsEmpty);
+
+            key = RsaJwk.FromByteArray(n: n, e: e, d: d, p: p, q: q, dp: dp, dq: dq, qi: qi, KeyManagementAlgorithm.RsaOaep, computeThumbprint: true);
+            Assert.True(key.N.SequenceEqual(n));
+            Assert.True(key.E.SequenceEqual(e));
+            Assert.True(key.D.SequenceEqual(d));
+            Assert.True(key.P.SequenceEqual(p));
+            Assert.True(key.Q.SequenceEqual(q));
+            Assert.True(key.DP.SequenceEqual(dp));
+            Assert.True(key.DQ.SequenceEqual(dq));
+            Assert.True(key.QI.SequenceEqual(qi));
+            Assert.Equal(kid, key.Kid);
+
+            key = RsaJwk.FromByteArray(n: n, e: e, d: d, p: p, q: q, dp: dp, dq: dq, qi: qi, KeyManagementAlgorithm.RsaOaep, computeThumbprint: false);
+            Assert.True(key.N.SequenceEqual(n));
+            Assert.True(key.E.SequenceEqual(e));
+            Assert.True(key.D.SequenceEqual(d));
+            Assert.True(key.P.SequenceEqual(p));
+            Assert.True(key.Q.SequenceEqual(q));
+            Assert.True(key.DP.SequenceEqual(dp));
+            Assert.True(key.DQ.SequenceEqual(dq));
+            Assert.True(key.QI.SequenceEqual(qi));
+            Assert.True(key.Kid.EncodedUtf8Bytes.IsEmpty);
+
+            key = RsaJwk.FromByteArray(n: n, e: e, SignatureAlgorithm.RS256, computeThumbprint: true);
+            Assert.True(key.N.SequenceEqual(n));
+            Assert.True(key.E.SequenceEqual(e));
+            Assert.True(key.D.IsEmpty);
+            Assert.True(key.P.IsEmpty);
+            Assert.True(key.Q.IsEmpty);
+            Assert.True(key.DP.IsEmpty);
+            Assert.True(key.DQ.IsEmpty);
+            Assert.True(key.QI.IsEmpty);
+            Assert.Equal(kid, key.Kid);
+
+            key = RsaJwk.FromByteArray(n: n, e: e, SignatureAlgorithm.RS256, computeThumbprint: false);
+            Assert.True(key.N.SequenceEqual(n));
+            Assert.True(key.E.SequenceEqual(e));
+            Assert.True(key.D.IsEmpty);
+            Assert.True(key.P.IsEmpty);
+            Assert.True(key.Q.IsEmpty);
+            Assert.True(key.DP.IsEmpty);
+            Assert.True(key.DQ.IsEmpty);
+            Assert.True(key.QI.IsEmpty);
+            Assert.True(key.Kid.EncodedUtf8Bytes.IsEmpty);
+
+            key = RsaJwk.FromByteArray(n: n, e: e, d: d, p: p, q: q, dp: dp, dq: dq, qi: qi, SignatureAlgorithm.RS256, computeThumbprint: true);
+            Assert.True(key.N.SequenceEqual(n));
+            Assert.True(key.E.SequenceEqual(e));
+            Assert.True(key.D.SequenceEqual(d));
+            Assert.True(key.P.SequenceEqual(p));
+            Assert.True(key.Q.SequenceEqual(q));
+            Assert.True(key.DP.SequenceEqual(dp));
+            Assert.True(key.DQ.SequenceEqual(dq));
+            Assert.True(key.QI.SequenceEqual(qi));
+            Assert.Equal(kid, key.Kid);
+
+            key = RsaJwk.FromByteArray(n: n, e: e, d: d, p: p, q: q, dp: dp, dq: dq, qi: qi, SignatureAlgorithm.RS256, computeThumbprint: false);
+            Assert.True(key.N.SequenceEqual(n));
+            Assert.True(key.E.SequenceEqual(e));
+            Assert.True(key.D.SequenceEqual(d));
+            Assert.True(key.P.SequenceEqual(p));
+            Assert.True(key.Q.SequenceEqual(q));
+            Assert.True(key.DP.SequenceEqual(dp));
+            Assert.True(key.DQ.SequenceEqual(dq));
+            Assert.True(key.QI.SequenceEqual(qi));
+            Assert.True(key.Kid.EncodedUtf8Bytes.IsEmpty);
+        }
+
+        [Fact]
+        public void Equal()
+        {
+            var key = RsaJwk.GeneratePrivateKey(4096);
+            Assert.True(key.Equals(key));
+            Assert.Equal(key, key);
+            var publicKey = key.AsPublicKey();
+            Assert.NotEqual(key, publicKey);
+            var copiedKey = Jwk.FromJson(key.ToString());
+            Assert.Equal(key, copiedKey);
+
+            // 'kid' is not a discriminant, excepted if the value is different.
+            copiedKey.Kid = default;
+            Assert.Equal(key, copiedKey);
+            Assert.Equal(copiedKey, key);
+            key.Kid = default;
+            Assert.Equal(key, copiedKey);
+            key.Kid = JsonEncodedText.Encode("X");
+            copiedKey.Kid = JsonEncodedText.Encode("Y");
+            Assert.NotEqual(key, copiedKey);
+
+            Assert.NotEqual(key, Jwk.None);
+        }
+
+        [Fact]
         public void RsaTest()
         {
             var parameters = new RSAParameters

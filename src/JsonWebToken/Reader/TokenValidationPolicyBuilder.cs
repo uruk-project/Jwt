@@ -209,6 +209,11 @@ namespace JsonWebToken
         /// </summary>
         public TokenValidationPolicyBuilder RequireSignatureByDefault(Jwk key)
         {
+            if (key is null)
+            {
+                throw new ArgumentNullException(nameof(key));
+            }
+
             if (key.SignatureAlgorithm == null)
             {
                 throw new InvalidOperationException($"The key does not define an 'alg' parameter. Use the method {nameof(RequireSignatureByDefault)} with a {nameof(Jwk)} and a {nameof(SignatureAlgorithm)}.");

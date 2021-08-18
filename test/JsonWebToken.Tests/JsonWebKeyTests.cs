@@ -54,6 +54,42 @@ namespace JsonWebToken.Tests
 
             Assert.Equal(keySize, jwk.KeySizeInBits);
             Assert.Equal(hasPrivateKey, jwk.HasPrivateKey);
+
+            jwk = Jwk.FromX509Certificate(certificate, SignatureAlgorithm.RS256, hasPrivateKey);
+            Assert.Equal(SignatureAlgorithm.RS256, jwk.SignatureAlgorithm);
+            jwk = Jwk.FromX509Certificate(certificate, KeyManagementAlgorithm.RsaOaep, hasPrivateKey);
+            Assert.Equal(KeyManagementAlgorithm.RsaOaep, jwk.KeyManagementAlgorithm);
+
+            bool parsed;
+            AsymmetricJwk key;
+            if (hasPrivateKey)
+            {
+                parsed = Jwk.TryReadPrivateKeyFromX509Certificate(certificate, out key);
+            }
+            else
+            {
+                parsed = Jwk.TryReadPublicKeyFromX509Certificate(certificate, out key);
+            }
+
+            Assert.True(parsed);
+            Assert.NotNull(key);
+        }
+
+        [Fact]
+        public void CreateFromCertificate_Error()
+        {
+            Assert.Throws<ArgumentNullException>(() => Jwk.FromX509Certificate(null, withPrivateKey: true));
+            Assert.Throws<InvalidOperationException>(() => Jwk.FromX509Certificate(Dsa1024Pfx_RC2ContentEncryption, withPrivateKey: true));
+            Assert.Throws<InvalidOperationException>(() => Jwk.FromX509Certificate(Dsa1024Pfx_RC2ContentEncryption, withPrivateKey: false));
+
+            Assert.Throws<ArgumentNullException>(() => Jwk.TryReadPrivateKeyFromX509Certificate(null, out _));
+            Assert.Throws<ArgumentNullException>(() => Jwk.TryReadPublicKeyFromX509Certificate(null, out _));
+            bool parsed = Jwk.TryReadPrivateKeyFromX509Certificate(Dsa1024Pfx_RC2ContentEncryption, out var key);
+            Assert.False(parsed);
+            Assert.Null(key);
+            parsed = Jwk.TryReadPublicKeyFromX509Certificate(Dsa1024Pfx_RC2ContentEncryption, out key);
+            Assert.False(parsed);
+            Assert.Null(key);
         }
 
         public static IEnumerable<object[]> GetJsonKeys()
@@ -198,6 +234,22 @@ namespace JsonWebToken.Tests
         }
 
 #if SUPPORT_ELLIPTIC_CURVE
+        [InlineData("Missing 'x' for EC key", @"
+{
+    ""alg"": ""ES256"",
+    ""kty"": ""EC"",
+    ""crv"": ""P-256"",
+    ""d"": ""w9WpI4vAnoE9iZsnRTZI9D20Ji9rzLyyEPp8KriI_HI"",
+    ""y"": ""Sm7nSOWIqLc8xMK5CRhEiePi9iNukStXhssrYdSiMk0""
+}")]
+        [InlineData("Missing 'y' for EC key", @"
+{
+    ""alg"": ""ES256"",
+    ""kty"": ""EC"",
+    ""crv"": ""P-256"",
+    ""d"": ""w9WpI4vAnoE9iZsnRTZI9D20Ji9rzLyyEPp8KriI_HI"",
+    ""x"": ""cRs59CHa39w6m48qqhqygXNXLmAbfp8yteQTjGBie9I""
+}")]
         [InlineData("Incorrect signature algorithm for EC key", @"
 {
     ""alg"": ""HS256"",
@@ -205,7 +257,7 @@ namespace JsonWebToken.Tests
     ""crv"": ""P-256"",
     ""d"": ""w9WpI4vAnoE9iZsnRTZI9D20Ji9rzLyyEPp8KriI_HI"",
     ""x"": ""cRs59CHa39w6m48qqhqygXNXLmAbfp8yteQTjGBie9I"",
-    ""y"": true
+    ""y"": ""Sm7nSOWIqLc8xMK5CRhEiePi9iNukStXhssrYdSiMk0""
 }")]
         [InlineData("Incorrect KM algorithm for EC key", @"
 {
@@ -214,7 +266,7 @@ namespace JsonWebToken.Tests
     ""crv"": ""P-256"",
     ""d"": ""w9WpI4vAnoE9iZsnRTZI9D20Ji9rzLyyEPp8KriI_HI"",
     ""x"": ""cRs59CHa39w6m48qqhqygXNXLmAbfp8yteQTjGBie9I"",
-    ""y"": true
+    ""y"": ""Sm7nSOWIqLc8xMK5CRhEiePi9iNukStXhssrYdSiMk0""
 }")]
         [InlineData("Incorrect 'EC' key size", @"
 {
@@ -256,7 +308,7 @@ namespace JsonWebToken.Tests
     ""alg"": ""RS256"",
     ""kty"": ""oct"",
     ""k"": ""Sm7nSOWIqLc8xMK5CRhEiePi9iNukStXhssrYdSiMk0""
-}")] 
+}")]
         [InlineData("Incorrect signature algorithm for oct key", @"
 {
     ""alg"": ""RSA-OAEP"",
@@ -431,14 +483,14 @@ namespace JsonWebToken.Tests
     ""kty"": ""oct"",
     ""k"": ""Sm7nSOWIqLc8xMK5CRhEiePi9iNukStXhssrYdSiMk0"",
     ""key_ops"": [""sign"", ""X""]
-}")]   
+}")]
         [InlineData("Inconsistent 'key_ops' with signing 'alg'", @"
 {
     ""kty"": ""oct"",
     ""alg"": ""A128KW"",
     ""k"": ""Sm7nSOWIqLc8xMK5CRhEiePi9iNukStXhssrYdSiMk0"",
     ""key_ops"": [""sign""]
-}")]  
+}")]
         [InlineData("Inconsistent 'key_ops' with encryption 'alg'", @"
 {
     ""kty"": ""oct"",
@@ -1008,7 +1060,8 @@ namespace JsonWebToken.Tests
 {
     ""kty"": ""oct"",
     ""k"": ""Sm7nSOWIqLc8xMK5CRhEiePi9iNukStXhssrYdSi%Mk0""
-}")]        [InlineData("Non ASCII encoding", @"
+}")]
+        [InlineData("Non ASCII encoding", @"
 {
     ""kty"": ""oct"",
     ""k"": ""Sm7nSOWIqLc8xMK5CRhEiePi9iNukStXhssrYdSiMk"",
@@ -1092,7 +1145,7 @@ namespace JsonWebToken.Tests
     ""x5t"": ""qUqP5cyxm6YcTAhz05Hph5gvu9M"",
     ""x5t#S256"": ""n4bQgYhMfWWaL-qgxVrQFaO_TxsrC4Is0V1sFbDwCgg"",
     ""x5u"": ""https://example.com""
-}")] 
+}")]
         [InlineData("invalid x5c type", @"
 {
     ""kty"": ""oct"",
@@ -1148,7 +1201,7 @@ namespace JsonWebToken.Tests
     ""k"": ""Sm7nSOWIqLc8xMK5CRhEiePi9iNukStXhssrYdSiMk0"",
     ""key_ops"": [""sign""],
     ""alg"": ""A128KW""
-}")]    
+}")]
         [InlineData("Invalid B64 value", @"
 {
     ""e"": ""AQAB"",
@@ -1204,5 +1257,7 @@ namespace JsonWebToken.Tests
         private static readonly string Sha512_2048_Public = "MIIDXjCCAkagAwIBAgIQzTfvf7ABYLxKOErOiooMIjANBgkqhkiG9w0BAQ0FADA1MTMwMQYDVQQDHioAUwBlAGwAZgBTAGkAZwBuAGUAZAAyADAANAA4AF8AUwBIAEEANQAxADIwHhcNMTQxMjI2MTUyODMxWhcNMzkxMjMxMjM1OTU5WjA1MTMwMQYDVQQDHioAUwBlAGwAZgBTAGkAZwBuAGUAZAAyADAANAA4AF8AUwBIAEEANQAxADIwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQCzk2XIZKwGbblamSyJ3l+Co+SzCqSV4X7COoJM0R7UwgYT12hD30xhvDUpQrhuHc2ecF5SPggpG/Z63BXsIaqSMCcmzOoV9igFDqWzecbj5Mz/xSm/ZjJ7HXxiklSekWFG1q/8crd1HfdHjaCm+hMxpfXFSH+h3bSxv+2XBkT+Y35wUXnnw6Q/rE+ieW5+xn0MUvh1UkFCl7+ZDOhIzbXkzM/BKUAPxbJBjXeAr0Cum/IVFStavxi21Sgj1XoMuW6tlFX+eG6wUvmh4LjVTlIVdrV8bqxDIm/w/vCwlyvcQxERlP3TVlusUkc157pXKvhqNlPdEGG9kUumMVaziNxNAgMBAAGjajBoMGYGA1UdAQRfMF2AEMQYtKMfx+sbsi5bQ7l/LTShNzA1MTMwMQYDVQQDHioAUwBlAGwAZgBTAGkAZwBuAGUAZAAyADAANAA4AF8AUwBIAEEANQAxADKCEM0373+wAWC8SjhKzoqKDCIwDQYJKoZIhvcNAQENBQADggEBAAvM9kCf8fpwiLYtEQK6ryHmg6MC5L2BNGsuRUOZNDkp+/LZF48tkfL6dTYslj3kPeEBGAA9ggIjDinTbPEveEpPUoZTllkMj9A9T963yhaLlsVAJDPbJw8XlHO+c01VjUtIjaVtIvJaCNoXF0S+TfbRDKceiEXYcDS+ySyssCi4x23nd2fylRvpiaOrFAMDXHF440vR/I18VEqKuPa/NWj/JbVdaXAmyjjtHi7GIcL6rQQFpbDDfrzKmNCc/SXLkNQ97ArngEkOzZhOmP2aZ7ZqdX/h3mRQ3wo91+WfVfFfbhKc4qTUQHr9rop2JeEhu8WaRwVoqz6PtXB6WtIX8hk=";
         private static readonly X509Certificate2 CertSha512_2048 = new X509Certificate2(Convert.FromBase64String(Sha512_2048), "SelfSigned2048_SHA512", X509KeyStorageFlags.PersistKeySet | X509KeyStorageFlags.Exportable);
         private static readonly X509Certificate2 CertSha512_2048_Public = new X509Certificate2(Convert.FromBase64String(Sha512_2048_Public), "SelfSigned2048_SHA512");
+
+        private static readonly X509Certificate2 Dsa1024Pfx_RC2ContentEncryption = new X509Certificate2(Convert.FromBase64String("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"), "1234");
     }
 }

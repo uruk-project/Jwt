@@ -165,9 +165,9 @@ namespace JsonWebToken
                 return false;
             }
 
-            if (Kid.EncodedUtf8Bytes.Length != 0 && Kid.Equals(other.Kid))
+            if (Kid.EncodedUtf8Bytes.Length != 0 && other.Kid.EncodedUtf8Bytes.Length != 0)
             {
-                return true;
+                return Kid.Equals(other.Kid);
             }
 
             return _inner.Equals(key._inner);

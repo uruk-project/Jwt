@@ -14,12 +14,147 @@ namespace JsonWebToken.Tests
 {
     public class ECJwkTests : JwkTestsBase
     {
-        [MemberData(nameof(SupportedCurves))]
+        [Fact]
+        public void Factory()
+        {
+            var x = Base64Url.Decode("MKBCTNIcKUSDii11ySs3526iDZ8AiTo7Tu6KPAqv7D4");
+            var y = Base64Url.Decode("4Etl6SRW2YiLUrN5vfvVHuhp7x8PxltmWWlbbM4IFyM");
+            var d = Base64Url.Decode("TEkodhWr0iujjHVx7BcV0llS4w5ACGgPrcAd6ZcSR01");
+
+            // FromBase64Url
+            var key = ECJwk.FromBase64Url(EllipticalCurve.P256, x: "MKBCTNIcKUSDii11ySs3526iDZ8AiTo7Tu6KPAqv7D4", y: "4Etl6SRW2YiLUrN5vfvVHuhp7x8PxltmWWlbbM4IFyM", KeyManagementAlgorithm.EcdhEs, computeThumbprint: true);
+            Assert.True(key.X.SequenceEqual(x));
+            Assert.True(key.Y.SequenceEqual(y));
+            Assert.Equal(0, key.D.Length);
+            Assert.NotEqual(0, key.Kid.EncodedUtf8Bytes.Length);
+
+            key = ECJwk.FromBase64Url(EllipticalCurve.P256, x: "MKBCTNIcKUSDii11ySs3526iDZ8AiTo7Tu6KPAqv7D4", y: "4Etl6SRW2YiLUrN5vfvVHuhp7x8PxltmWWlbbM4IFyM", KeyManagementAlgorithm.EcdhEs, computeThumbprint: false);
+            Assert.True(key.X.SequenceEqual(x));
+            Assert.True(key.Y.SequenceEqual(y));
+            Assert.Equal(0, key.D.Length);
+            Assert.Equal(0, key.Kid.EncodedUtf8Bytes.Length);
+
+            key = ECJwk.FromBase64Url(EllipticalCurve.P256, x: "MKBCTNIcKUSDii11ySs3526iDZ8AiTo7Tu6KPAqv7D4", y: "4Etl6SRW2YiLUrN5vfvVHuhp7x8PxltmWWlbbM4IFyM", d: "TEkodhWr0iujjHVx7BcV0llS4w5ACGgPrcAd6ZcSR01", KeyManagementAlgorithm.EcdhEs, computeThumbprint: true);
+            Assert.True(key.X.SequenceEqual(x));
+            Assert.True(key.Y.SequenceEqual(y));
+            Assert.True(key.D.SequenceEqual(d));
+            Assert.NotEqual(0, key.Kid.EncodedUtf8Bytes.Length);
+
+            key = ECJwk.FromBase64Url(EllipticalCurve.P256, x: "MKBCTNIcKUSDii11ySs3526iDZ8AiTo7Tu6KPAqv7D4", y: "4Etl6SRW2YiLUrN5vfvVHuhp7x8PxltmWWlbbM4IFyM", d: "TEkodhWr0iujjHVx7BcV0llS4w5ACGgPrcAd6ZcSR01", KeyManagementAlgorithm.EcdhEs, computeThumbprint: false);
+            Assert.True(key.X.SequenceEqual(x));
+            Assert.True(key.Y.SequenceEqual(y));
+            Assert.True(key.D.SequenceEqual(d));
+            Assert.Equal(0, key.Kid.EncodedUtf8Bytes.Length);
+
+            key = ECJwk.FromBase64Url(EllipticalCurve.P256, x: "MKBCTNIcKUSDii11ySs3526iDZ8AiTo7Tu6KPAqv7D4", y: "4Etl6SRW2YiLUrN5vfvVHuhp7x8PxltmWWlbbM4IFyM", SignatureAlgorithm.ES256, computeThumbprint: true);
+            Assert.True(key.X.SequenceEqual(x));
+            Assert.True(key.Y.SequenceEqual(y));
+            Assert.Equal(0, key.D.Length);
+            Assert.NotEqual(0, key.Kid.EncodedUtf8Bytes.Length);
+
+            key = ECJwk.FromBase64Url(EllipticalCurve.P256, x: "MKBCTNIcKUSDii11ySs3526iDZ8AiTo7Tu6KPAqv7D4", y: "4Etl6SRW2YiLUrN5vfvVHuhp7x8PxltmWWlbbM4IFyM", SignatureAlgorithm.ES256, computeThumbprint: false);
+            Assert.True(key.X.SequenceEqual(x));
+            Assert.True(key.Y.SequenceEqual(y));
+            Assert.Equal(0, key.D.Length);
+            Assert.Equal(0, key.Kid.EncodedUtf8Bytes.Length);
+
+            key = ECJwk.FromBase64Url(EllipticalCurve.P256, x: "MKBCTNIcKUSDii11ySs3526iDZ8AiTo7Tu6KPAqv7D4", y: "4Etl6SRW2YiLUrN5vfvVHuhp7x8PxltmWWlbbM4IFyM", d: "TEkodhWr0iujjHVx7BcV0llS4w5ACGgPrcAd6ZcSR01", SignatureAlgorithm.ES256, computeThumbprint: true);
+            Assert.True(key.X.SequenceEqual(x));
+            Assert.True(key.Y.SequenceEqual(y));
+            Assert.True(key.D.SequenceEqual(d));
+            Assert.NotEqual(0, key.Kid.EncodedUtf8Bytes.Length);
+
+            key = ECJwk.FromBase64Url(EllipticalCurve.P256, x: "MKBCTNIcKUSDii11ySs3526iDZ8AiTo7Tu6KPAqv7D4", y: "4Etl6SRW2YiLUrN5vfvVHuhp7x8PxltmWWlbbM4IFyM", d: "TEkodhWr0iujjHVx7BcV0llS4w5ACGgPrcAd6ZcSR01", SignatureAlgorithm.ES256, computeThumbprint: false);
+            Assert.True(key.X.SequenceEqual(x));
+            Assert.True(key.Y.SequenceEqual(y));
+            Assert.True(key.D.SequenceEqual(d));
+            Assert.Equal(0, key.Kid.EncodedUtf8Bytes.Length);
+
+
+            // FromByteArray
+            key = ECJwk.FromByteArray(EllipticalCurve.P256, x: x, y: y, KeyManagementAlgorithm.EcdhEs, computeThumbprint: true);
+            Assert.True(key.X.SequenceEqual(x));
+            Assert.True(key.Y.SequenceEqual(y));
+            Assert.Equal(0, key.D.Length);
+            Assert.NotEqual(0, key.Kid.EncodedUtf8Bytes.Length);
+
+            key = ECJwk.FromByteArray(EllipticalCurve.P256, x: x, y: y, KeyManagementAlgorithm.EcdhEs, computeThumbprint: false);
+            Assert.True(key.X.SequenceEqual(x));
+            Assert.True(key.Y.SequenceEqual(y));
+            Assert.Equal(0, key.D.Length);
+            Assert.Equal(0, key.Kid.EncodedUtf8Bytes.Length);
+
+            key = ECJwk.FromByteArray(EllipticalCurve.P256, x: x, y: y, d: d, KeyManagementAlgorithm.EcdhEs, computeThumbprint: true);
+            Assert.True(key.X.SequenceEqual(x));
+            Assert.True(key.Y.SequenceEqual(y));
+            Assert.True(key.D.SequenceEqual(d));
+            Assert.NotEqual(0, key.Kid.EncodedUtf8Bytes.Length);
+
+            key = ECJwk.FromByteArray(EllipticalCurve.P256, x: x, y: y, d: d, KeyManagementAlgorithm.EcdhEs, computeThumbprint: false);
+            Assert.True(key.X.SequenceEqual(x));
+            Assert.True(key.Y.SequenceEqual(y));
+            Assert.True(key.D.SequenceEqual(d));
+            Assert.Equal(0, key.Kid.EncodedUtf8Bytes.Length);
+
+            key = ECJwk.FromByteArray(EllipticalCurve.P256, x: x, y: y, SignatureAlgorithm.ES256, computeThumbprint: true);
+            Assert.True(key.X.SequenceEqual(x));
+            Assert.True(key.Y.SequenceEqual(y));
+            Assert.Equal(0, key.D.Length);
+            Assert.NotEqual(0, key.Kid.EncodedUtf8Bytes.Length);
+
+            key = ECJwk.FromByteArray(EllipticalCurve.P256, x: x, y: y, SignatureAlgorithm.ES256, computeThumbprint: false);
+            Assert.True(key.X.SequenceEqual(x));
+            Assert.True(key.Y.SequenceEqual(y));
+            Assert.Equal(0, key.D.Length);
+            Assert.Equal(0, key.Kid.EncodedUtf8Bytes.Length);
+
+            key = ECJwk.FromByteArray(EllipticalCurve.P256, x: x, y: y, d: d, SignatureAlgorithm.ES256, computeThumbprint: true);
+            Assert.True(key.X.SequenceEqual(x));
+            Assert.True(key.Y.SequenceEqual(y));
+            Assert.True(key.D.SequenceEqual(d));
+            Assert.NotEqual(0, key.Kid.EncodedUtf8Bytes.Length);
+
+            key = ECJwk.FromByteArray(EllipticalCurve.P256, x: x, y: y, d: d, SignatureAlgorithm.ES256, computeThumbprint: false);
+            Assert.True(key.X.SequenceEqual(x));
+            Assert.True(key.Y.SequenceEqual(y));
+            Assert.True(key.D.SequenceEqual(d));
+            Assert.Equal(0, key.Kid.EncodedUtf8Bytes.Length);
+        }
+
         [Theory]
+        [MemberData(nameof(SupportedCurves))]
+        public void Equal(EllipticalCurve crv)
+        {
+            var key = ECJwk.GeneratePrivateKey(crv);
+            Assert.True(key.Equals(key));
+            Assert.Equal(key, key);
+            var publicKey = key.AsPublicKey();
+            Assert.NotEqual(key, publicKey);
+            var copiedKey = ECJwk.FromJson(key.ToString());
+            Assert.Equal(key, copiedKey);
+
+            // 'kid' is not a discriminant, excepted if the value is different.
+            copiedKey.Kid = default;
+            Assert.Equal(key, copiedKey);
+            Assert.Equal(copiedKey, key);
+            key.Kid = default;
+            Assert.Equal(key, copiedKey);
+            key.Kid = JsonEncodedText.Encode("X");
+            copiedKey.Kid = JsonEncodedText.Encode("Y");
+            Assert.NotEqual(key, copiedKey);
+   
+            Assert.NotEqual(key, Jwk.None);
+        }
+
+        [Theory]
+        [MemberData(nameof(SupportedCurves))]
         public void GenerateKey(EllipticalCurve crv)
         {
             var key = ECJwk.GeneratePrivateKey(crv);
             Assert.NotNull(key);
+
+            var key2 = ECJwk.GeneratePrivateKey(crv.SupportedSignatureAlgorithm);
+            Assert.NotNull(key2);
         }
 
         public static IEnumerable<object[]> SupportedCurves => EllipticalCurve.SupportedCurves.Select(c => new object[] { c }).ToArray();
