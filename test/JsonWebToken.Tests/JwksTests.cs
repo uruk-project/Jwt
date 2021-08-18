@@ -8,6 +8,131 @@ namespace JsonWebToken.Tests
 {
     public class JwksTests
     {
+        [Fact]
+        public void Ctor()
+        {
+            Assert.Throws<ArgumentNullException>(() => new Jwks((Jwk)null));
+            Assert.Throws<ArgumentNullException>(() => new Jwks((IList<Jwk>)null));
+            Assert.Throws<ArgumentNullException>(() => new Jwks((string)null));
+            Assert.Throws<ArgumentNullException>(() => new Jwks((string)null, Jwk.None));
+            Assert.Throws<ArgumentNullException>(() => new Jwks("issuer", (Jwk)null));
+            Assert.Throws<ArgumentNullException>(() => new Jwks((string)null, new List<Jwk> { Jwk.None }));
+            Assert.Throws<ArgumentNullException>(() => new Jwks("issuer", (IList<Jwk>)null));
+
+            var jwks = new Jwks("issuer1");
+            Assert.Equal("issuer1", jwks.Issuer);
+        }
+
+        [Fact]
+        public void Add()
+        {
+            var jwks = new Jwks("issuer1");
+            Assert.Equal(0, jwks.Count);
+            jwks.Add(SymmetricJwk.GenerateKey(128));
+
+            Assert.Equal(1, jwks.Count);
+
+            Assert.Throws<ArgumentNullException>(() => jwks.Add(null));
+        }
+
+        [Fact]
+        public void Remove()
+        {
+            var key128 = SymmetricJwk.GenerateKey(128);
+            var key192 = SymmetricJwk.GenerateKey(192);
+            var key256 = SymmetricJwk.GenerateKey(256);
+            var key512 = SymmetricJwk.GenerateKey(512);
+
+            var jwks = new Jwks("issuer1")
+            {
+                key128,
+                key192,
+                key256
+            };
+
+            Assert.Equal(3, jwks.Count);
+            jwks.Remove(key192);
+            Assert.Equal(2, jwks.Count);
+            jwks.Remove(key512);
+            Assert.Equal(2, jwks.Count);
+
+            Assert.Throws<ArgumentNullException>(() => jwks.Remove(null));
+        }
+
+        [Fact]
+        public void Contains()
+        {
+            var key128 = SymmetricJwk.GenerateKey(128);
+            var key192 = SymmetricJwk.GenerateKey(192);
+            var key256 = SymmetricJwk.GenerateKey(256);
+            var key512 = SymmetricJwk.GenerateKey(512);
+
+            var jwks = new Jwks("issuer1")
+            {
+                key128,
+                key192,
+                key256
+            };
+
+            Assert.Contains(key128, jwks);
+            Assert.Contains(key192, jwks);
+            Assert.Contains(key256, jwks);
+            Assert.DoesNotContain(key512, jwks);
+            Assert.DoesNotContain(null, jwks);
+        }
+
+        [Fact]
+        public void Vakidate()
+        {
+            var key128 = SymmetricJwk.GenerateKey(128);
+            var key192 = SymmetricJwk.GenerateKey(192);
+            var key256 = SymmetricJwk.GenerateKey(256);
+
+            var jwks = new Jwks("issuer1")
+            {
+                key128,
+                key192,
+                key256
+            };
+
+            jwks.Validate();
+        }
+
+        [Fact]
+        public void GetKeyFromKid()
+        {
+            var key128 = SymmetricJwk.GenerateKey(128);
+            key128.Kid = JsonEncodedText.Encode("key128");
+            var key192 = SymmetricJwk.GenerateKey(192);
+            key192.Kid = JsonEncodedText.Encode("key192");
+            var key256 = SymmetricJwk.GenerateKey(256);
+            key256.Kid = JsonEncodedText.Encode("key256");
+
+            var jwks = new Jwks("issuer1")
+            {
+                key128,
+                key192,
+                key256
+            };
+
+            Assert.Null(jwks["XXX"]);
+            Assert.Null(jwks[JsonEncodedText.Encode("XXX")]);
+
+            Assert.Equal(key128, jwks["key128"]);
+            Assert.Equal(key128, jwks[key128.Kid]);
+            Assert.Equal(key192, jwks["key192"]);
+            Assert.Equal(key192, jwks[key192.Kid]);
+            Assert.Equal(key256, jwks["key256"]);
+            Assert.Equal(key256, jwks[key256.Kid]);
+        }
+
+        [Fact]
+        public void ReadJwks_InvalidParameters()
+        {
+            Assert.Throws<ArgumentNullException>(() => Jwks.FromJson(null, "{}"));
+            Assert.Throws<ArgumentNullException>(() => Jwks.FromJson("issuer1", (string) null));
+        }
+
         [Theory]
         [MemberData(nameof(GetJwksJson))]
         public void ReadJwks_Valid(string issuer, string json, int count)
@@ -28,15 +153,44 @@ namespace JsonWebToken.Tests
         [MemberData(nameof(GetInvalidJwks))]
         public void ReadJwks_Invalid(string issuer, string json)
         {
-            try
+            Assert.ThrowsAny<Exception>(() => Jwks.FromJson(issuer, json));
+        }
+
+        [Fact]
+        public void OnJwksRefreshed()
+        {
+            Jwks.OnJwksRefreshed += Jwks_OnJwksRefreshed;
+            var key128 = SymmetricJwk.GenerateKey(128);
+            var key192 = SymmetricJwk.GenerateKey(192);
+            var key256 = SymmetricJwk.GenerateKey(256);
+            var key384 = SymmetricJwk.GenerateKey(384);
+            var key512 = SymmetricJwk.GenerateKey(512);
+
+            var oldJwks = new Jwks("issuer1")
             {
-                Jwks.FromJson(issuer, json);
-                Assert.False(true, "Expected to throw an exception.");
-            }
-            catch (Exception e)
+                key128,
+                key192,
+                key256
+            };
+            var newJwks = new Jwks()
             {
-                Assert.IsAssignableFrom<Exception>(e);
-            }
+                key128,
+                key256,
+                key384,
+                key512
+            };
+
+            Jwks.PublishJwksRefreshed(oldJwks, newJwks);
+        }
+
+        private void Jwks_OnJwksRefreshed(Jwks added, Jwks removed)
+        {
+            Assert.Equal(2, added.Count);
+            Assert.Contains(added, k => k.KeySizeInBits == 384);
+            Assert.Contains(added, k => k.KeySizeInBits == 512);
+
+            Assert.Equal(1, removed.Count);
+            Assert.Contains(removed, k => k.KeySizeInBits == 192);
         }
 
         [Theory]

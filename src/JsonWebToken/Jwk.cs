@@ -243,6 +243,7 @@ namespace JsonWebToken
                 {
                     _alg = default;
                     _signatureAlgorithm = null;
+                    _keyManagementAlgorithm = null;
                 }
                 else
                 {
@@ -289,6 +290,7 @@ namespace JsonWebToken
                 {
                     _alg = default;
                     _keyManagementAlgorithm = null;
+                    _signatureAlgorithm = null;
                 }
                 else
                 {
@@ -1371,14 +1373,6 @@ namespace JsonWebToken
             if (IntegerMarshal.ReadUInt64(ref pPropertyName) == x5t_S256)
             {
                 key._x5tS256 = Base64Url.Decode(reader.ValueSpan);
-            }
-        }
-
-        internal static void PopulateEight(ref Utf8JsonReader reader, ReadOnlySpan<byte> pPropertyName, Jwk key)
-        {
-            if (IntegerMarshal.ReadUInt64(pPropertyName) == x5t_S256)
-            {
-                key.X5tS256 = Base64Url.Decode(reader.ValueSpan);
             }
         }
 

@@ -3,12 +3,68 @@ using System.Collections.Generic;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Text.Json;
+using JsonWebToken.Cryptography;
 using Xunit;
 
 namespace JsonWebToken.Tests
 {
     public class JsonWebKeyTests
     {
+
+        [Fact]
+        public void Ctor()
+        {
+            Assert.Throws<ArgumentNullException>(() => new JwkStub((SignatureAlgorithm)null));
+            Assert.Throws<ArgumentNullException>(() => new JwkStub((KeyManagementAlgorithm)null));
+        }
+
+        [Fact]
+        public void Properties()
+        {
+            var key = new JwkStub();
+            Assert.Throws<InvalidOperationException>(() => key.X5t = new byte[21]);
+            Assert.Throws<InvalidOperationException>(() => key.X5tS256 = new byte[33]);
+            Assert.Empty(key.X5c);
+
+            // by default, no algorithm
+            Assert.Equal(default, key.Alg);
+            Assert.Null(key.SignatureAlgorithm);
+            Assert.Null(key.KeyManagementAlgorithm);
+
+            key.SignatureAlgorithm = SignatureAlgorithm.HS256;
+            Assert.Equal(SignatureAlgorithm.HS256.Name, key.Alg);
+            Assert.Equal(SignatureAlgorithm.HS256, key.SignatureAlgorithm);
+            Assert.Null(key.KeyManagementAlgorithm);
+
+            key.KeyManagementAlgorithm = null;
+            Assert.Equal(default, key.Alg);
+            Assert.Null(key.SignatureAlgorithm);
+            Assert.Null(key.KeyManagementAlgorithm);
+
+            key.KeyManagementAlgorithm = KeyManagementAlgorithm.A128KW;
+            Assert.Equal(KeyManagementAlgorithm.A128KW.Name, key.Alg);
+            Assert.Null(key.SignatureAlgorithm);
+            Assert.Equal(KeyManagementAlgorithm.A128KW, key.KeyManagementAlgorithm);
+
+            key.SignatureAlgorithm = null;
+            Assert.Equal(default, key.Alg);
+            Assert.Null(key.SignatureAlgorithm);
+            Assert.Null(key.KeyManagementAlgorithm);
+
+            // Setting a key management algorithm then a signature algorithm 
+            key.KeyManagementAlgorithm = KeyManagementAlgorithm.A128KW;
+            key.SignatureAlgorithm = SignatureAlgorithm.HS256;
+            Assert.Equal(SignatureAlgorithm.HS256.Name, key.Alg);
+            Assert.Equal(SignatureAlgorithm.HS256, key.SignatureAlgorithm);
+            Assert.Null(key.KeyManagementAlgorithm);
+
+            // Setting a signature algorithm then a key management algorithm 
+            key.KeyManagementAlgorithm = KeyManagementAlgorithm.A128KW;
+            Assert.Equal(KeyManagementAlgorithm.A128KW.Name, key.Alg);
+            Assert.Null(key.SignatureAlgorithm);
+            Assert.Equal(KeyManagementAlgorithm.A128KW, key.KeyManagementAlgorithm);
+        }
+
         [Fact]
         public void GetKeys_Empty_Default()
         {
@@ -31,6 +87,14 @@ namespace JsonWebToken.Tests
             var allKeys = jwks.GetKeys(default);
 
             Assert.Equal(4, allKeys.Length);
+        }
+
+        [Fact]
+        public void CreateFromJson_Malformed()
+        {
+            Assert.Throws<ArgumentException>(() => Jwk.FromJson("{}"));
+            Assert.Throws<ArgumentException>(() => Jwk.FromJson("[]"));
+            Assert.ThrowsAny<JsonException>(() => Jwk.FromJson("{"));
         }
 
         [Theory]
@@ -1259,5 +1323,85 @@ namespace JsonWebToken.Tests
         private static readonly X509Certificate2 CertSha512_2048_Public = new X509Certificate2(Convert.FromBase64String(Sha512_2048_Public), "SelfSigned2048_SHA512");
 
         private static readonly X509Certificate2 Dsa1024Pfx_RC2ContentEncryption = new X509Certificate2(Convert.FromBase64String("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"), "1234");
+
+
+        private class JwkStub : Jwk
+        {
+            public JwkStub()
+            {
+            }
+
+            public JwkStub(SignatureAlgorithm alg) : base(alg)
+            {
+            }
+
+            public JwkStub(KeyManagementAlgorithm alg) : base(alg)
+            {
+            }
+
+            public override JsonEncodedText Kty => throw new NotImplementedException();
+
+            public override int KeySizeInBits => throw new NotImplementedException();
+
+            public override ReadOnlySpan<byte> AsSpan()
+            {
+                throw new NotImplementedException();
+            }
+
+            public override bool Equals(Jwk other)
+            {
+                throw new NotImplementedException();
+            }
+
+            public override int GetHashCode()
+            {
+                throw new NotImplementedException();
+            }
+
+            public override bool SupportEncryption(EncryptionAlgorithm algorithm)
+            {
+                throw new NotImplementedException();
+            }
+
+            public override bool SupportKeyManagement(KeyManagementAlgorithm algorithm)
+            {
+                throw new NotImplementedException();
+            }
+
+            public override bool SupportSignature(SignatureAlgorithm algorithm)
+            {
+                throw new NotImplementedException();
+            }
+
+            protected override KeyUnwrapper CreateKeyUnwrapper(EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm algorithm)
+            {
+                throw new NotImplementedException();
+            }
+
+            protected override KeyWrapper CreateKeyWrapper(EncryptionAlgorithm encryptionAlgorithm, KeyManagementAlgorithm algorithm)
+            {
+                throw new NotImplementedException();
+            }
+
+            protected override SignatureVerifier CreateSignatureVerifier(SignatureAlgorithm algorithm)
+            {
+                throw new NotImplementedException();
+            }
+
+            protected override Signer CreateSigner(SignatureAlgorithm algorithm)
+            {
+                throw new NotImplementedException();
+            }
+
+            protected internal override void Canonicalize(Span<byte> buffer)
+            {
+                throw new NotImplementedException();
+            }
+
+            protected internal override int GetCanonicalizeSize()
+            {
+                throw new NotImplementedException();
+            }
+        }
     }
 }
