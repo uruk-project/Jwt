@@ -130,7 +130,7 @@ namespace JsonWebToken.Tests
         public void ReadJwks_InvalidParameters()
         {
             Assert.Throws<ArgumentNullException>(() => Jwks.FromJson(null, "{}"));
-            Assert.Throws<ArgumentNullException>(() => Jwks.FromJson("issuer1", (string) null));
+            Assert.Throws<ArgumentNullException>(() => Jwks.FromJson("issuer1", (string)null));
         }
 
         [Theory]
@@ -159,7 +159,6 @@ namespace JsonWebToken.Tests
         [Fact]
         public void OnJwksRefreshed()
         {
-            Jwks.OnJwksRefreshed += Jwks_OnJwksRefreshed;
             var key128 = SymmetricJwk.GenerateKey(128);
             var key192 = SymmetricJwk.GenerateKey(192);
             var key256 = SymmetricJwk.GenerateKey(256);
@@ -179,8 +178,15 @@ namespace JsonWebToken.Tests
                 key384,
                 key512
             };
-
-            Jwks.PublishJwksRefreshed(oldJwks, newJwks);
+            Jwks.OnJwksRefreshed += Jwks_OnJwksRefreshed;
+            try
+            {
+                Jwks.PublishJwksRefreshed(oldJwks, newJwks);
+            }
+            finally
+            {
+                Jwks.OnJwksRefreshed -= Jwks_OnJwksRefreshed;
+            }
         }
 
         private void Jwks_OnJwksRefreshed(Jwks added, Jwks removed)
