@@ -154,7 +154,7 @@ namespace JsonWebToken
             get => _x5t;
             set
             {
-                if (value?.Length != 20)
+                if (value != null && value.Length != 20)
                 {
                     throw new InvalidOperationException($"The parameter 'x5t' must be a byte array of 160 bits (20 bytes). Current size: {value?.Length * 8} bits.");
                 }
@@ -169,7 +169,7 @@ namespace JsonWebToken
             get => _x5tS256;
             set
             {
-                if (value?.Length != Sha256.Sha256HashSize)
+                if (value != null && value.Length != Sha256.Sha256HashSize)
                 {
                     throw new InvalidOperationException($"The parameter 'x5t#S256' must be a byte array of 256 bits (32 bytes). Current size: {value?.Length * 8} bits.");
                 }
@@ -243,6 +243,7 @@ namespace JsonWebToken
                 {
                     _alg = default;
                     _signatureAlgorithm = null;
+                    _keyManagementAlgorithm = null;
                 }
                 else
                 {
@@ -289,6 +290,7 @@ namespace JsonWebToken
                 {
                     _alg = default;
                     _keyManagementAlgorithm = null;
+                    _signatureAlgorithm = null;
                 }
                 else
                 {
@@ -1371,14 +1373,6 @@ namespace JsonWebToken
             if (IntegerMarshal.ReadUInt64(ref pPropertyName) == x5t_S256)
             {
                 key._x5tS256 = Base64Url.Decode(reader.ValueSpan);
-            }
-        }
-
-        internal static void PopulateEight(ref Utf8JsonReader reader, ReadOnlySpan<byte> pPropertyName, Jwk key)
-        {
-            if (IntegerMarshal.ReadUInt64(pPropertyName) == x5t_S256)
-            {
-                key.X5tS256 = Base64Url.Decode(reader.ValueSpan);
             }
         }
 

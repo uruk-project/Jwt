@@ -10,6 +10,28 @@ namespace JsonWebToken.Tests
 {
     public class PasswordBasedJwkTests : JwkTestsBase
     {
+        [Fact]
+        public void Equal()
+        {
+            var key = PasswordBasedJwk.FromPassphrase("Hello world");
+            Assert.True(key.Equals(key));
+            Assert.Equal(key, key);
+            var copiedKey = PasswordBasedJwk.FromPassphrase("Hello world");
+            Assert.Equal(key, copiedKey);
+
+            // 'kid' is not a discriminant, excepted if the value is different.
+            copiedKey.Kid = default;
+            Assert.Equal(key, copiedKey);
+            Assert.Equal(copiedKey, key);
+            key.Kid = default;
+            Assert.Equal(key, copiedKey);
+            key.Kid = JsonEncodedText.Encode("X");
+            copiedKey.Kid = JsonEncodedText.Encode("Y");
+            Assert.NotEqual(key, copiedKey);
+    
+            Assert.NotEqual(key, Jwk.None);
+        }
+
         [Theory]
         [MemberData(nameof(GetWrappingKeys))]
         public override KeyWrapper CreateKeyWrapper_Succeed(Jwk key, EncryptionAlgorithm enc, KeyManagementAlgorithm alg)

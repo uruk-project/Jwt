@@ -106,10 +106,11 @@ namespace JsonWebToken
             get
             {
                 var keys = _keys;
+                var kidValue = JsonEncodedText.Encode(kid);
                 for (int i = 0; i < keys.Count; i++)
                 {
                     var key = keys[i];
-                    if (kid == key.Kid.ToString())
+                    if (key.Kid.Equals(kidValue))
                     {
                         return key;
                     }
@@ -128,7 +129,7 @@ namespace JsonWebToken
                 for (int i = 0; i < keys.Count; i++)
                 {
                     var key = keys[i];
-                    if (kid.EncodedUtf8Bytes.SequenceEqual(key.Kid.EncodedUtf8Bytes))
+                    if (kid.Equals(key.Kid))
                     {
                         return key;
                     }
@@ -231,14 +232,7 @@ namespace JsonWebToken
 
         private string DebuggerDisplay()
         {
-            using var bufferWriter = new PooledByteBufferWriter();
-            using (Utf8JsonWriter writer = new Utf8JsonWriter(bufferWriter, new JsonWriterOptions { Indented = true }))
-            {
-                WriteTo(writer);
-            }
-
-            var input = bufferWriter.WrittenSpan;
-            return Utf8.GetString(input);
+            return ToString();
         }
 
         internal KeyValuePair<JsonEncodedText, Jwk[]>[] GetIdentifiedKeys()
@@ -622,7 +616,7 @@ namespace JsonWebToken
         {
             for (int i = 0; i < Count; i++)
             {
-                if (other.Equals(_keys[i]))
+                if (_keys[i].Equals(other))
                 {
                     return true;
                 }
@@ -630,7 +624,6 @@ namespace JsonWebToken
 
             return false;
         }
-
 
         /// <summary>Validate the keys of the current <see cref="Jwks"/>.</summary>
         public void Validate()

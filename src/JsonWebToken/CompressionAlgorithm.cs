@@ -2,6 +2,8 @@
 // Licensed under the MIT license. See LICENSE in the project root for license information.
 
 using System;
+using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
@@ -45,20 +47,9 @@ namespace JsonWebToken
         /// <summary>Initializes a new instance of the <see cref="CompressionAlgorithm"/> class.</summary>
         public CompressionAlgorithm(sbyte id, string name, Compressor compressor, Decompressor decompressor, bool enabled)
         {
-            if (name is null)
-            {
-                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.name);
-            }
-
-            if (compressor is null)
-            {
-                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.compressor);
-            }
-
-            if (decompressor is null)
-            {
-                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.decompressor);
-            }
+            Debug.Assert(name is not null);
+            Debug.Assert(compressor is not null);
+            Debug.Assert(decompressor is not null);
 
             _id = id;
             _utf8Name = JsonEncodedText.Encode(name);
@@ -211,5 +202,8 @@ namespace JsonWebToken
 
         internal static CompressionAlgorithm Create(string name)
             => new CompressionAlgorithm(127, name, Compressor.Null, Decompressor.Null, false);
+
+        /// <summary>The supported <see cref="CompressionAlgorithm"/>.</summary>
+        public static ReadOnlyCollection<CompressionAlgorithm> SupportedAlgorithms => Array.AsReadOnly(new[] { Def });
     }
 }

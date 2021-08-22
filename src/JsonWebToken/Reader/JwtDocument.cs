@@ -478,7 +478,11 @@ namespace JsonWebToken
                 return true;
             }
 
-            value = 0;
+#if NET5_0_OR_GREATER
+            Unsafe.SkipInit(out value);
+#else
+            value = default;
+#endif
             return false;
         }
 
@@ -498,7 +502,11 @@ namespace JsonWebToken
                 return true;
             }
 
-            value = 0;
+#if NET5_0_OR_GREATER
+            Unsafe.SkipInit(out value);
+#else
+            value = default;
+#endif
             return false;
         }
 
@@ -530,9 +538,9 @@ namespace JsonWebToken
             return GetRawValue(index, includeQuotes: false);
         }
 
-        internal string GetRawValueAsString(int index)
+        internal string GetRawValueAsString(int index, bool includeQuotes = true)
         {
-            ReadOnlyMemory<byte> segment = GetRawValue(index, includeQuotes: true);
+            ReadOnlyMemory<byte> segment = GetRawValue(index, includeQuotes: includeQuotes);
             return JsonReaderHelper.TranscodeHelper(segment.Span);
         }
 
@@ -568,7 +576,7 @@ namespace JsonWebToken
 
             CheckExpectedType(JsonTokenType.StartArray, row.TokenType);
 
-            return row.Length;
+            return row.NumberOfItems;
         }
 
         internal int GetMemberCount(int index)

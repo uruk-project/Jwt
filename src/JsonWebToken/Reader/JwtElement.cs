@@ -196,7 +196,11 @@ namespace JsonWebToken
         {
             if (_parent is null)
             {
-                value = 0L;
+#if NET5_0_OR_GREATER
+                Unsafe.SkipInit(out value);
+#else
+                value = default;
+#endif
                 return false;
             }
 
@@ -250,7 +254,11 @@ namespace JsonWebToken
         {
             if (_parent is null)
             {
-                value = 0;
+#if NET5_0_OR_GREATER
+                Unsafe.SkipInit(out value);
+#else
+                value = default;
+# endif
                 return false;
             }
 
@@ -566,7 +574,7 @@ namespace JsonWebToken
                 case JsonTokenType.Number:
                 case JsonTokenType.StartArray:
                 case JsonTokenType.StartObject:
-                    return _parent.GetRawValueAsString(_idx);
+                    return _parent.GetRawValueAsString(_idx, includeQuotes: false);
                 case JsonTokenType.String:
                     return GetString();
                 case JsonTokenType.Comment:
@@ -811,13 +819,14 @@ namespace JsonWebToken
                 _curIdx = -1;
 
                 var value = target.GetRawValue();
-                if (!TryParse(value, target.GetArrayLength(), out _document!))
+                int count = target.GetArrayLength();
+                if (!TryParse(value, count, out _document!))
                 {
                     ThrowHelper.ThrowFormatException_MalformedJson();
                 }
 
                 Debug.Assert(target.TokenType == JsonTokenType.StartArray);
-                _endIdxOrVersion = value.Length;
+                _endIdxOrVersion = count * JsonRow.Size;
             }
 
             /// <inheritdoc />
@@ -965,7 +974,7 @@ namespace JsonWebToken
 
             internal ArrayEnumerator(JwtElement target)
             {
-                if (typeof(T) != typeof(string) && typeof(T) != typeof(long) && typeof(T) != typeof(double))
+                if (typeof(T) != typeof(string) && typeof(T) != typeof(long) && typeof(T) != typeof(int) && typeof(T) != typeof(double))
                 {
                     throw new NotSupportedException();
                 }
@@ -973,13 +982,14 @@ namespace JsonWebToken
                 _curIdx = -1;
 
                 var value = target.GetRawValue();
-                if (!TryParse(value, target.GetArrayLength(), out _document!))
+                int count = target.GetArrayLength();
+                if (!TryParse(value, count, out _document!))
                 {
                     ThrowHelper.ThrowFormatException_MalformedJson();
                 }
 
                 Debug.Assert(target.TokenType == JsonTokenType.StartArray);
-                _endIdxOrVersion = value.Length;
+                _endIdxOrVersion = count * JsonRow.Size;
             }
 
             /// <inheritdoc />
@@ -1076,7 +1086,7 @@ namespace JsonWebToken
                                 if (tokenType == JsonTokenType.Number)
                                 {
                                     Debug.Assert(tokenStart < int.MaxValue);
-                                    database.Append(JsonTokenType.Number, tokenStart + 1, reader.ValueSpan.Length);
+                                    database.Append(JsonTokenType.Number, tokenStart, reader.ValueSpan.Length);
                                 }
                                 else
                                 {
