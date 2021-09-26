@@ -255,6 +255,12 @@ namespace JsonWebToken
                 return _utf8Json.Slice(row.Location, row.Length);
             }
 
+            if (row.Location + row.Length > _utf8Json.Length)
+            {
+                throw new Exception($"{row.Location} + {row.Length} > {_utf8Json.Length}");
+            }
+
+
             return _utf8Json.Slice(row.Location, row.Length);
         }
 
