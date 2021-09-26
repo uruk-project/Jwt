@@ -255,7 +255,7 @@ namespace JsonWebToken
                 return _utf8Json.Slice(row.Location, row.Length);
             }
 
-            if (row.Location + row.Length > _utf8Json.Length)
+            if ((uint)row.Location > (uint)_utf8Json.Length || (uint)row.Length > (uint)(_utf8Json.Length - row.Location))
             {
                 throw new Exception($"{row.Location} + {row.Length} > {_utf8Json.Length}");
             }
