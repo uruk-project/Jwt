@@ -16,7 +16,7 @@ namespace JsonWebToken
     // Based on https://github.com/dotnet/runtime/blob/master/src/libraries/System.Text.Json/src/System/Text/Json/Document/JsonDocument.cs
     public sealed class JwtHeaderDocument : IDisposable
     {
-        internal static readonly JwtHeaderDocument Empty = new JwtHeaderDocument(new JwtDocument(), -1, -1, -1, -1);
+        internal static readonly JwtHeaderDocument Empty = new JwtHeaderDocument(JwtDocument.Empty, -1, -1, -1, -1);
 
         private readonly JwtDocument _document;
         private readonly JwtElement _alg;
