@@ -19,7 +19,7 @@ namespace JsonWebToken
     // Based on https://github.com/dotnet/runtime/blob/master/src/libraries/System.Text.Json/src/System/Text/Json/Document/JsonDocument.cs
     public sealed class JwtPayloadDocument : IDisposable
     {
-        internal static readonly JwtPayloadDocument Empty = new JwtPayloadDocument(new JwtDocument(), 0, -1);
+        internal static readonly JwtPayloadDocument Empty = new JwtPayloadDocument(JwtDocument.Empty, 0, -1);
 
         private readonly JwtDocument _document;
         private readonly byte _control;

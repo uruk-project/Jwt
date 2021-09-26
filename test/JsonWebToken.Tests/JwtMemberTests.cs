@@ -29,11 +29,85 @@ namespace JsonWebToken.Tests
         }
 
         [Fact]
+        public void Indexer_Array()
+        {
+            JwtHeaderDocument.TryParseHeader(Utf8.GetBytes("{\"fake\":true, \"array\":[ 1, {}, {\"x\":true}, true, false, null, \"text\", [], [true, false]]}"), null, TokenValidationPolicy.NoValidation, out var header, out _);
+            header.TryGetHeaderParameter("array", out var element);
+
+            var value = element[0];
+            Assert.Equal(JsonValueKind.Number, value.ValueKind);
+            value = element[1];
+            Assert.Equal(JsonValueKind.Object, value.ValueKind);
+            value = element[2];
+            Assert.Equal(JsonValueKind.Object, value.ValueKind);
+            value = element[3];
+            Assert.Equal(JsonValueKind.True, value.ValueKind);
+            value = element[4];
+            Assert.Equal(JsonValueKind.False, value.ValueKind);
+            value = element[5];
+            Assert.Equal(JsonValueKind.Null, value.ValueKind);
+            value = element[6];
+            Assert.Equal(JsonValueKind.String, value.ValueKind);
+            value = element[7];
+            Assert.Equal(JsonValueKind.Array, value.ValueKind);
+            value = element[8];
+            Assert.Equal(JsonValueKind.Array, value.ValueKind);
+        }
+
+        [Theory]
+        [InlineData("{\"object\":{\"p1\":1, \"p2\":{}, \"p3\":{\"x\":true}, \"p4\":true, \"p5\":false, \"p6\":null, \"p7\":\"text\", \"p8\":[], \"p9\":[true, false]}}")]
+        [InlineData("{\"placeholder\":true,\"object\":{\"p1\":1, \"p2\":{}, \"p3\":{\"x\":true}, \"p4\":true, \"p5\":false, \"p6\":null, \"p7\":\"text\", \"p8\":[], \"p9\":[true, false]}}")]
+        [InlineData("{\"object\":{\"p1\":1, \"p2\":{}, \"p3\":{\"x\":true}, \"p4\":true, \"p5\":false, \"p6\":null, \"p7\":\"text\", \"p8\":[], \"p9\":[true, false]},\"placeholder\":true}")]
+        [InlineData("{\"placeholder1\":true,\"object\":{\"p1\":1, \"p2\":{}, \"p3\":{\"x\":true}, \"p4\":true, \"p5\":false, \"p6\":null, \"p7\":\"text\", \"p8\":[], \"p9\":[true, false]},\"placeholder2\":true}")]
+        public void Indexer_Object(string json)
+        {
+            JwtHeaderDocument.TryParseHeader(Utf8.GetBytes(json), null, TokenValidationPolicy.NoValidation, out var header, out _);
+            header.TryGetHeaderParameter("object", out var element);
+
+            var value = element["p1"];
+            var value2 = element[Encoding.UTF8.GetBytes("p1")];
+            Assert.Equal(JsonValueKind.Number, value.ValueKind);
+            Assert.Equal(JsonValueKind.Number, value2.ValueKind);
+            value = element["p2"];
+            value2 = element[Encoding.UTF8.GetBytes("p2")];
+            Assert.Equal(JsonValueKind.Object, value.ValueKind);
+            Assert.Equal(JsonValueKind.Object, value2.ValueKind);
+            value = element["p3"];
+            value2 = element[Encoding.UTF8.GetBytes("p3")];
+            Assert.Equal(JsonValueKind.Object, value.ValueKind);
+            Assert.Equal(JsonValueKind.Object, value2.ValueKind);
+            value = element["p4"];
+            value2 = element[Encoding.UTF8.GetBytes("p4")];
+            Assert.Equal(JsonValueKind.True, value.ValueKind);
+            Assert.Equal(JsonValueKind.True, value2.ValueKind);
+            value = element["p5"];
+            value2 = element[Encoding.UTF8.GetBytes("p5")];
+            Assert.Equal(JsonValueKind.False, value.ValueKind);
+            Assert.Equal(JsonValueKind.False, value2.ValueKind);
+            value = element["p6"];
+            value2 = element[Encoding.UTF8.GetBytes("p6")];
+            Assert.Equal(JsonValueKind.Null, value.ValueKind);
+            Assert.Equal(JsonValueKind.Null, value2.ValueKind);
+            value = element["p7"];
+            value2 = element[Encoding.UTF8.GetBytes("p7")];
+            Assert.Equal(JsonValueKind.String, value.ValueKind);
+            Assert.Equal(JsonValueKind.String, value2.ValueKind);
+            value = element["p8"];
+            value2 = element[Encoding.UTF8.GetBytes("p8")];
+            Assert.Equal(JsonValueKind.Array, value.ValueKind);
+            Assert.Equal(JsonValueKind.Array, value2.ValueKind);
+            value = element["p9"];
+            value2 = element[Encoding.UTF8.GetBytes("p9")];
+            Assert.Equal(JsonValueKind.Array, value.ValueKind);
+            Assert.Equal(JsonValueKind.Array, value2.ValueKind);
+        }
+
+        [Fact]
         public void EnumerateArrayOfObject()
         {
             JwtHeaderDocument.TryParseHeader(Utf8.GetBytes("{\"array\":[ 1, {}, {\"x\":true}, true, false, null, \"text\", [], [true, false]]}"), null, TokenValidationPolicy.NoValidation, out var header, out _);
             header.TryGetHeaderParameter("array", out var element);
-        
+
             var enumerator = element.EnumerateArray();
             enumerator.MoveNext();
             Assert.Equal(JsonValueKind.Number, enumerator.Current.ValueKind);
@@ -60,7 +134,7 @@ namespace JsonWebToken.Tests
         {
             JwtHeaderDocument.TryParseHeader(Utf8.GetBytes("{\"array\":{\"x\":true}}"), null, TokenValidationPolicy.NoValidation, out var header, out _);
             header.TryGetHeaderParameter("array", out var element);
-        
+
             Assert.Throws<InvalidOperationException>(() => element.EnumerateArray());
         }
 

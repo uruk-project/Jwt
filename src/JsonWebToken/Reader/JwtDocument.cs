@@ -49,18 +49,16 @@ namespace JsonWebToken
             Debug.Assert(isDisposable || extraRentedBytes == null);
         }
 
-        internal JwtDocument()
+        private JwtDocument()
         {
             _isDisposable = false;
             _utf8Json = new byte[1];
-            _disposableRegistry = new List<IDisposable>(0);
-            _root = new JwtElement(this, 0);
+            _disposableRegistry = new List<IDisposable>(Array.Empty<IDisposable>());
+            _root = default;
         }
 
         internal bool TryGetNamedPropertyValue(ReadOnlySpan<char> propertyName, out JwtElement value)
         {
-            JsonRow row;
-
             int maxBytes = Utf8.GetMaxByteCount(propertyName.Length);
             int endIndex = _parsedData.Length;
 
@@ -75,48 +73,25 @@ namespace JsonWebToken
                     utf8Name,
                     out value);
             }
-
-            // Unescaping the property name will make the string shorter (or the same)
-            // So the first viable candidate is one whose length in bytes matches, or
-            // exceeds, our length in chars.
-            //
-            // The maximal escaping seems to be 6 -> 1 ("\u0030" => "0"), but just transcode
-            // and switch once one viable long property is found.
-            int minBytes = propertyName.Length;
-            for (int candidateIndex = 0; candidateIndex <= endIndex; candidateIndex += JsonRow.Size * 2)
+            else
             {
-                row = _parsedData.Get(candidateIndex);
-                Debug.Assert(row.TokenType == JsonTokenType.PropertyName);
-
-                if (row.Length >= minBytes)
+                byte[] tmpUtf8 = ArrayPool<byte>.Shared.Rent(maxBytes);
+                Span<byte> utf8Name = tmpUtf8;
+                try
                 {
-                    byte[] tmpUtf8 = ArrayPool<byte>.Shared.Rent(maxBytes);
-                    Span<byte> utf8Name = default;
+                    int len = JsonReaderHelper.GetUtf8FromText(propertyName, utf8Name);
+                    utf8Name = utf8Name.Slice(0, len);
 
-                    try
-                    {
-                        int len = JsonReaderHelper.GetUtf8FromText(propertyName, tmpUtf8);
-                        utf8Name = tmpUtf8.AsSpan(0, len);
-
-                        return TryGetNamedPropertyValue(
-                            candidateIndex,
-                            utf8Name,
-                            out value);
-                    }
-                    finally
-                    {
-                        ArrayPool<byte>.Shared.Return(tmpUtf8);
-                    }
+                    return TryGetNamedPropertyValue(
+                        endIndex,
+                        utf8Name,
+                        out value);
+                }
+                finally
+                {
+                    ArrayPool<byte>.Shared.Return(tmpUtf8);
                 }
             }
-
-            // None of the property names were within the range that the UTF-8 encoding would have been.
-#if NET5_0_OR_GREATER
-            Unsafe.SkipInit(out value);
-#else
-            value = default;
-#endif
-            return false;
         }
 
         internal bool TryGetNamedPropertyValue(ReadOnlySpan<byte> propertyName, out JwtElement value)
@@ -590,20 +565,17 @@ namespace JsonWebToken
 
         internal JwtElement GetArrayIndexElement(int currentIndex, int arrayIndex)
         {
-            JsonRow row = _parsedData.Get(currentIndex);
-
-            CheckExpectedType(JsonTokenType.StartArray, row.TokenType);
-
-            int arrayLength = row.Length;
+            int arrayLength = _parsedData.Count;
 
             if ((uint)arrayIndex >= (uint)arrayLength)
             {
                 throw new IndexOutOfRangeException();
             }
 
+            JsonRow row = _parsedData.Get(currentIndex);
             if (!row.NeedUnescaping)
             {
-                return new JwtElement(this, currentIndex + ((arrayIndex + 1) * JsonRow.Size));
+                return new JwtElement(this, arrayIndex * JsonRow.Size);
             }
 
             int elementCount = 0;
@@ -630,7 +602,6 @@ namespace JsonWebToken
                 $"Ran out of database searching for array index {arrayIndex} from {currentIndex} when length was {arrayLength}");
             throw new IndexOutOfRangeException();
         }
-
 
         /// <summary>Determines whether the <see cref="JwtDocument"/> contains the specified key.</summary>
         public bool ContainsKey(ReadOnlySpan<byte> key)

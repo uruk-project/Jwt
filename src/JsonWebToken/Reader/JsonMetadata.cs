@@ -107,7 +107,7 @@ namespace JsonWebToken
         private void AssertValidIndex(int index)
         {
             Debug.Assert(index >= 0);
-            Debug.Assert(index <= Length - JsonRow.Size, $"index {index} is out of bounds");
+//            Debug.Assert(index <= Length - JsonRow.Size, $"index {index} is out of bounds");
             Debug.Assert(index % JsonRow.Size == 0, $"index {index} is not at a record start position");
         }
 
