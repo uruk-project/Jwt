@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net5.0;netstandard2.0;netcoreapp2.1;netcoreapp3.1</TargetFrameworks>
+    <TargetFrameworks>net5.0;ne6.0;netstandard2.0;netcoreapp2.1;netcoreapp3.1</TargetFrameworks>
     <TargetFrameworks Condition="'$(OS)' == 'Windows_NT'">$(TargetFrameworks);net461;net47</TargetFrameworks>
     <LangVersion>9.0</LangVersion>
     <Nullable>enable</Nullable>
@@ -113,6 +113,10 @@
     <DefineConstants>$(DefineConstants);SUPPORT_AESGCM;SUPPORT_JAVASCRIPT_ENCODER;SUPPORT_SPAN_CRYPTO;SUPPORT_RUNE;SUPPORT_SPAN_STREAM</DefineConstants>
   </PropertyGroup>
   <PropertyGroup Condition="'$(TargetFramework)' == 'net5.0'">
+    <DefineConstants>$(DefineConstants);SUPPORT_ELLIPTIC_CURVE;SUPPORT_ELLIPTIC_CURVE_SIGNATURE;SUPPORT_ELLIPTIC_CURVE_KEYWRAPPING;SUPPORT_SIMD</DefineConstants>
+    <DefineConstants>$(DefineConstants);SUPPORT_AESGCM;SUPPORT_JAVASCRIPT_ENCODER;SUPPORT_SPAN_CRYPTO;SUPPORT_RUNE;SUPPORT_SPAN_STREAM;SUPPORT_SKIPLOCALINIT</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(TargetFramework)' == 'net6.0'">
     <DefineConstants>$(DefineConstants);SUPPORT_ELLIPTIC_CURVE;SUPPORT_ELLIPTIC_CURVE_SIGNATURE;SUPPORT_ELLIPTIC_CURVE_KEYWRAPPING;SUPPORT_SIMD</DefineConstants>
     <DefineConstants>$(DefineConstants);SUPPORT_AESGCM;SUPPORT_JAVASCRIPT_ENCODER;SUPPORT_SPAN_CRYPTO;SUPPORT_RUNE;SUPPORT_SPAN_STREAM;SUPPORT_SKIPLOCALINIT</DefineConstants>
   </PropertyGroup>
