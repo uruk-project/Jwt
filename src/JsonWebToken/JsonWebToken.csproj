@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net5.0;ne6.0;netstandard2.0;netcoreapp2.1;netcoreapp3.1</TargetFrameworks>
+    <TargetFrameworks>net5.0;ne6.0;netstandard2.0;netcoreapp2.2;netcoreapp3.1</TargetFrameworks>
     <TargetFrameworks Condition="'$(OS)' == 'Windows_NT'">$(TargetFrameworks);net461;net47</TargetFrameworks>
     <LangVersion>9.0</LangVersion>
     <Nullable>enable</Nullable>
@@ -103,7 +103,7 @@
     <DefineConstants>$(DefineConstants);SUPPORT_ELLIPTIC_CURVE;SUPPORT_ELLIPTIC_CURVE_SIGNATURE</DefineConstants>
     <NoWarn>CS8601;CS8602;CS8604;CS8618</NoWarn>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(TargetFramework)' == 'netcoreapp2.1'">
+  <PropertyGroup Condition="'$(TargetFramework)' == 'netcoreapp2.2'">
     <DefineConstants>$(DefineConstants);SUPPORT_ELLIPTIC_CURVE;SUPPORT_ELLIPTIC_CURVE_SIGNATURE;SUPPORT_ELLIPTIC_CURVE_KEYWRAPPING</DefineConstants>
     <DefineConstants>$(DefineConstants);SUPPORT_JAVASCRIPT_ENCODER;SUPPORT_SPAN_CRYPTO;SUPPORT_SPAN_STREAM</DefineConstants>
     <NoWarn>CS8601;CS8602;CS8604;CS8618</NoWarn>
