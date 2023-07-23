@@ -42,7 +42,7 @@ namespace JsonWebToken
         Hmac = 0x08,
 
         /// <summary>
-        /// HMAC algorithm
+        /// Direct algorithm
         /// </summary>
         Direct = 0x10
     }

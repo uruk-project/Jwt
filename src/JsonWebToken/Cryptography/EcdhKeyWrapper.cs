@@ -61,10 +61,10 @@ namespace JsonWebToken.Internal
             }
             else
             {
-                if (alg == KeyManagementAlgorithm.EcdhEs)
+                // https://datatracker.ietf.org/doc/html/rfc7516#section-5.2
+                if ((alg.Category & AlgorithmCategory.Direct) == AlgorithmCategory.Direct)
                 {
                     size = 0;
-                   // size = _keySizeInBytes;
                 }
                 else
                 {
