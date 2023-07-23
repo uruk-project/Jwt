@@ -63,7 +63,7 @@ namespace JsonWebToken.Tests
                         { "iss", "https://idp.example.com/"},
                         { "iat", 1508184845},
                         { "aud", "636C69656E745F6964"},
-                        { "exp", 1628184845},
+                        { "exp", 2628184845},
                         { "nbf",  1508184845}
                     }
                 },
@@ -74,7 +74,7 @@ namespace JsonWebToken.Tests
                         { "iss", "https://idp.example.com/"},
                         { "iat", 1508184845},
                         { "aud", new JArray("636C69656E745F6964", "X", "Y" ) },
-                        { "exp", 1628184845},
+                        { "exp", 2628184845},
                         { "nbf",  1508184845}
                     }
                 },
@@ -85,7 +85,7 @@ namespace JsonWebToken.Tests
                         { "iss", "https://idp.example.com/"},
                         { "iat", 1508184845},
                         { "aud", "636C69656E745F6964"},
-                        { "exp", 1628184845}
+                        { "exp", 2628184845}
                     }
                 },
                 {
@@ -95,7 +95,7 @@ namespace JsonWebToken.Tests
                         { "iss", "https://idp.example.com/"},
                         { "iat", 1508184845},
                         { "aud", "636C69656E745F6964"},
-                        { "exp", 1628184845},
+                        { "exp", 2628184845},
                         { "nbf",  1508184845},
                         { "claim1", "value1ABCDEFGH" },
                         { "claim2", "value1ABCDEFGH" },
@@ -122,7 +122,7 @@ namespace JsonWebToken.Tests
                         { "iss", "https://idp.example.com/" },
                         { "iat", 1508184845 },
                         { "aud", "636C69656E745F6964" },
-                        { "exp", 1628184845 },
+                        { "exp", 2628184845 },
                         { "nbf",  1508184845},
                         { "big_claim", Convert.ToBase64String(bigData) }
                     }

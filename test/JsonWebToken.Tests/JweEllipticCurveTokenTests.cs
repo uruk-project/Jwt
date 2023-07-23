@@ -46,6 +46,35 @@ namespace JsonWebToken.Tests
             Assert.Equal("Alice", result.Token.Subject);
         }
 
+        [Fact]
+        public void Issue578()
+        {
+            var alg = KeyManagementAlgorithm.EcdhEs;
+            Assert.Equal("ECDH-ES", alg.Name);
+            Assert.Equal(Algorithms.EcdhEs, alg.Id);
+            Assert.Equal(AlgorithmCategory.Direct | AlgorithmCategory.EllipticCurve, alg.Category);
+            Assert.False(alg.ProduceEncryptionKey);
+
+            string json = "{\"alg\": \"ES256\",\"crv\": \"P-256\",\"kty\": \"EC\",\"use\": \"sig\",\"x\": \"OKs1T_4N9Z78RQ87olZ98PW__ROFWL5fw1671XB20zw\",\"y\": \"8y5YBG5RY4gK2bObN4Aj5eNmXBoLMrCHKEMwykPSTIg\"}";
+            string payload = "teste";
+
+            var descriptor = new PlaintextJweDescriptor(payload)
+            {
+                EncryptionKey = Jwk.FromJson(json),
+                EncryptionAlgorithm = EncryptionAlgorithm.Aes256Gcm,
+                Algorithm = KeyManagementAlgorithm.EcdhEs
+            };
+
+            var writer = new JwtWriter();
+            string jwe = writer.WriteTokenString(descriptor);
+            string[] parts = jwe.Split('.', System.StringSplitOptions.None);
+            string cek = parts[1];
+            System.Console.Write(jwe);
+            Assert.Equal(
+                "",
+                cek);
+        }
+
         public static IEnumerable<object[]> GetSupportedAlgorithm()
         {
             yield return new object[] { (string)EncryptionAlgorithm.Aes128CbcHmacSha256, (byte[])KeyManagementAlgorithm.EcdhEs };

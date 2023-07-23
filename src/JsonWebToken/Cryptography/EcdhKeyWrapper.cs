@@ -63,7 +63,8 @@ namespace JsonWebToken.Internal
             {
                 if (alg == KeyManagementAlgorithm.EcdhEs)
                 {
-                    size = _keySizeInBytes;
+                    size = 0;
+                   // size = _keySizeInBytes;
                 }
                 else
                 {
