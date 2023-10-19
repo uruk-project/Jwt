@@ -2,7 +2,7 @@ name: .NET Core CI/CD
 on:
   push:
     branches:
-      - master
+      - Irock1up/jwt
     tags:
       - v*
     paths:
