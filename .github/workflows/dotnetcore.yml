@@ -42,8 +42,12 @@ jobs:
       - name: Setup OpenSSL (macOS)
         if: matrix.os == 'macos-latest'
         run: |
-          ln -s /usr/local/opt/openssl@1.1/lib/libssl.1.1.dylib /usr/local/lib/libssl.1.1.dylib
-          ln -s /usr/local/opt/openssl@1.1/lib/libcrypto.1.1.dylib /usr/local/lib/libcrypto.1.1.dylib
+          wget https://www.openssl.org/source/openssl-1.1.1c.tar.gz
+          tar -xzvf openssl-1.1.1c.tar.gz
+          cd openssl-1.1.1c
+          ./config
+          make
+          sudo make install
       - name: setup dotnet '2.2.x'
         uses: actions/setup-dotnet@v1
         with:
