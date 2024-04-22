@@ -34,7 +34,7 @@ namespace JsonWebToken.Tests
             writer.Flush();
             var json = Encoding.UTF8.GetString(stream.ToArray());
             string expected = "{\"long\":9223372036854775807,\"ulong\":18446744073709551615,\"int\":2147483647,\"uint\":4294967295,\"short\":32767,\"ushort\":65535,\"sbyte\":127,\"byte\":255,\"float\":3.4028235E+38,\"double\":1.7976931348623157E+308,\"true\":true,\"false\":false}";
-#if NETCOREAPP2_1 || NET46_OR_GREATER
+#if NETCOREAPP2_2 || NET46_OR_GREATER
             expected = expected.Replace("\"float\":3.40282347E+38", "\"float\":3.4028235E+38");
 #else
             Assert.Equal(expected, json);

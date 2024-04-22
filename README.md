@@ -126,10 +126,10 @@ The main reason of the efficiency of this library is the usage of the new API pr
 | RS256        | RSASSA-PKCS1-v1_5 using SHA-256                | netstandard2.0
 | RS384        | RSASSA-PKCS1-v1_5 using SHA-384                | netstandard2.0
 | RS512        | RSASSA-PKCS1-v1_5 using SHA-512                | netstandard2.0
-| ES256        | ECDSA using curve P-256 and SHA-256                  | netcoreapp2.1
-| ES384        | ECDSA using curve P-384 and SHA-384                  | netcoreapp2.1
-| ES512        | ECDSA using curve P-521 and SHA-512                  | netcoreapp2.1
-| ES256K       | ECDSA using curve secp256k1  and SHA-256             | netcoreapp2.1 (not available on MacOS)
+| ES256        | ECDSA using curve P-256 and SHA-256                  | netcoreapp2.2
+| ES384        | ECDSA using curve P-384 and SHA-384                  | netcoreapp2.2
+| ES512        | ECDSA using curve P-521 and SHA-512                  | netcoreapp2.2
+| ES256K       | ECDSA using curve secp256k1  and SHA-256             | netcoreapp2.2 (not available on MacOS)
 | PS256        | RSASSA-PSS using SHA-256 and MGF1 with SHA-256 | netstandard2.0
 | PS384        | RSASSA-PSS using SHA-384 and MGF1 with SHA-384 | netstandard2.0
 | PS512        | RSASSA-PSS using SHA-512 and MGF1 with SHA-512 | netstandard2.0
@@ -155,10 +155,10 @@ The main reason of the efficiency of this library is the usage of the new API pr
 | A192KW             | AES Key Wrap with default initial value using 192-bit key                     | netstandard2.0
 | A256KW             | AES Key Wrap with default initial value using 256-bit key                     | netstandard2.0
 | dir                | Direct use of a shared symmetric key as the CEK                               | netstandard2.0
-| ECDH-ES            | Elliptic Curve Diffie-Hellman Ephemeral Static key agreement using Concat KDF | netcoreapp2.1
-| ECDH-ES+A128KW     | ECDH-ES using Concat KDF and CEK wrapped with "A128KW"                        | netcoreapp2.1
-| ECDH-ES+A192KW     | ECDH-ES using Concat KDF and CEK wrapped with "A192KW"                        | netcoreapp2.1
-| ECDH-ES+A256KW     | ECDH-ES using Concat KDF and CEK wrapped with "A256KW"                        | netcoreapp2.1
+| ECDH-ES            | Elliptic Curve Diffie-Hellman Ephemeral Static key agreement using Concat KDF | netcoreapp2.2
+| ECDH-ES+A128KW     | ECDH-ES using Concat KDF and CEK wrapped with "A128KW"                        | netcoreapp2.2
+| ECDH-ES+A192KW     | ECDH-ES using Concat KDF and CEK wrapped with "A192KW"                        | netcoreapp2.2
+| ECDH-ES+A256KW     | ECDH-ES using Concat KDF and CEK wrapped with "A256KW"                        | netcoreapp2.2
 | A128GCMKW          | Key wrapping with AES GCM using 128-bit key                                   | netcoreapp3.0
 | A192GCMKW          | Key wrapping with AES GCM using 192-bit key                                   | netcoreapp3.0
 | A256GCMKW          | Key wrapping with AES GCM using 256-bit key                                   | netcoreapp3.0

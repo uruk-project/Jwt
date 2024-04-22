@@ -160,7 +160,7 @@ namespace JsonWebToken.Tests
             yield return new object[] { new JwtMember(JsonEncodedText.Encode("int32"), 1), "{\"int32\":1}" };
             yield return new object[] { new JwtMember(JsonEncodedText.Encode("int16"), (short)1), "{\"int16\":1}" };
             yield return new object[] { new JwtMember(JsonEncodedText.Encode("int8"), (byte)1), "{\"int8\":1}" };
-#if NETCOREAPP2_1 || NETFRAMEWORK || NETSTANDARD
+#if NETCOREAPP2_2 || NETFRAMEWORK || NETSTANDARD
             yield return new object[] { new JwtMember(JsonEncodedText.Encode("float"), 1.0f), "{\"float\":1}" };
             yield return new object[] { new JwtMember(JsonEncodedText.Encode("float"), 1.1f), "{\"float\":" + ((double)1.1f).ToString("G9", CultureInfo.InvariantCulture) + "}" };
             yield return new object[] { new JwtMember(JsonEncodedText.Encode("double"), 1.0d), "{\"double\":1}" };

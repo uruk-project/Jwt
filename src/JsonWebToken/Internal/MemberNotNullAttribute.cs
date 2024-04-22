@@ -1,7 +1,7 @@
 ﻿// Copyright (c) 2020 Yann Crumeyrolle. All rights reserved.
 // Licensed under the MIT license. See LICENSE in the project root for license information.
 
-#if NETSTANDARD2_0 || NET461 || NET47 || NETCOREAPP2_1 || NETCOREAPP3_1
+#if NETSTANDARD2_0 || NET461 || NET47 || NETCOREAPP2_2 || NETCOREAPP3_1
 namespace System.Diagnostics.CodeAnalysis
 {
     /// <summary>Specifies that the method or property will ensure that the listed field and property members have values that aren't null.</summary>
