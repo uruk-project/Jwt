@@ -14,6 +14,7 @@ namespace JsonWebToken
     {
         private readonly JwtDocument _parent;
         private readonly int _idx;
+        private readonly JwtDocument? _document;
 
         internal JwtElement(JwtDocument parent, int idx)
         {
@@ -23,8 +24,28 @@ namespace JsonWebToken
             Debug.Assert(idx >= 0);
             Debug.Assert(parent != null);
 
-            _parent = parent;
             _idx = idx;
+
+            if (parent.GetJsonTokenType(idx) is JsonTokenType.StartArray)
+            {
+                var value = parent.GetRawValue(idx);
+                int count = parent.GetArrayLength(idx);
+                if (!ArrayEnumerator.TryParse(value, count, out var doc))
+                {
+                    ThrowHelper.ThrowFormatException_MalformedJson();
+                    _document = default;
+                }
+                else
+                {
+                    _document = doc;
+                }
+            }
+            else
+            {
+                _document = default;
+            }
+
+            _parent = parent;
         }
 
         /// <summary>Defines whether the current <see cref="JwtElement"/> is empty</summary>
@@ -47,9 +68,9 @@ namespace JsonWebToken
         {
             get
             {
-                if (_parent != null)
+                if (_document != null)
                 {
-                    return _parent.GetArrayIndexElement(_idx, index);
+                    return _document.GetArrayIndexElement(0, index);
                 }
 
                 throw new IndexOutOfRangeException();
@@ -884,7 +905,7 @@ namespace JsonWebToken
                 return _curIdx < _endIdxOrVersion;
             }
 
-            private static bool TryParse(ReadOnlyMemory<byte> utf8Array, int count, out JwtDocument? document)
+            internal static bool TryParse(ReadOnlyMemory<byte> utf8Array, int count, [NotNullWhen(true)] out JwtDocument? document)
             {
                 ReadOnlySpan<byte> utf8JsonSpan = utf8Array.Span;
                 var database = new JsonMetadata(count * JsonRow.Size);
