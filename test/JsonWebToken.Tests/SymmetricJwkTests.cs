@@ -46,8 +46,11 @@ namespace JsonWebToken.Tests
             return base.CreateSigner_Succeed(key, alg);
         }
 
-        [Fact]
-        public override void Canonicalize()
+        [Theory]
+        [InlineData("HS256")]
+        [InlineData("HS384")]
+        [InlineData("HS512")]
+        public override void Canonicalize(string alg)
         {
             var jwk = SymmetricJwk.GenerateKey(SignatureAlgorithm.HS256);
             var canonicalizedKey = (SymmetricJwk)CanonicalizeKey(jwk);

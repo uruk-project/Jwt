@@ -47,7 +47,7 @@ namespace JsonWebToken.Tests
             return signer;
         }
 
-        public abstract void Canonicalize();
+        public abstract void Canonicalize(string alg);
 
         public Jwk CanonicalizeKey(Jwk key)
         {

@@ -142,7 +142,7 @@ namespace JsonWebToken.Tests
             key.Kid = JsonEncodedText.Encode("X");
             copiedKey.Kid = JsonEncodedText.Encode("Y");
             Assert.NotEqual(key, copiedKey);
-   
+
             Assert.NotEqual(key, Jwk.None);
         }
 
@@ -180,15 +180,21 @@ namespace JsonWebToken.Tests
             return base.CreateSigner_Failed(key, alg);
         }
 
-        [Fact]
-        public override void Canonicalize()
+        [Theory]
+        [InlineData("ES256")]
+        [InlineData("ES384")]
+        [InlineData("ES512")]
+        [InlineData("ES256K")]
+        public override void Canonicalize(string alg)
         {
-            var jwk = ECJwk.GeneratePrivateKey(SignatureAlgorithm.ES256);
+            var jwk = ECJwk.GeneratePrivateKey((SignatureAlgorithm)alg);
             var canonicalizedKey = (ECJwk)CanonicalizeKey(jwk);
 
             Assert.True(canonicalizedKey.D.IsEmpty);
+            bool supported = EllipticalCurve.TryGetSupportedCurve((SignatureAlgorithm)alg, out var crv);
 
-            Assert.Equal(EllipticalCurve.P256.Id, canonicalizedKey.Crv.Id);
+            Assert.True(supported);
+            Assert.Equal(crv.Id, canonicalizedKey.Crv.Id);
             Assert.False(canonicalizedKey.X.IsEmpty);
             Assert.False(canonicalizedKey.Y.IsEmpty);
         }
