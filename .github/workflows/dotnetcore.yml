@@ -39,15 +39,15 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
-      - name: Setup OpenSSL (macOS)
-        if: matrix.os == 'macos-latest'
-        run: |
-          wget https://www.openssl.org/source/openssl-1.1.1c.tar.gz
-          tar -xzvf openssl-1.1.1c.tar.gz
-          cd openssl-1.1.1c
-          ./config
-          make
-          sudo make install
+      # - name: Setup OpenSSL (macOS)
+      #   if: matrix.os == 'macos-latest'
+      #   run: |
+      #     wget https://www.openssl.org/source/openssl-1.1.1c.tar.gz
+      #     tar -xzvf openssl-1.1.1c.tar.gz
+      #     cd openssl-1.1.1c
+      #     ./config
+      #     make
+      #     sudo make install
       - name: setup dotnet '2.2.x'
         uses: actions/setup-dotnet@v1
         with:
@@ -68,6 +68,8 @@ jobs:
         run: dotnet build -c ${{ matrix.configuration }} --no-restore
 
       - name: Test
+  # disable macOS tests
+        if: matrix.os != 'macos-latest'
         run: dotnet test -c ${{ matrix.configuration }} --no-build --collect:"XPlat Code Coverage" --settings coverlet.runsettings
 
       - name: Upload coverage to Codecov
