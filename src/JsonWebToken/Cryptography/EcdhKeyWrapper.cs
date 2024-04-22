@@ -13,6 +13,7 @@ namespace JsonWebToken.Cryptography
 {
     internal sealed class EcdhKeyWrapper : KeyWrapper
     {
+        private const int Sha256Length = 32;
         private static readonly byte[] _secretPreprend = { 0x0, 0x0, 0x0, 0x1 };
 
         private readonly JsonEncodedText _algorithm;
@@ -41,7 +42,7 @@ namespace JsonWebToken.Cryptography
             }
 
             _algorithmNameLength = _algorithm.EncodedUtf8Bytes.Length;
-            _hashAlgorithm = GetHashAlgorithm(encryptionAlgorithm);
+            _hashAlgorithm = GetHashAlgorithm();
         }
 
         /// <inheritsdoc />
@@ -95,13 +96,20 @@ namespace JsonWebToken.Cryptography
             var partyUInfo = GetPartyInfo(header, JwtHeaderParameterNames.Apu);
             var partyVInfo = GetPartyInfo(header, JwtHeaderParameterNames.Apv);
             var secretAppend = BuildSecretAppend(partyUInfo, partyVInfo);
-            ReadOnlySpan<byte> exchangeHash;
+            Span<byte> exchangeHash = stackalloc byte[_keySizeInBytes];
+            if (_keySizeInBytes > Sha256Length)
+            {
+                exchangeHash.Slice(Sha256Length).Clear();
+            }
+
+            exchangeHash.Clear();
             var ecKey = _key;
             var otherPartyKey = ecKey.CreateEcdhKey();
             ECDiffieHellman ephemeralKey = (staticKey is null) ? ECDiffieHellman.Create(ecKey.Crv.CurveParameters) : ((ECJwk)staticKey).CreateEcdhKey();
             try
             {
-                exchangeHash = new ReadOnlySpan<byte>(ephemeralKey.DeriveKeyFromHash(otherPartyKey.PublicKey, _hashAlgorithm, _secretPreprend, secretAppend), 0, _keySizeInBytes);
+                var kdf = ephemeralKey.DeriveKeyFromHash(otherPartyKey.PublicKey, _hashAlgorithm, _secretPreprend, secretAppend);
+                kdf.AsSpan(0, _keySizeInBytes < kdf.Length ? _keySizeInBytes : kdf.Length).CopyTo(exchangeHash);
                 var epk = ECJwk.FromParameters(ephemeralKey.ExportParameters(false));
                 header.Add(JwtHeaderParameterNames.Epk, epk);
             }
@@ -132,19 +140,8 @@ namespace JsonWebToken.Cryptography
         {
         }
 
-        private static HashAlgorithmName GetHashAlgorithm(EncryptionAlgorithm encryptionAlgorithm)
+        private static HashAlgorithmName GetHashAlgorithm()
         {
-            Debug.Assert(encryptionAlgorithm.SignatureAlgorithm != null);
-
-            var hashAlgorithm = encryptionAlgorithm.SignatureAlgorithm.HashAlgorithm;
-            if (hashAlgorithm == default)
-            {
-                goto Sha256;
-            }
-
-            return hashAlgorithm;
-
-        Sha256:
             return HashAlgorithmName.SHA256;
         }
 

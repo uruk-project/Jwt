@@ -13,6 +13,7 @@ namespace JsonWebToken.Cryptography
 {
     internal sealed class EcdhKeyUnwrapper : KeyUnwrapper
     {
+        private const int Sha256Length = 32;
         private static readonly byte[] _secretPreprend = { 0x0, 0x0, 0x0, 0x1 };
 
         private readonly JsonEncodedText _algorithm;
@@ -41,7 +42,7 @@ namespace JsonWebToken.Cryptography
             }
 
             _algorithmNameLength = _algorithm.EncodedUtf8Bytes.Length;
-            _hashAlgorithm = GetHashAlgorithm(encryptionAlgorithm);
+            _hashAlgorithm = GetHashAlgorithm();
         }
 
         /// <inheritsdoc />
@@ -60,7 +61,12 @@ namespace JsonWebToken.Cryptography
             header.TryGetHeaderParameter(JwtHeaderParameterNames.Apv.EncodedUtf8Bytes, out JwtElement apv);
             byte[] secretAppend = BuildSecretAppend(apu, apv);
 
-            ReadOnlySpan<byte> exchangeHash;
+            Span<byte> exchangeHash = stackalloc byte[_keySizeInBytes];
+            if (_keySizeInBytes > Sha256Length)
+            {
+                exchangeHash.Slice(Sha256Length).Clear();
+            }
+
             using (var ephemeralKey = ECDiffieHellman.Create(ECJwk.FromJwtElement(epk).ExportParameters()))
             {
                 var privateKey = _key.CreateEcdhKey();
@@ -69,7 +75,8 @@ namespace JsonWebToken.Cryptography
                     return ThrowHelper.TryWriteError(out bytesWritten);
                 }
 
-                exchangeHash = new ReadOnlySpan<byte>(privateKey.DeriveKeyFromHash(ephemeralKey.PublicKey, _hashAlgorithm, _secretPreprend, secretAppend), 0, _keySizeInBytes);
+                var kdf = privateKey.DeriveKeyFromHash(ephemeralKey.PublicKey, _hashAlgorithm, _secretPreprend, secretAppend);
+                kdf.AsSpan(0, _keySizeInBytes < kdf.Length ? _keySizeInBytes : kdf.Length).CopyTo(exchangeHash);
             }
 
             if (Algorithm.ProduceEncryptionKey)
@@ -89,19 +96,8 @@ namespace JsonWebToken.Cryptography
         {
         }
 
-        private static HashAlgorithmName GetHashAlgorithm(EncryptionAlgorithm encryptionAlgorithm)
+        private static HashAlgorithmName GetHashAlgorithm()
         {
-            Debug.Assert(encryptionAlgorithm.SignatureAlgorithm != null);
-
-            var hashAlgorithm = encryptionAlgorithm.SignatureAlgorithm.HashAlgorithm;
-            if (hashAlgorithm == default)
-            {
-                goto Sha256;
-            }
-
-            return hashAlgorithm;
-
-        Sha256:
             return HashAlgorithmName.SHA256;
         }
 
