@@ -6,7 +6,7 @@
     <BuildNumber Condition="'$(BuildNumber)' == ''">0</BuildNumber>
     
     <Version>$(VersionMajor).$(VersionMinor).$(VersionPatch)</Version>
-    <VersionSuffix>beta.54</VersionSuffix>
+    <VersionSuffix>beta.5</VersionSuffix>
     <VersionSuffix Condition="'$(VersionSuffix)' != ''">-$(VersionSuffix)</VersionSuffix>
     <PackageVersion>$(VersionMajor).$(VersionMinor).$(VersionPatch)$(VersionSuffix)</PackageVersion>
     <AssemblyVersion Condition="'$(AssemblyVersion)' == ''">$(VersionMajor).$(VersionMinor).$(VersionPatch)</AssemblyVersion>
