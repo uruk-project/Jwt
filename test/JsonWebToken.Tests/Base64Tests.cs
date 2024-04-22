@@ -10,6 +10,19 @@ namespace JsonWebToken.Tests
         [InlineData("", "")]
         [InlineData("SGVsbG8=", "Hello")]
         [InlineData("SGVsbG8gV29ybGQ=", "Hello World")]
+        [InlineData("SGV+bG8=", "He~lo")]
+        [InlineData("SGV/bG8=", "He\u007flo")]
+        public void Decode_Valid(string value, string expected)
+        {
+            var result = Base64.Decode(Encoding.UTF8.GetBytes(value));
+            Assert.NotNull(result);
+            Assert.Equal(Encoding.UTF8.GetBytes(expected), result);
+        }
+
+        [Theory]
+        [InlineData("", "")]
+        [InlineData("SGVsbG8=", "Hello")]
+        [InlineData("SGVsbG8gV29ybGQ=", "Hello World")]
         [InlineData("SGVsbG8\tgV29ybGQ=", "Hello World")]
         [InlineData("SGVsbG8\rgV29ybGQ=", "Hello World")]
         [InlineData("SGVsbG8\ngV29ybGQ=", "Hello World")]
@@ -23,9 +36,9 @@ namespace JsonWebToken.Tests
         [InlineData(" S  G    V     s       b         G8gV29ybGQ= ", "Hello World")]
         [InlineData("SGV+bG8=", "He~lo")]
         [InlineData("SGV/bG8=", "He\u007flo")]
-        public void Decode_Valid(string value, string expected)
+        public void Decode_WithWithspaceStripping_Valid(string value, string expected)
         {
-            var result = Base64.Decode(Encoding.UTF8.GetBytes(value));
+            var result = Base64.Decode(Encoding.UTF8.GetBytes(value), true);
             Assert.NotNull(result);
             Assert.Equal(Encoding.UTF8.GetBytes(expected), result);
         }
@@ -39,6 +52,23 @@ namespace JsonWebToken.Tests
         public void Decode_Invalid(string value)
         {
             Assert.Throws<FormatException>(() => Base64.Decode(Encoding.UTF8.GetBytes(value)));
+        }
+
+        [Theory]
+        [InlineData("SGVsbG8\tgV29ybGQ=")]
+        [InlineData("SGVsbG8\rgV29ybGQ=")]
+        [InlineData("SGVsbG8\ngV29ybGQ=")]
+        [InlineData("SGVsbG8\vgV29ybGQ=")]
+        [InlineData("SGVsbG8\fgV29ybGQ=")]
+        [InlineData("SGVsbG8 gV29ybGQ=")]
+        [InlineData(" SGVsbG8gV29ybGQ=")]
+        [InlineData("SG Vsb G8gV29ybGQ=")]
+        [InlineData("S G V s b G 8 g V 2 9 y b G Q =")]
+        [InlineData("S  G    V     s       b         G8gV29ybGQ=")]
+        [InlineData(" S  G    V     s       b         G8gV29ybGQ= ")]
+        public void Decode_WithoutWithstripping_Invalid(string value)
+        {
+            Assert.Throws<FormatException>(() => Base64.Decode(Encoding.UTF8.GetBytes(value), false));
         }
     }
 }

@@ -10,7 +10,6 @@ namespace JsonWebToken
     /// http://tools.ietf.org/html/rfc7517#section-4
     /// </summary>
     public static class JwkKeyOpsValues
-
     {
         /// <summary>Gets the 'sign' (compute digital signature or MAC) value for the 'key_ops' parameter.</summary>
         public static readonly JsonEncodedText Sign = JsonEncodedText.Encode("sign");

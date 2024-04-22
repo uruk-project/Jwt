@@ -356,10 +356,38 @@ NfZ9nLTVjxeD08pD548KWrqmJAeZNsDDqQ==
 MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEgQHs5HRkpurXDPaabivT2IaRoyYt
 Isuk92Ner/JmgKjYoSumHVmSNfZ9nLTVjxeD08pD548KWrqmJAeZNsDDqQ==
 -----END PUBLIC KEY-----";
+        private const string Pkcs8PemECPrivateKeyExplanatoryText = @"
+Subject: CN=Atlantis
+Issuer: CN=Atlantis
+Validity: from 7/9/2012 3:10:38 AM UTC to 7/9/2013 3:10:37 AM UTC
+-----BEGIN PRIVATE KEY-----
+MIGHAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBG0wawIBAQQgcKEsLbFoRe1W/2jP
+whpHKz8E19aFG/Y0ny19WzRSs4qhRANCAASBAezkdGSm6tcM9ppuK9PYhpGjJi0i
+y6T3Y16v8maAqNihK6YdWZI19n2ctNWPF4PTykPnjwpauqYkB5k2wMOp
+-----END PRIVATE KEY-----this was a key.";
+        private const string Pkcs1PemECPrivateKeyExplanatoryText = @"
+Subject: CN=Atlantis
+Issuer: CN=Atlantis
+Validity: from 7/9/2012 3:10:38 AM UTC to 7/9/2013 3:10:37 AM UTC
+-----BEGIN EC PRIVATE KEY-----
+MHcCAQEEIHChLC2xaEXtVv9oz8IaRys/BNfWhRv2NJ8tfVs0UrOKoAoGCCqGSM49
+AwEHoUQDQgAEgQHs5HRkpurXDPaabivT2IaRoyYtIsuk92Ner/JmgKjYoSumHVmS
+NfZ9nLTVjxeD08pD548KWrqmJAeZNsDDqQ==
+-----END EC PRIVATE KEY-----this was a key.";
+        private const string Pkcs8PemECPublicKeyExplanatoryText = @"
+Subject: CN=Atlantis
+Issuer: CN=Atlantis
+Validity: from 7/9/2012 3:10:38 AM UTC to 7/9/2013 3:10:37 AM UTC
+-----BEGIN PUBLIC KEY-----
+MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEgQHs5HRkpurXDPaabivT2IaRoyYt
+Isuk92Ner/JmgKjYoSumHVmSNfZ9nLTVjxeD08pD548KWrqmJAeZNsDDqQ==
+-----END PUBLIC KEY-----this was a key.";
 
         [Theory]
         [InlineData(Pkcs1PemECPrivateKey)]
         [InlineData(Pkcs8PemECPrivateKey)]
+        [InlineData(Pkcs1PemECPrivateKeyExplanatoryText)]
+        [InlineData(Pkcs8PemECPrivateKeyExplanatoryText)]
         public void FromPem_PrivateKey(string pem)
         {
             var key = ECJwk.FromPem(pem);
@@ -371,6 +399,7 @@ Isuk92Ner/JmgKjYoSumHVmSNfZ9nLTVjxeD08pD548KWrqmJAeZNsDDqQ==
 
         [Theory]
         [InlineData(Pkcs8PemECPublicKey)]
+        [InlineData(Pkcs8PemECPublicKeyExplanatoryText)]
         public void FromPem_PublicKey(string pem)
         {
             var key = ECJwk.FromPem(pem);
