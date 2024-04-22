@@ -110,6 +110,19 @@ namespace JsonWebToken
             return curve;
         }
 
+
+        /// <summary>Cast the <see cref="string"/> into its <see cref="EllipticalCurve"/> representation.</summary>
+        public static explicit operator EllipticalCurve?(string? value)
+        {
+            if (value is null)
+            {
+                return null;
+            }
+
+            return FromString(value); ;
+        }
+
+
         /// <summary>Tries to parse a <see cref="string"/> into a <see cref="EllipticalCurve"/>.</summary>
         public static bool TryParse(string crv, [NotNullWhen(true)] out EllipticalCurve? curve)
         {
