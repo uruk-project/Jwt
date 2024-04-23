@@ -28,7 +28,7 @@ namespace JsonWebToken.Cryptography
             {
                 ref byte keyRef = ref MemoryMarshal.GetReference(key);
                 ref byte keyEndRef = ref Unsafe.Add(ref keyRef, key.Length);
-                ref byte innerKeyRef = ref Unsafe.AsRef(keys[0]);
+                ref byte innerKeyRef = ref Unsafe.AsRef(in keys[0]);
                 ref byte outerKeyRef = ref Unsafe.Add(ref innerKeyRef, blockSize);
                 ref byte innerKeyEndRef = ref outerKeyRef;
                 while (Unsafe.IsAddressLessThan(ref keyRef, ref keyEndRef))

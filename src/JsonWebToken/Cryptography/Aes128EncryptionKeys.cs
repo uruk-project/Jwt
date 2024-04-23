@@ -59,7 +59,7 @@ namespace JsonWebToken.Cryptography
 
         public void Clear()
         {
-            ref byte that = ref Unsafe.As<Aes128EncryptionKeys, byte>(ref Unsafe.AsRef(this));
+            ref byte that = ref Unsafe.As<Aes128EncryptionKeys, byte>(ref Unsafe.AsRef(ref  this));
             Unsafe.InitBlock(ref that, 0, Count * 16);
         }
     }
