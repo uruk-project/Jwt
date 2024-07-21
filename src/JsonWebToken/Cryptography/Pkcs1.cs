@@ -11,7 +11,11 @@ namespace JsonWebToken.Cryptography
         public static ReadOnlySpan<char> PrivatRsaKeySuffix => new[] { '-', '-', '-', '-', '-', 'E', 'N', 'D', ' ', 'R', 'S', 'A', ' ', 'P', 'R', 'I', 'V', 'A', 'T', 'E', ' ', 'K', 'E', 'Y', '-', '-', '-', '-', '-' };
 
 #if SUPPORT_ELLIPTIC_CURVE
-        public static ReadOnlySpan<char> PrivateECKeyPrefix => ['-', '-', '-', '-', '-', 'B', 'E', 'G', 'I', 'N', ' ', 'E', 'C', ' ', 'P', 'R', 'I', 'V', 'A', 'T', 'E', ' ', 'K', 'E', 'Y', '-', '-', '-', '-', '-'];
+        public static ReadOnlySpan<char> GetPrivateECKeyPrefix()
+        {
+            return ['-', '-', '-', '-', '-', 'B', 'E', 'G', 'I', 'N', ' ', 'E', 'C', ' ', 'P', 'R', 'I', 'V', 'A', 'T', 'E', ' ', 'K', 'E', 'Y', '-', '-', '-', '-', '-'];
+        }
+
         public static ReadOnlySpan<char> PrivateECKeySuffix => new[] { '-', '-', '-', '-', '-', 'E', 'N', 'D', ' ', 'E', 'C', ' ', 'P', 'R', 'I', 'V', 'A', 'T', 'E', ' ', 'K', 'E', 'Y', '-', '-', '-', '-', '-' };
 #endif
 
@@ -111,7 +115,7 @@ namespace JsonWebToken.Cryptography
         //     BIT STRING public key
         public static ECJwk ReadECPrivateKey(ReadOnlySpan<char> key)
         {
-            var data = key.Slice(PrivateECKeyPrefix.Length, key.Length - PrivateECKeyPrefix.Length - PrivateECKeySuffix.Length);
+            var data = key.Slice(GetPrivateECKeyPrefix().Length, key.Length - GetPrivateECKeyPrefix().Length - PrivateECKeySuffix.Length);
             byte[] tmpArray;
             Span<byte> keyData = tmpArray = ArrayPool<byte>.Shared.Rent(Base64.GetArraySizeRequiredToDecode(data.Length));
             try

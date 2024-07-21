@@ -29,7 +29,7 @@ namespace JsonWebToken.Cryptography
                 return Pkcs1.ReadRsaPublicKey(data);
             }
 #if SUPPORT_ELLIPTIC_CURVE
-            if (data.StartsWith(Pkcs1.PrivateECKeyPrefix, StringComparison.Ordinal) && data.EndsWith(Pkcs1.PrivateECKeySuffix, StringComparison.Ordinal))
+            if (data.StartsWith(Pkcs1.GetPrivateECKeyPrefix(), StringComparison.Ordinal) && data.EndsWith(Pkcs1.PrivateECKeySuffix, StringComparison.Ordinal))
             {
                 return Pkcs1.ReadECPrivateKey(data);
             }
