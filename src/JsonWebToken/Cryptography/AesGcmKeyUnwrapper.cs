@@ -48,7 +48,11 @@ namespace JsonWebToken.Cryptography
             {
                 Base64Url.Decode(rawIV.Span, nonce);
                 Base64Url.Decode(rawTag.Span, tag);
+#if NET8_0_OR_GREATER
+                using var aesGcm = new AesGcm(_key.K, TagSize);
+#else
                 using var aesGcm = new AesGcm(_key.K);
+#endif
                 if (destination.Length > keyBytes.Length)
                 {
                     destination = destination.Slice(0, keyBytes.Length);

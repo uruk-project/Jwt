@@ -3,6 +3,7 @@
 
 #if SUPPORT_SIMD
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Runtime.Intrinsics;
@@ -72,11 +73,11 @@ namespace JsonWebToken.Cryptography
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static Vector128<byte> Shuffle(Vector128<byte> left, Vector128<byte> right, byte control)
+        private static Vector128<byte> Shuffle(Vector128<byte> left, Vector128<byte> right, [ConstantExpected] byte control)
            => Sse2.Shuffle(left.AsDouble(), right.AsDouble(), control).AsByte();
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static Vector128<byte> KeyGenAssist(ref Vector128<byte> tmp1, Vector128<byte> tmp3, byte control)
+        private static Vector128<byte> KeyGenAssist(ref Vector128<byte> tmp1, Vector128<byte> tmp3, [ConstantExpected] byte control)
         {
             var keyGened = Aes.KeygenAssist(tmp3, control);
             keyGened = Sse2.Shuffle(keyGened.AsInt32(), 0x55).AsByte();
