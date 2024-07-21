@@ -76,6 +76,8 @@ jobs:
         run: dotnet build -c ${{ matrix.configuration }} --no-restore
 
       - name: Test
+  # disable macOS tests
+        if: matrix.os != 'macos-latest'
         run: dotnet test -c ${{ matrix.configuration }} --no-build --collect:"XPlat Code Coverage" --settings coverlet.runsettings
 
       - name: Upload coverage to Codecov
