@@ -60,11 +60,11 @@ jobs:
         run: dotnet test -c ${{ matrix.configuration }} --no-build --collect:"XPlat Code Coverage" --settings coverlet.runsettings --logger trx --results-directory "TestResults-${{ matrix.dotnet-version }}"
 
       - name: Upload dotnet test results
+        if: ${{ always() }}
         uses: actions/upload-artifact@v4
         with:
             name: dotnet-results-${{ matrix.dotnet-version }}
             path: TestResults-${{ matrix.dotnet-version }}
-            if: ${{ always() }}
 
       - name: Upload coverage to Codecov
         if: matrix.is-main
