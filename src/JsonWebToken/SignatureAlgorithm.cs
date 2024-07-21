@@ -145,7 +145,7 @@ namespace JsonWebToken
 
         /// <summary>Determines whether two specified <see cref="SignatureAlgorithm"/> objects have the same value.</summary>
         public bool Equals(SignatureAlgorithm? other)
-            => other is null ? false : _id == other._id;
+            => other is not null && _id == other._id;
 
         /// <summary>Returns the hash code for this <see cref="SignatureAlgorithm"/>.</summary>
         public override int GetHashCode()

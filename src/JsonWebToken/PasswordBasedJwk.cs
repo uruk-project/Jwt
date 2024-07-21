@@ -160,7 +160,7 @@ namespace JsonWebToken
                 return true;
             }
 
-            if (!(other is PasswordBasedJwk key))
+            if (other is not PasswordBasedJwk key)
             {
                 return false;
             }

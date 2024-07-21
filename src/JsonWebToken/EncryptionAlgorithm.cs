@@ -329,7 +329,7 @@ namespace JsonWebToken
 
         /// <summary>Determines whether two specified <see cref="EncryptionAlgorithm"/> objects have the same value.</summary>
         public bool Equals(EncryptionAlgorithm? other)
-            => !(other is null) && _id == other._id;
+            => other is not null && _id == other._id;
 
         /// <summary>Returns the hash code for this <see cref="EncryptionAlgorithm"/>.</summary>
         public override int GetHashCode()

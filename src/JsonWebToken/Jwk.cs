@@ -107,10 +107,7 @@ namespace JsonWebToken
         {
             get
             {
-                if (_keyOps == null)
-                {
-                    _keyOps = new List<JsonEncodedText>();
-                }
+                _keyOps ??= new List<JsonEncodedText>();
 
                 return _keyOps;
             }
@@ -139,10 +136,7 @@ namespace JsonWebToken
         {
             get
             {
-                if (_x5c == null)
-                {
-                    _x5c = new List<byte[]>();
-                }
+                _x5c ??= new List<byte[]>();
 
                 return _x5c;
             }
@@ -230,7 +224,7 @@ namespace JsonWebToken
                     var alg = Alg;
                     if (!alg.EncodedUtf8Bytes.IsEmpty)
                     {
-                        SignatureAlgorithm.TryParse(alg.EncodedUtf8Bytes, out _signatureAlgorithm);
+                        _ = SignatureAlgorithm.TryParse(alg.EncodedUtf8Bytes, out _signatureAlgorithm);
                     }
                 }
 
@@ -277,7 +271,7 @@ namespace JsonWebToken
                     var alg = Alg;
                     if (!alg.EncodedUtf8Bytes.IsEmpty)
                     {
-                        KeyManagementAlgorithm.TryParse(alg.EncodedUtf8Bytes, out _keyManagementAlgorithm);
+                        _ = KeyManagementAlgorithm.TryParse(alg.EncodedUtf8Bytes, out _keyManagementAlgorithm);
                     }
                 }
 
@@ -431,7 +425,7 @@ namespace JsonWebToken
         /// <returns><c>true</c> if the <paramref name="signer"/> is available for the requested <paramref name="algorithm"/>; <c>false</c> otherwise.</returns>
         public bool TryGetSigner(SignatureAlgorithm? algorithm, [NotNullWhen(true)] out Signer? signer)
         {
-            if (!(algorithm is null))
+            if (algorithm is not null)
             {
                 int algorithmId = (int)algorithm.Id;
                 var signers = _signers;
@@ -480,7 +474,7 @@ namespace JsonWebToken
         /// <returns><c>true</c> if the <paramref name="signatureVerifier"/> is available for the requested <paramref name="algorithm"/>; <c>false</c> otherwise.</returns>
         public bool TryGetSignatureVerifier(SignatureAlgorithm? algorithm, [NotNullWhen(true)] out SignatureVerifier? signatureVerifier)
         {
-            if (!(algorithm is null))
+            if (algorithm is not null)
             {
                 int algorithmId = (int)algorithm.Id;
                 var signatureVerifiers = _signatureVerifiers;
@@ -529,7 +523,7 @@ namespace JsonWebToken
         /// <param name="keyWrapper">The provided <see cref="KeyWrapper"/>. <c>null</c> if return <c>false</c></param>
         public bool TryGetKeyWrapper(EncryptionAlgorithm? encryptionAlgorithm, KeyManagementAlgorithm? algorithm, [NotNullWhen(true)] out KeyWrapper? keyWrapper)
         {
-            if (!(encryptionAlgorithm is null) && !(algorithm is null))
+            if (encryptionAlgorithm is not null && algorithm is not null)
             {
                 var keyWrappers = _keyWrappers;
                 var algorithmKey = encryptionAlgorithm.ComputeKey(algorithm);
@@ -581,7 +575,7 @@ namespace JsonWebToken
         /// <param name="keyUnwrapper">The provided <see cref="KeyUnwrapper"/>. <c>null</c> if return <c>false</c></param>
         public bool TryGetKeyUnwrapper(EncryptionAlgorithm? encryptionAlgorithm, KeyManagementAlgorithm? algorithm, [NotNullWhen(true)] out KeyUnwrapper? keyUnwrapper)
         {
-            if (!(encryptionAlgorithm is null) && !(algorithm is null))
+            if (encryptionAlgorithm is not null && algorithm is not null)
             {
                 var keyUnwrappers = _keyUnwrappers;
                 var algorithmKey = encryptionAlgorithm.ComputeKey(algorithm);
@@ -769,7 +763,7 @@ namespace JsonWebToken
             }
 
             using var rsa = certificate.GetRSAPrivateKey();
-            if (!(rsa is null))
+            if (rsa is not null)
             {
                 var rsaParameters = rsa.ExportParameters(true);
                 key = RsaJwk.FromParameters(rsaParameters, computeThumbprint: false);
@@ -778,7 +772,7 @@ namespace JsonWebToken
             else
             {
                 using var ecdsa = certificate.GetECDsaPrivateKey();
-                if (!(ecdsa is null))
+                if (ecdsa is not null)
                 {
                     var ecParameters = ecdsa.ExportParameters(true);
                     key = ECJwk.FromParameters(ecParameters, computeThumbprint: false);
@@ -809,7 +803,7 @@ namespace JsonWebToken
 
             key = null;
             using var rsa = certificate.GetRSAPublicKey();
-            if (!(rsa is null))
+            if (rsa is not null)
             {
                 var rsaParameters = rsa.ExportParameters(false);
                 key = RsaJwk.FromParameters(rsaParameters, computeThumbprint: false);
@@ -818,7 +812,7 @@ namespace JsonWebToken
             else
             {
                 using var ecdsa = certificate.GetECDsaPublicKey();
-                if (!(ecdsa is null))
+                if (ecdsa is not null)
                 {
                     var ecParameters = ecdsa.ExportParameters(false);
                     key = ECJwk.FromParameters(ecParameters, computeThumbprint: false);
@@ -1605,26 +1599,15 @@ namespace JsonWebToken
         public virtual void Dispose()
         {
             GC.SuppressFinalize(this);
-            if (_signers != null)
-            {
-                _signers.Dispose();
-            }
-
-            if (_keyWrappers != null)
-            {
-                _keyWrappers.Dispose();
-            }
-
-            if (_keyUnwrappers != null)
-            {
-                _keyUnwrappers.Dispose();
-            }
+            _signers?.Dispose();
+            _keyWrappers?.Dispose();
+            _keyUnwrappers?.Dispose();
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static void WriteOptionalBase64UrlProperty(Utf8JsonWriter writer, Span<byte> buffer, byte[]? value, JsonEncodedText propertyName)
         {
-            if (!(value is null))
+            if (value is not null)
             {
                 WriteBase64UrlProperty(writer, buffer, value, propertyName);
             }

@@ -94,7 +94,7 @@ namespace JsonWebToken
         {
             var key = _signingKey;
             var alg = _alg;
-            if (!(key is null) && key.TryGetSigner(alg, out var signer))
+            if (key is not null && key.TryGetSigner(alg, out var signer))
             {
                 if (context.TokenLifetimeInSeconds != 0 || context.GenerateIssuedTime)
                 {

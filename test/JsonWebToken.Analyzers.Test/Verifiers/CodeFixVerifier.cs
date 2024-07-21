@@ -242,7 +242,7 @@ namespace JsonWebToken.Analyzers.Test
             };
             var fixAllProvider = codeFixProvider.GetFixAllProvider();
             var fixAllDiagnosticProvider = new FixAllDiagnosticProvider(codeFixProvider.FixableDiagnosticIds.ToImmutableHashSet(), getDocumentDiagnosticsAsync, getProjectDiagnosticsAsync);
-            if (equivalenceKey == null) equivalenceKey = codeFixProvider.GetType().Name;
+            equivalenceKey ??= codeFixProvider.GetType().Name;
             var fixAllContext = new FixAllContext(document, codeFixProvider, FixAllScope.Document,
                 equivalenceKey,
                 codeFixProvider.FixableDiagnosticIds,
@@ -269,7 +269,7 @@ namespace JsonWebToken.Analyzers.Test
             var project = CreateProject(oldSources, language, languageVersionCSharp, languageVersionVB);
             var compilerDiagnostics = (await Task.WhenAll(project.Documents.Select(d => GetCompilerDiagnosticsAsync(d))).ConfigureAwait(true)).SelectMany(d => d);
             var fixAllProvider = codeFixProvider.GetFixAllProvider();
-            if (equivalenceKey == null) equivalenceKey = codeFixProvider.GetType().Name;
+            equivalenceKey ??= codeFixProvider.GetType().Name;
             FixAllContext fixAllContext;
             if (analyzer != null)
             {

@@ -11,7 +11,7 @@ namespace BinaryJwtCreationSample
             var encryptionKey = SymmetricJwk.FromBase64Url("R9MyWaEoyiMYViVWo8Fk4T");
 
             // Creates a JWE descriptor with all its properties
-            var payload = new byte[] { 76, 105, 102, 101, 32, 108, 111, 110, 103, 32, 97, 110, 100, 32, 112, 114, 111, 115, 112, 101, 114, 46 };
+            var payload = "Life long and prosper."u8.ToArray();
             var descriptor = new BinaryJweDescriptor(encryptionKey, KeyManagementAlgorithm.A128KW, EncryptionAlgorithm.A128CbcHS256)
             {
                 Payload = payload

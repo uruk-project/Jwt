@@ -237,10 +237,7 @@ namespace JsonWebToken
 
         internal KeyValuePair<JsonEncodedText, Jwk[]>[] GetIdentifiedKeys()
         {
-            if (_identifiedKeys is null)
-            {
-                _identifiedKeys = InitializeIdentifiedKeys();
-            }
+            _identifiedKeys ??= InitializeIdentifiedKeys();
 
             return _identifiedKeys;
         }
@@ -555,7 +552,7 @@ namespace JsonWebToken
                                     jwks.Add(jwk);
                                 }
 
-                                if (!(reader.TokenType is JsonTokenType.EndArray) || !reader.Read())
+                                if (reader.TokenType is not JsonTokenType.EndArray || !reader.Read())
                                 {
                                     ThrowHelper.ThrowInvalidOperationException_MalformedJwks();
                                 }
@@ -585,7 +582,7 @@ namespace JsonWebToken
                 }
             }
 
-            if (!(reader.TokenType is JsonTokenType.EndObject))
+            if (reader.TokenType is not JsonTokenType.EndObject)
             {
                 ThrowHelper.ThrowInvalidOperationException_MalformedJwks();
             }

@@ -176,7 +176,7 @@ namespace JsonWebToken
                             if (key.CanUseForSignature(algElement))
                             {
                                 var alg = algorithm ?? key.SignatureAlgorithm;
-                                if (!(alg is null))
+                                if (alg is not null)
                                 {
                                     if (key.TryGetSignatureVerifier(alg, out var signatureVerifier))
                                     {
