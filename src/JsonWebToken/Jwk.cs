@@ -641,22 +641,9 @@ namespace JsonWebToken
         public byte[] Canonicalize()
         {
             int size = GetCanonicalizeSize();
-            byte[]? arrayToReturn = null;
-            try
-            {
-                Span<byte> buffer = size > Constants.MaxStackallocBytes
-                                    ? (arrayToReturn = ArrayPool<byte>.Shared.Rent(size))
-                                    : stackalloc byte[size];
-                Canonicalize(buffer);
-                return buffer.Slice(0, size).ToArray();
-            }
-            finally
-            {
-                if (arrayToReturn != null)
-                {
-                    ArrayPool<byte>.Shared.Return(arrayToReturn);
-                }
-            }
+            var buffer = new byte[size];
+            Canonicalize(buffer);
+            return buffer;
         }
 
         /// <summary>Compute the normal form, as defined by https://tools.ietf.org/html/rfc7638#section-3.2, and writes it to the <paramref name="buffer"/>.</summary>

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.Contracts;
 using System.Numerics;
 using System.Security.Cryptography;
 using System.Text;
@@ -286,10 +287,16 @@ namespace JsonWebToken.Tests
             return base.CreateSigner_Succeed(key, alg);
         }
 
-        [Fact]
-        public override void Canonicalize()
+        [Theory]
+        [InlineData("RS256")]
+        [InlineData("RS384")]
+        [InlineData("RS512")]
+        [InlineData("PS256")]
+        [InlineData("PS384")]
+        [InlineData("PS512")]
+        public override void Canonicalize(string alg)
         {
-            var jwk = RsaJwk.GeneratePrivateKey(2048, SignatureAlgorithm.RS256);
+            var jwk = RsaJwk.GeneratePrivateKey(2048, (SignatureAlgorithm)alg);
             var canonicalizedKey = (RsaJwk)CanonicalizeKey(jwk);
             Assert.False(canonicalizedKey.E.IsEmpty);
             Assert.False(canonicalizedKey.N.IsEmpty);

@@ -28,7 +28,7 @@ namespace JsonWebToken.Tests
             key.Kid = JsonEncodedText.Encode("X");
             copiedKey.Kid = JsonEncodedText.Encode("Y");
             Assert.NotEqual(key, copiedKey);
-    
+
             Assert.NotEqual(key, Jwk.None);
         }
 
@@ -39,10 +39,14 @@ namespace JsonWebToken.Tests
             return base.CreateKeyWrapper_Succeed(key, enc, alg);
         }
 
-        [Fact]
-        public override void Canonicalize()
+        [Theory]
+        [InlineData("PBES2-HS256+A128KW")]
+        [InlineData("PBES2-HS384+A192KW")]
+        [InlineData("PBES2-HS512+A256KW")]
+        public override void Canonicalize(string alg)
         {
-            var jwk = PasswordBasedJwk.FromPassphrase("Thus from my lips, by yours, my sin is purged.");
+            var jwk = PasswordBasedJwk.FromPassphrase("Thus from my lips, by yours, my sin is purged.", (KeyManagementAlgorithm)alg); // something is wrong here... how to provide the PBES alg ?
+            //var jwk = PasswordBasedJwk.FromPassphrase("Thus from my lips, by yours, my sin is purged."); // something is wrong here... how to provide the PBES alg ?
             var canonicalizedKey = (SymmetricJwk)CanonicalizeKey(jwk);
             Assert.NotEmpty(canonicalizedKey.ToArray());
         }
