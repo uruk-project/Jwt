@@ -90,7 +90,11 @@ namespace JsonWebToken
             }
 
             JsonRow row = new JsonRow(tokenType, startLocation, length);
+#if NET8_0_OR_GREATER
+            MemoryMarshal.Write(_data.AsSpan(Length), in row);
+#else
             MemoryMarshal.Write(_data.AsSpan(Length), ref row);
+#endif
             Length += JsonRow.Size;
         }
 
@@ -116,7 +120,11 @@ namespace JsonWebToken
             AssertValidIndex(index);
             Debug.Assert(length >= 0);
             Span<byte> destination = _data.AsSpan(index + SizeOrLengthOffset);
+#if NET8_0_OR_GREATER
+            MemoryMarshal.Write(destination, in length);
+#else
             MemoryMarshal.Write(destination, ref length);
+#endif
         }
 
         internal void SetNumberOfRows(int index, int numberOfRows)
@@ -129,7 +137,11 @@ namespace JsonWebToken
 
             // Persist the most significant nybble
             int value = (current & unchecked((int)0xF0000000)) | numberOfRows;
+#if NET8_0_OR_GREATER
+            MemoryMarshal.Write(dataPos, in value);
+#else
             MemoryMarshal.Write(dataPos, ref value);
+#endif
         }
 
         internal void SetNeedUnescaping(int index)
@@ -141,7 +153,11 @@ namespace JsonWebToken
             int current = MemoryMarshal.Read<int>(dataPos);
 
             int value = current | unchecked((int)0x80000000);
+#if NET8_0_OR_GREATER
+            MemoryMarshal.Write(dataPos, in value);
+#else
             MemoryMarshal.Write(dataPos, ref value);
+#endif
         }
 
         internal JsonRow Get(int index)

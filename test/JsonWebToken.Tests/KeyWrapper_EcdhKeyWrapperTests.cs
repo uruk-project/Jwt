@@ -1,4 +1,4 @@
-﻿#if NETCOREAPP
+﻿#if !NET461
 using System;
 using System.Collections.Generic;
 using JsonWebToken.Cryptography;

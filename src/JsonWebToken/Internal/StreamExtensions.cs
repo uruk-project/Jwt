@@ -13,6 +13,7 @@ namespace JsonWebToken
         public static unsafe void Write(this Stream stream, ReadOnlySpan<byte> data)
         {
             stream.Write(data.ToArray(), 0, data.Length);
+            //stream.Flush();
         }
 
         public static int Read(this Stream stream, Span<byte> buffer)

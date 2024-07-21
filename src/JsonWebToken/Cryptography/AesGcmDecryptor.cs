@@ -11,6 +11,7 @@ namespace JsonWebToken.Cryptography
     /// <summary>Provides authenticated decryption for AES GCM algorithm.</summary>
     internal sealed class AesGcmDecryptor : AuthenticatedDecryptor
     {
+        private const int TagSizeInBytes = 16;
         private readonly EncryptionAlgorithm _encryptionAlgorithm;
 
         public AesGcmDecryptor(EncryptionAlgorithm encryptionAlgorithm)
@@ -21,7 +22,7 @@ namespace JsonWebToken.Cryptography
         }
 
         /// <inheritdoc />
-        public override int GetTagSize() => 16;
+        public override int GetTagSize() => TagSizeInBytes;
 
         /// <inheritdoc />
         public override bool TryDecrypt(ReadOnlySpan<byte> key, ReadOnlySpan<byte> ciphertext, ReadOnlySpan<byte> associatedData, ReadOnlySpan<byte> nonce, ReadOnlySpan<byte> authenticationTag, Span<byte> plaintext, out int bytesWritten)
@@ -33,13 +34,17 @@ namespace JsonWebToken.Cryptography
 
             try
             {
-                using var aes = new AesGcm(key);
+#if NET8_0_OR_GREATER
+                using var aesGcm = new AesGcm(key, TagSizeInBytes);
+#else
+                using var aesGcm = new AesGcm(key);
+#endif
                 if (plaintext.Length > ciphertext.Length)
                 {
                     plaintext = plaintext.Slice(0, ciphertext.Length);
                 }
 
-                aes.Decrypt(nonce, ciphertext, authenticationTag, plaintext, associatedData);
+                aesGcm.Decrypt(nonce, ciphertext, authenticationTag, plaintext, associatedData);
                 bytesWritten = plaintext.Length;
                 return true;
             }
