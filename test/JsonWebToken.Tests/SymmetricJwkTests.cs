@@ -28,7 +28,7 @@ namespace JsonWebToken.Tests
             key.Kid = JsonEncodedText.Encode("X");
             copiedKey.Kid = JsonEncodedText.Encode("Y");
             Assert.NotEqual(key, copiedKey);
-     
+
             Assert.NotEqual(key, Jwk.None);
         }
 
@@ -52,7 +52,7 @@ namespace JsonWebToken.Tests
         [InlineData("HS512")]
         public override void Canonicalize(string alg)
         {
-            var jwk = SymmetricJwk.GenerateKey(SignatureAlgorithm.HS256);
+            var jwk = SymmetricJwk.GenerateKey((SignatureAlgorithm)alg);
             var canonicalizedKey = (SymmetricJwk)CanonicalizeKey(jwk);
             Assert.NotEqual(0, canonicalizedKey.K.Length);
         }
