@@ -142,7 +142,7 @@ namespace JsonWebToken.Tests
             key.Kid = JsonEncodedText.Encode("X");
             copiedKey.Kid = JsonEncodedText.Encode("Y");
             Assert.NotEqual(key, copiedKey);
-   
+
             Assert.NotEqual(key, Jwk.None);
         }
 
@@ -180,15 +180,21 @@ namespace JsonWebToken.Tests
             return base.CreateSigner_Failed(key, alg);
         }
 
-        [Fact]
-        public override void Canonicalize()
+        [Theory]
+        [InlineData("ES256")]
+        [InlineData("ES384")]
+        [InlineData("ES512")]
+        [InlineData("ES256K")]
+        public override void Canonicalize(string alg)
         {
-            var jwk = ECJwk.GeneratePrivateKey(SignatureAlgorithm.ES256);
+            var jwk = ECJwk.GeneratePrivateKey((SignatureAlgorithm)alg);
             var canonicalizedKey = (ECJwk)CanonicalizeKey(jwk);
 
             Assert.True(canonicalizedKey.D.IsEmpty);
+            bool supported = EllipticalCurve.TryGetSupportedCurve((SignatureAlgorithm)alg, out var crv);
 
-            Assert.Equal(EllipticalCurve.P256.Id, canonicalizedKey.Crv.Id);
+            Assert.True(supported);
+            Assert.Equal(crv.Id, canonicalizedKey.Crv.Id);
             Assert.False(canonicalizedKey.X.IsEmpty);
             Assert.False(canonicalizedKey.Y.IsEmpty);
         }
@@ -356,10 +362,38 @@ NfZ9nLTVjxeD08pD548KWrqmJAeZNsDDqQ==
 MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEgQHs5HRkpurXDPaabivT2IaRoyYt
 Isuk92Ner/JmgKjYoSumHVmSNfZ9nLTVjxeD08pD548KWrqmJAeZNsDDqQ==
 -----END PUBLIC KEY-----";
+        private const string Pkcs8PemECPrivateKeyExplanatoryText = @"
+Subject: CN=Atlantis
+Issuer: CN=Atlantis
+Validity: from 7/9/2012 3:10:38 AM UTC to 7/9/2013 3:10:37 AM UTC
+-----BEGIN PRIVATE KEY-----
+MIGHAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBG0wawIBAQQgcKEsLbFoRe1W/2jP
+whpHKz8E19aFG/Y0ny19WzRSs4qhRANCAASBAezkdGSm6tcM9ppuK9PYhpGjJi0i
+y6T3Y16v8maAqNihK6YdWZI19n2ctNWPF4PTykPnjwpauqYkB5k2wMOp
+-----END PRIVATE KEY-----this was a key.";
+        private const string Pkcs1PemECPrivateKeyExplanatoryText = @"
+Subject: CN=Atlantis
+Issuer: CN=Atlantis
+Validity: from 7/9/2012 3:10:38 AM UTC to 7/9/2013 3:10:37 AM UTC
+-----BEGIN EC PRIVATE KEY-----
+MHcCAQEEIHChLC2xaEXtVv9oz8IaRys/BNfWhRv2NJ8tfVs0UrOKoAoGCCqGSM49
+AwEHoUQDQgAEgQHs5HRkpurXDPaabivT2IaRoyYtIsuk92Ner/JmgKjYoSumHVmS
+NfZ9nLTVjxeD08pD548KWrqmJAeZNsDDqQ==
+-----END EC PRIVATE KEY-----this was a key.";
+        private const string Pkcs8PemECPublicKeyExplanatoryText = @"
+Subject: CN=Atlantis
+Issuer: CN=Atlantis
+Validity: from 7/9/2012 3:10:38 AM UTC to 7/9/2013 3:10:37 AM UTC
+-----BEGIN PUBLIC KEY-----
+MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEgQHs5HRkpurXDPaabivT2IaRoyYt
+Isuk92Ner/JmgKjYoSumHVmSNfZ9nLTVjxeD08pD548KWrqmJAeZNsDDqQ==
+-----END PUBLIC KEY-----this was a key.";
 
         [Theory]
         [InlineData(Pkcs1PemECPrivateKey)]
         [InlineData(Pkcs8PemECPrivateKey)]
+        [InlineData(Pkcs1PemECPrivateKeyExplanatoryText)]
+        [InlineData(Pkcs8PemECPrivateKeyExplanatoryText)]
         public void FromPem_PrivateKey(string pem)
         {
             var key = ECJwk.FromPem(pem);
@@ -371,6 +405,7 @@ Isuk92Ner/JmgKjYoSumHVmSNfZ9nLTVjxeD08pD548KWrqmJAeZNsDDqQ==
 
         [Theory]
         [InlineData(Pkcs8PemECPublicKey)]
+        [InlineData(Pkcs8PemECPublicKeyExplanatoryText)]
         public void FromPem_PublicKey(string pem)
         {
             var key = ECJwk.FromPem(pem);

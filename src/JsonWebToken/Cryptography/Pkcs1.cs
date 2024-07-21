@@ -5,15 +5,15 @@ namespace JsonWebToken.Cryptography
 {
     internal static class Pkcs1
     {
-        public static ReadOnlySpan<char> PublicRsaKeyPrefix => new[] { '-', '-', '-', '-', '-', 'B', 'E', 'G', 'I', 'N', ' ', 'R', 'S', 'A', ' ', 'P', 'U', 'B', 'L', 'I', 'C', ' ', 'K', 'E', 'Y', '-', '-', '-', '-', '-' };
-        public static ReadOnlySpan<char> PublicRsaKeySuffix => new[] { '-', '-', '-', '-', '-', 'E', 'N', 'D', ' ', 'R', 'S', 'A', ' ', 'P', 'U', 'B', 'L', 'I', 'C', ' ', 'K', 'E', 'Y', '-', '-', '-', '-', '-' };
-        public static ReadOnlySpan<char> PrivateRsaKeyPrefix => new[] { '-', '-', '-', '-', '-', 'B', 'E', 'G', 'I', 'N', ' ', 'R', 'S', 'A', ' ', 'P', 'R', 'I', 'V', 'A', 'T', 'E', ' ', 'K', 'E', 'Y', '-', '-', '-', '-', '-' };
-        public static ReadOnlySpan<char> PrivatRsaKeySuffix => new[] { '-', '-', '-', '-', '-', 'E', 'N', 'D', ' ', 'R', 'S', 'A', ' ', 'P', 'R', 'I', 'V', 'A', 'T', 'E', ' ', 'K', 'E', 'Y', '-', '-', '-', '-', '-' };
+        public static ReadOnlySpan<char> PublicRsaKeyLabel => new[] { 'R', 'S', 'A', ' ', 'P', 'U', 'B', 'L', 'I', 'C', ' ', 'K', 'E', 'Y', '-', '-', '-', '-', '-' };
+        public static ReadOnlySpan<char> PrivateRsaKeyLabel => new[] { 'R', 'S', 'A', ' ', 'P', 'R', 'I', 'V', 'A', 'T', 'E', ' ', 'K', 'E', 'Y', '-', '-', '-', '-', '-' };
 
 #if SUPPORT_ELLIPTIC_CURVE
         public static ReadOnlySpan<char> PrivateECKeyPrefix => "-----BEGIN EC PRIVATE KEY-----".AsSpan();
 
         public static ReadOnlySpan<char> PrivateECKeySuffix => new[] { '-', '-', '-', '-', '-', 'E', 'N', 'D', ' ', 'E', 'C', ' ', 'P', 'R', 'I', 'V', 'A', 'T', 'E', ' ', 'K', 'E', 'Y', '-', '-', '-', '-', '-' };
+
+        public static ReadOnlySpan<char> PrivateECKeyLabel => new[] { 'E', 'C', ' ', 'P', 'R', 'I', 'V', 'A', 'T', 'E', ' ', 'K', 'E', 'Y', '-', '-', '-', '-', '-' };
 #endif
 
         // SEQUENCE
@@ -21,12 +21,11 @@ namespace JsonWebToken.Cryptography
         //   INTEGER E
         public static RsaJwk ReadRsaPublicKey(ReadOnlySpan<char> key)
         {
-            var data = key.Slice(PublicRsaKeyPrefix.Length, key.Length - PublicRsaKeyPrefix.Length - PublicRsaKeySuffix.Length);
             byte[] tmpArray;
-            Span<byte> keyData = tmpArray = ArrayPool<byte>.Shared.Rent(Base64.GetArraySizeRequiredToDecode(data.Length));
+            Span<byte> keyData = tmpArray = ArrayPool<byte>.Shared.Rent(Base64.GetArraySizeRequiredToDecode(key.Length));
             try
             {
-                int length = Base64.Decode(data, keyData);
+                int length = Base64.Decode(key, keyData, stripWhitespace: true);
                 var reader = new AsnReader(keyData.Slice(0, length));
 
                 reader = reader.ReadSequence();
@@ -59,12 +58,11 @@ namespace JsonWebToken.Cryptography
         //   INTEGER QI
         public static RsaJwk ReadRsaPrivateKey(ReadOnlySpan<char> key)
         {
-            var data = key.Slice(PrivateRsaKeyPrefix.Length, key.Length - PrivateRsaKeyPrefix.Length - PrivatRsaKeySuffix.Length);
             byte[] tmpArray;
-            Span<byte> keyData = tmpArray = ArrayPool<byte>.Shared.Rent(Base64.GetArraySizeRequiredToDecode(data.Length));
+            Span<byte> keyData = tmpArray = ArrayPool<byte>.Shared.Rent(Base64.GetArraySizeRequiredToDecode(key.Length));
             try
             {
-                int length = Base64.Decode(data, keyData);
+                int length = Base64.Decode(key, keyData, stripWhitespace: true);
                 var reader = new AsnReader(keyData.Slice(0, length));
                 reader = reader.ReadSequence();
                 var version = reader.ReadInteger();
@@ -112,12 +110,11 @@ namespace JsonWebToken.Cryptography
         //     BIT STRING public key
         public static ECJwk ReadECPrivateKey(ReadOnlySpan<char> key)
         {
-            var data = key.Slice(PrivateECKeyPrefix.Length, key.Length - PrivateECKeyPrefix.Length - PrivateECKeySuffix.Length);
             byte[] tmpArray;
-            Span<byte> keyData = tmpArray = ArrayPool<byte>.Shared.Rent(Base64.GetArraySizeRequiredToDecode(data.Length));
+            Span<byte> keyData = tmpArray = ArrayPool<byte>.Shared.Rent(Base64.GetArraySizeRequiredToDecode(key.Length));
             try
             {
-                int length = Base64.Decode(data, keyData);
+                int length = Base64.Decode(key, keyData, stripWhitespace: true);
                 var reader = new AsnReader(keyData.Slice(0, length));
 
                 reader = reader.ReadSequence();

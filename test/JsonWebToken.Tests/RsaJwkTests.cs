@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.Contracts;
 using System.Numerics;
 using System.Security.Cryptography;
 using System.Text;
@@ -286,10 +287,16 @@ namespace JsonWebToken.Tests
             return base.CreateSigner_Succeed(key, alg);
         }
 
-        [Fact]
-        public override void Canonicalize()
+        [Theory]
+        [InlineData("RS256")]
+        [InlineData("RS384")]
+        [InlineData("RS512")]
+        [InlineData("PS256")]
+        [InlineData("PS384")]
+        [InlineData("PS512")]
+        public override void Canonicalize(string alg)
         {
-            var jwk = RsaJwk.GeneratePrivateKey(2048, SignatureAlgorithm.RS256);
+            var jwk = RsaJwk.GeneratePrivateKey(2048, (SignatureAlgorithm)alg);
             var canonicalizedKey = (RsaJwk)CanonicalizeKey(jwk);
             Assert.False(canonicalizedKey.E.IsEmpty);
             Assert.False(canonicalizedKey.N.IsEmpty);
@@ -397,9 +404,45 @@ MEgCQQC3P1n17ovVXiS3/wKa0WqFQ8ltJT5UMZuTUyxBw8FHe4nbLS8z17modFhI
 4GqOaDtQRFEeG8o2JSfhfPQrOAYVAgMBAAE=
 -----END RSA PUBLIC KEY-----";
 
+        private const string Pkcs8PemRsaPrivateKeyExplanatoryText = @"
+This is a key-----BEGIN PRIVATE KEY-----
+MIIBVQIBADANBgkqhkiG9w0BAQEFAASCAT8wggE7AgEAAkEAtz9Z9e6L1V4kt/8C
+mtFqhUPJbSU+VDGbk1MsQcPBR3uJ2y0vM9e5qHRYSOBqjmg7UERRHhvKNiUn4Xz0
+KzgGFQIDAQABAkEAr+byNi+cr17FpJH4MCEiPXaKnmkH4c4U52EJtL9yg2gijBrp
+Ykat3c2nWb0EGGi5aWgXxQHoi7z97/ACD4X3KQIhAPNyex6GdiBVlNPHOgInTU8a
+mARKKVHIXM0SxvxXrRl7AiEAwLI66OpSqftDTv1KUfNe6+hyoh23ggzUSYiWuVT0
+Ya8CHwiO/cUU9RIt8A2B84gf2ZfuV2nPMaSuZpTPFC/K5UsCIQCsJMzx1JuilQAN
+acPiMCuFTnRSFYAhozpmsqoLyTREqwIhAMLJlZTGjEB2N+sEazH5ToEczQzKqp7t
+9juGNbOPhoEL
+-----END PRIVATE KEY-----this was a key.";
+
+        private const string Pkcs1PemRsaPrivateKeyExplanatoryText = @"
+This is a key-----BEGIN RSA PRIVATE KEY-----
+MIIBOwIBAAJBALc/WfXui9VeJLf/AprRaoVDyW0lPlQxm5NTLEHDwUd7idstLzPX
+uah0WEjgao5oO1BEUR4byjYlJ+F89Cs4BhUCAwEAAQJBAK/m8jYvnK9exaSR+DAh
+Ij12ip5pB+HOFOdhCbS/coNoIowa6WJGrd3Np1m9BBhouWloF8UB6Iu8/e/wAg+F
+9ykCIQDzcnsehnYgVZTTxzoCJ01PGpgESilRyFzNEsb8V60ZewIhAMCyOujqUqn7
+Q079SlHzXuvocqIdt4IM1EmIlrlU9GGvAh8Ijv3FFPUSLfANgfOIH9mX7ldpzzGk
+rmaUzxQvyuVLAiEArCTM8dSbopUADWnD4jArhU50UhWAIaM6ZrKqC8k0RKsCIQDC
+yZWUxoxAdjfrBGsx+U6BHM0Myqqe7fY7hjWzj4aBCw==
+-----END RSA PRIVATE KEY-----this was a key.";
+
+        private const string Pkcs8PemRsaPublicKeyExplanatoryText = @"
+This is a key-----BEGIN PUBLIC KEY-----
+MFwwDQYJKoZIhvcNAQEBBQADSwAwSAJBALc/WfXui9VeJLf/AprRaoVDyW0lPlQx
+m5NTLEHDwUd7idstLzPXuah0WEjgao5oO1BEUR4byjYlJ+F89Cs4BhUCAwEAAQ==
+-----END PUBLIC KEY-----this was a key.";
+
+        private const string Pkcs1PemRsaPublicKeyExplanatoryText = @"
+This is a key-----BEGIN RSA PUBLIC KEY-----
+MEgCQQC3P1n17ovVXiS3/wKa0WqFQ8ltJT5UMZuTUyxBw8FHe4nbLS8z17modFhI
+4GqOaDtQRFEeG8o2JSfhfPQrOAYVAgMBAAE=
+-----END RSA PUBLIC KEY-----this was a key.";
         [Theory]
         [InlineData(Pkcs1PemRsaPrivateKey)]
         [InlineData(Pkcs8PemRsaPrivateKey)]
+        [InlineData(Pkcs1PemRsaPrivateKeyExplanatoryText)]
+        [InlineData(Pkcs8PemRsaPrivateKeyExplanatoryText)]
         public void FromPem_PrivateKey(string pem)
         {
             var key = RsaJwk.FromPem(pem);
@@ -410,6 +453,8 @@ MEgCQQC3P1n17ovVXiS3/wKa0WqFQ8ltJT5UMZuTUyxBw8FHe4nbLS8z17modFhI
         [Theory]
         [InlineData(Pkcs1PemRsaPublicKey)]
         [InlineData(Pkcs8PemRsaPublicKey)]
+        [InlineData(Pkcs1PemRsaPublicKeyExplanatoryText)]
+        [InlineData(Pkcs8PemRsaPublicKeyExplanatoryText)]
         public void FromPem_PublicKey(string pem)
         {
             var key = RsaJwk.FromPem(pem);

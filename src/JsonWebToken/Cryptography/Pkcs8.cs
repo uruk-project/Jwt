@@ -5,19 +5,18 @@ namespace JsonWebToken.Cryptography
 {
     internal static class Pkcs8
     {
-        internal static ReadOnlySpan<char> PublicKeyPrefix => new[] { '-', '-', '-', '-', '-', 'B', 'E', 'G', 'I', 'N', ' ', 'P', 'U', 'B', 'L', 'I', 'C', ' ', 'K', 'E', 'Y', '-', '-', '-', '-', '-' };
-        internal static ReadOnlySpan<char> PublicKeySuffix => new[] { '-', '-', '-', '-', '-', 'E', 'N', 'D', ' ', 'P', 'U', 'B', 'L', 'I', 'C', ' ', 'K', 'E', 'Y', '-', '-', '-', '-', '-' };
-        internal static ReadOnlySpan<char> PrivateKeyPrefix => new[] { '-', '-', '-', '-', '-', 'B', 'E', 'G', 'I', 'N', ' ', 'P', 'R', 'I', 'V', 'A', 'T', 'E', ' ', 'K', 'E', 'Y', '-', '-', '-', '-', '-' };
-        internal static ReadOnlySpan<char> PrivateKeySuffix => new[] { '-', '-', '-', '-', '-', 'E', 'N', 'D', ' ', 'P', 'R', 'I', 'V', 'A', 'T', 'E', ' ', 'K', 'E', 'Y', '-', '-', '-', '-', '-' };
+        internal static ReadOnlySpan<char> PublicKeyPrefix => new[] { 'P', 'U', 'B', 'L', 'I', 'C', ' ', 'K', 'E', 'Y', '-', '-', '-', '-', '-' };
+        internal static ReadOnlySpan<char> PublicKeySuffix => new[] { 'P', 'U', 'B', 'L', 'I', 'C', ' ', 'K', 'E', 'Y', '-', '-', '-', '-', '-' };
+        internal static ReadOnlySpan<char> PrivateKeyPrefix => new[] { 'P', 'R', 'I', 'V', 'A', 'T', 'E', ' ', 'K', 'E', 'Y', '-', '-', '-', '-', '-' };
+        internal static ReadOnlySpan<char> PrivateKeySuffix => new[] { 'P', 'R', 'I', 'V', 'A', 'T', 'E', ' ', 'K', 'E', 'Y', '-', '-', '-', '-', '-' };
 
         public static AsymmetricJwk ReadPublicKey(ReadOnlySpan<char> key)
         {
-            var data = key.Slice(PublicKeyPrefix.Length, key.Length - PublicKeyPrefix.Length - PublicKeySuffix.Length);
             byte[] tmpArray;
-            Span<byte> keyData = tmpArray = ArrayPool<byte>.Shared.Rent(Base64.GetArraySizeRequiredToDecode(data.Length));
+            Span<byte> keyData = tmpArray = ArrayPool<byte>.Shared.Rent(Base64.GetArraySizeRequiredToDecode(key.Length));
             try
             {
-                int length = Base64.Decode(data, keyData);
+                int length = Base64.Decode(key, keyData, stripWhitespace: true);
                 var reader = new AsnReader(keyData.Slice(0, length));
                 reader = reader.ReadSequence();
                 var readerOid = reader.ReadSequence();
@@ -48,12 +47,11 @@ namespace JsonWebToken.Cryptography
         //     NULL or OBJECT IDENTIFIER (EC curve OID)
         public static AsymmetricJwk ReadPrivateKey(ReadOnlySpan<char> key)
         {
-            var data = key.Slice(PrivateKeyPrefix.Length, key.Length - PrivateKeyPrefix.Length - PrivateKeySuffix.Length);
             byte[] tmpArray;
-            Span<byte> keyData = tmpArray = ArrayPool<byte>.Shared.Rent(Base64.GetArraySizeRequiredToDecode(data.Length));
+            Span<byte> keyData = tmpArray = ArrayPool<byte>.Shared.Rent(Base64.GetArraySizeRequiredToDecode(key.Length));
             try
             {
-                int length = Base64.Decode(data, keyData);
+                int length = Base64.Decode(key, keyData, stripWhitespace: true);
                 var reader = new AsnReader(keyData.Slice(0, length));
                 reader = reader.ReadSequence();
                 reader.ReadInteger();

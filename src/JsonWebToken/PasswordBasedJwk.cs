@@ -84,7 +84,7 @@ namespace JsonWebToken
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.bytes);
             }
 
-            var innerKey = SymmetricJwk.FromByteArray(Utf8.GetBytes(passphrase), algorithm, computeThumbprint);
+            var innerKey = SymmetricJwk.FromByteArray(Utf8.GetBytes(passphrase), computeThumbprint);
             return new PasswordBasedJwk(innerKey, iterationCount, saltSizeInBytes, algorithm);
         }
 
