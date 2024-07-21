@@ -21,13 +21,12 @@ jobs:
       matrix:
         os: [ ubuntu-latest, windows-latest, macos-latest ]
         configuration: [ Debug, Release ]
+        dotnet-version: [ '6.x', '7.x', '8.x' ]
         include:
           - os: ubuntu-latest
             configuration: Release
+            dotnet-version: 8.x
             is-main: true
-          - os: windows-latest
-            configuration: Release
-            is-netfx: true
     env:
       DOTNET_CLI_TELEMETRY_OPTOUT: 1
       DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 1
@@ -47,10 +46,7 @@ jobs:
       - name: Setup dotnet
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: | 
-              6.x
-              7.x
-              8.x
+          dotnet-version: ${{ matrix.dotnet-version }}
 
       - name: Restore dependencies
         run: dotnet restore
@@ -61,7 +57,14 @@ jobs:
       - name: Test
   # disable macOS tests
         if: matrix.os != 'macos-latest'
-        run: dotnet test -c ${{ matrix.configuration }} --no-build --collect:"XPlat Code Coverage" --settings coverlet.runsettings
+        run: dotnet test -c ${{ matrix.configuration }} --no-build --collect:"XPlat Code Coverage" --settings coverlet.runsettings --logger trx --results-directory "TestResults-${{ matrix.dotnet-version }}"
+
+      - name: Upload dotnet test results
+        uses: actions/upload-artifact@v4
+        with:
+            name: dotnet-results-${{ matrix.dotnet-version }}
+            path: TestResults-${{ matrix.dotnet-version }}
+            if: ${{ always() }}
 
       - name: Upload coverage to Codecov
         if: matrix.is-main
