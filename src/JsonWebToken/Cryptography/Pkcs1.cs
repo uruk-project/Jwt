@@ -11,7 +11,7 @@ namespace JsonWebToken.Cryptography
         public static ReadOnlySpan<char> PrivatRsaKeySuffix => new[] { '-', '-', '-', '-', '-', 'E', 'N', 'D', ' ', 'R', 'S', 'A', ' ', 'P', 'R', 'I', 'V', 'A', 'T', 'E', ' ', 'K', 'E', 'Y', '-', '-', '-', '-', '-' };
 
 #if SUPPORT_ELLIPTIC_CURVE
-        public static ReadOnlySpan<char> PrivateECKeyPrefix => new[] { '-', '-', '-', '-', '-', 'B', 'E', 'G', 'I', 'N', ' ', 'E', 'C', ' ', 'P', 'R', 'I', 'V', 'A', 'T', 'E', ' ', 'K', 'E', 'Y', '-', '-', '-', '-', '-' };
+        public static ReadOnlySpan<char> PrivateECKeyPrefix => ['-', '-', '-', '-', '-', 'B', 'E', 'G', 'I', 'N', ' ', 'E', 'C', ' ', 'P', 'R', 'I', 'V', 'A', 'T', 'E', ' ', 'K', 'E', 'Y', '-', '-', '-', '-', '-'];
         public static ReadOnlySpan<char> PrivateECKeySuffix => new[] { '-', '-', '-', '-', '-', 'E', 'N', 'D', ' ', 'E', 'C', ' ', 'P', 'R', 'I', 'V', 'A', 'T', 'E', ' ', 'K', 'E', 'Y', '-', '-', '-', '-', '-' };
 #endif
 
