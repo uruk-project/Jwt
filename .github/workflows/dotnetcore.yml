@@ -63,7 +63,7 @@ jobs:
         if: ${{ always() }}
         uses: actions/upload-artifact@v4
         with:
-            name: dotnet-results-${{ matrix.dotnet-version }}
+            name: dotnet-results-${{ matrix.dotnet-version }}-${{ matrix.configuration }}-${{ matrix.os }}
             path: TestResults-${{ matrix.dotnet-version }}
 
       - name: Upload coverage to Codecov
