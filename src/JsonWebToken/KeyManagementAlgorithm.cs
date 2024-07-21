@@ -259,7 +259,7 @@ namespace JsonWebToken
 
         /// <summary>Determines whether two specified <see cref="KeyManagementAlgorithm"/> objects have the same value.</summary>
         public bool Equals(KeyManagementAlgorithm? other)
-            => other is null ? false : _id == other._id;
+            => other is not null && _id == other._id;
 
         /// <summary>Returns the hash code for this <see cref="KeyManagementAlgorithm"/>.</summary>
         public override int GetHashCode()
@@ -337,7 +337,7 @@ namespace JsonWebToken
 
         /// <summary>Cast the <see cref="KeyManagementAlgorithm"/> into its <see cref="byte"/> array representation.</summary>
         public static explicit operator byte[]?(KeyManagementAlgorithm? value)
-            => value is null ? null : value._utf8Name.EncodedUtf8Bytes.ToArray();
+            => value?._utf8Name.EncodedUtf8Bytes.ToArray();
 
         /// <inheritsddoc />
         public override string ToString()

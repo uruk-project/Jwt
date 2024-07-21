@@ -382,7 +382,7 @@ namespace JsonWebToken
         }
 
         /// <inheritdoc/>
-        public override bool HasPrivateKey => !(_parameters.D is null);
+        public override bool HasPrivateKey => _parameters.D is not null;
 
         /// <inheritsdoc />
         public override JsonEncodedText Kty => JwkTypeNames.Rsa;
@@ -508,7 +508,7 @@ namespace JsonWebToken
 #if SUPPORT_SPAN_CRYPTO
             using RSA rsa = RSA.Create(sizeInBits);
 #else
-#if NET461 || NET47
+#if NET462 || NET47
             using RSA rsa = new RSACng(sizeInBits);
 #else
             using RSA rsa = RSA.Create();
@@ -524,7 +524,7 @@ namespace JsonWebToken
 #if SUPPORT_SPAN_CRYPTO
             using RSA rsa = RSA.Create(sizeInBits);
 #else
-#if NET461 || NET47
+#if NET462 || NET47
             using RSA rsa = new RSACng(sizeInBits);
 #else
             using RSA rsa = RSA.Create();
@@ -542,7 +542,7 @@ namespace JsonWebToken
 #if SUPPORT_SPAN_CRYPTO
             using RSA rsa = RSA.Create(sizeInBits);
 #else
-#if NET461 || NET47
+#if NET462 || NET47
             using RSA rsa = new RSACng(sizeInBits);
 #else
             using RSA rsa = RSA.Create();
@@ -564,11 +564,11 @@ namespace JsonWebToken
             };
 
             RsaJwk publicKey;
-            if (!(KeyManagementAlgorithm is null))
+            if (KeyManagementAlgorithm is not null)
             {
                 publicKey = FromParameters(publicParameters, KeyManagementAlgorithm, computeThumbprint: false);
             }
-            else if (!(SignatureAlgorithm is null))
+            else if (SignatureAlgorithm is not null)
             {
                 publicKey = FromParameters(publicParameters, SignatureAlgorithm, computeThumbprint: false);
             }
@@ -857,7 +857,7 @@ namespace JsonWebToken
         public new static RsaJwk FromPem(string pem)
         {
             AsymmetricJwk jwk = PemParser.Read(pem);
-            if (!(jwk is RsaJwk rsaJwk))
+            if (jwk is not RsaJwk rsaJwk)
             {
                 jwk.Dispose();
                 ThrowHelper.ThrowInvalidOperationException_UnexpectedKeyType(jwk, JwkTypeNames.Rsa.ToString());
@@ -867,9 +867,9 @@ namespace JsonWebToken
             return rsaJwk;
         }
 
-        private static ReadOnlySpan<byte> StartCanonicalizeValue => new byte[] { (byte)'{', (byte)'"', (byte)'e', (byte)'"', (byte)':', (byte)'"' };
-        private static ReadOnlySpan<byte> MiddleCanonicalizeValue => new byte[] { (byte)'"', (byte)',', (byte)'"', (byte)'k', (byte)'t', (byte)'y', (byte)'"', (byte)':', (byte)'"', (byte)'R', (byte)'S', (byte)'A', (byte)'"', (byte)',', (byte)'"', (byte)'n', (byte)'"', (byte)':', (byte)'"' };
-        private static ReadOnlySpan<byte> EndCanonicalizeValue => new byte[] { (byte)'"', (byte)'}' };
+        private static ReadOnlySpan<byte> StartCanonicalizeValue => "{\"e\":\""u8;
+        private static ReadOnlySpan<byte> MiddleCanonicalizeValue => "\",\"kty\":\"RSA\",\"n\":\""u8;
+        private static ReadOnlySpan<byte> EndCanonicalizeValue => "\"}"u8;
 
         /// <inheritdoc />
         protected internal override void Canonicalize(Span<byte> buffer)
@@ -905,7 +905,7 @@ namespace JsonWebToken
 
             while (reader.Read())
             {
-                if (!(reader.TokenType is JsonTokenType.PropertyName))
+                if (reader.TokenType is not JsonTokenType.PropertyName)
                 {
                     break;
                 }
@@ -945,7 +945,7 @@ namespace JsonWebToken
                 }
             }
 
-            if (!(reader.TokenType is JsonTokenType.EndObject))
+            if (reader.TokenType is not JsonTokenType.EndObject)
             {
                 ThrowHelper.ThrowArgumentException_MalformedKey();
             }
@@ -1032,7 +1032,7 @@ namespace JsonWebToken
                 return true;
             }
 
-            if (!(other is RsaJwk key))
+            if (other is not RsaJwk key)
             {
                 return false;
             }

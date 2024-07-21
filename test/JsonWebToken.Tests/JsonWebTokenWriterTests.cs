@@ -47,9 +47,9 @@ namespace JsonWebToken.Tests
             var result = Jwt.TryParse(value, policy, out var jwt);
             Assert.True(result);
 
-            if (!(descriptor is JwsDescriptor jwsPayload))
+            if (descriptor is not JwsDescriptor jwsPayload)
             {
-                if (!(descriptor is JweDescriptor jwePayload))
+                if (descriptor is not JweDescriptor jwePayload)
                 {
                     throw new Xunit.Sdk.IsNotTypeException(typeof(JwtDescriptor), descriptor);
                 }

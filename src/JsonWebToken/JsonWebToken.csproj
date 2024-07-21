@@ -1,87 +1,89 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFrameworks>net5.0;netstandard2.0;netcoreapp2.1;netcoreapp3.1</TargetFrameworks>
-    <TargetFrameworks Condition="'$(OS)' == 'Windows_NT'">$(TargetFrameworks);net461;net47</TargetFrameworks>
-    <LangVersion>9.0</LangVersion>
-    <Nullable>enable</Nullable>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <SignAssembly>true</SignAssembly>
-    <AssemblyOriginatorKeyFile>../../jwt.snk</AssemblyOriginatorKeyFile>
-    <NoWarn>3021;IDE0057</NoWarn>
-  </PropertyGroup>
+	<PropertyGroup>
+		<TargetFrameworks>net8.0;net6.0;net7.0;netstandard2.0</TargetFrameworks>
+		<TargetFrameworks Condition="'$(OS)' == 'Windows_NT'">$(TargetFrameworks);net462;net47</TargetFrameworks>
+		<LangVersion>12.0</LangVersion>
+		<Nullable>enable</Nullable>
+		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+		<SignAssembly>true</SignAssembly>
+		<AssemblyOriginatorKeyFile>../../jwt.snk</AssemblyOriginatorKeyFile>
+		<NoWarn>3021;IDE0057</NoWarn>
+	</PropertyGroup>
 
-  <PropertyGroup>
-    <PackageTags>jwt security jsonwebtoken cryptography</PackageTags>
-    <Description>High-performance JWT library. Provides Json Web Token primitives.</Description>
-    <DocumentationFile>$(OutputPath)JsonWebToken.xml</DocumentationFile>
-  </PropertyGroup>
+	<PropertyGroup>
+		<PackageTags>jwt security jsonwebtoken cryptography</PackageTags>
+		<Description>High-performance JWT library. Provides Json Web Token primitives.</Description>
+		<DocumentationFile>$(OutputPath)JsonWebToken.xml</DocumentationFile>
+	</PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)'=='Debug'">
-    <DebugType>full</DebugType>
-    <DebugSymbols>true</DebugSymbols>
-  </PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)'=='Debug'">
+		<DebugType>full</DebugType>
+		<DebugSymbols>true</DebugSymbols>
+	</PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)'=='Release'">
-  </PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)'=='Release'">
+	</PropertyGroup>
 
-  <ItemGroup>
-    <None Remove="JsonWebToken.xml" />
-  </ItemGroup>
+	<ItemGroup>
+		<None Remove="JsonWebToken.xml" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Include="gfoidl.Base64" Version="1.1.1" />
-    <ProjectReference Include="..\Analyzers\JsonWebToken.Analyzers.csproj" PrivateAssets="all">
-      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
-      <OutputItemType>Analyzer</OutputItemType>
-    </ProjectReference>
-  </ItemGroup>
+	<ItemGroup>
+		<ProjectReference Include="..\Analyzers\JsonWebToken.Analyzers.csproj" PrivateAssets="all">
+			<ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+			<OutputItemType>Analyzer</OutputItemType>
+		</ProjectReference>
+	</ItemGroup>
 
-  <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
-    <PackageReference Include="System.Memory" Version="4.5.4" />
-    <PackageReference Include="System.Numerics.Vectors" Version="4.5.0" />
-    <PackageReference Include="System.Buffers" Version="4.5.1" />
-    <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="4.7.1" />
-    <PackageReference Include="System.Security.Cryptography.Cng" Version="4.7.0" />
-    <PackageReference Include="System.Text.Json" Version="4.7.2-*" />
-  </ItemGroup>
+	<ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0' And '$(TargetFramework)' != 'net7.0' And '$(TargetFramework)' != 'net8.0'">
+		<PackageReference Include="gfoidl.Base64" Version="1.1.1" />
+		<PackageReference Include="System.Memory" Version="4.5.5" />
+		<PackageReference Include="System.Numerics.Vectors" Version="4.5.0" />
+		<PackageReference Include="System.Buffers" Version="4.5.1" />
+		<PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="6.0.0" />
+		<PackageReference Include="System.Security.Cryptography.Cng" Version="5.0.0" />
+		<PackageReference Include="System.Text.Json" Version="8.0.4" />
+	</ItemGroup>
 
-  <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp2.1'">
-    <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="4.7.1" />
-    <PackageReference Include="System.Text.Json" Version="4.7.2" />
-  </ItemGroup>
+	<ItemGroup Condition="'$(TargetFramework)' == 'net6.0'">
+		<PackageReference Include="gfoidl.Base64" Version="1.1.1" />
+	</ItemGroup>
+	<ItemGroup Condition="'$(TargetFramework)' == 'net7.0'">
+		<PackageReference Include="gfoidl.Base64" Version="2.0" />
+	</ItemGroup>
+	<ItemGroup Condition="'$(TargetFramework)' == 'net8.0'">
+		<PackageReference Include="gfoidl.Base64" Version="2.0" />
+	</ItemGroup>
 
-  <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp3.1'">
-    <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="4.7.1" />
-    <PackageReference Include="System.Text.Json" Version="4.7.2" />
-  </ItemGroup>
+	<ItemGroup Condition="'$(TargetFramework)' == 'net462'">
+		<PackageReference Include="gfoidl.Base64" Version="1.1.1" />
+		<PackageReference Include="System.Runtime" Version="4.3.1" />
+		<PackageReference Include="System.Memory" Version="4.5.5" />
+		<PackageReference Include="System.Numerics.Vectors" Version="4.5.0" />
+		<PackageReference Include="System.Buffers" Version="4.5.1" />
+		<PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="6.0.0" />
+		<PackageReference Include="System.Security.Cryptography.Cng" Version="5.0.0" />
+		<PackageReference Include="System.Security.Cryptography.Algorithms" Version="4.3.1" />
+		<PackageReference Include="System.Text.Json" Version="8.0.4" />
+		<PackageReference Include="System.Net.Http" Version="4.3.4" />
+	</ItemGroup>
 
-  <ItemGroup Condition="'$(TargetFramework)' == 'net461'">
-    <PackageReference Include="System.Runtime" Version="4.3.1" />
-    <PackageReference Include="System.Memory" Version="4.5.4" />
-    <PackageReference Include="System.Numerics.Vectors" Version="4.5.0" />
-    <PackageReference Include="System.Buffers" Version="4.5.1" />
-    <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="4.7.1" />
-    <PackageReference Include="System.Security.Cryptography.Cng" Version="4.7.0" />
-    <PackageReference Include="System.Security.Cryptography.Algorithms" Version="4.3.1" />
-    <PackageReference Include="System.Text.Json" Version="4.7.2" />
-    <PackageReference Include="System.Net.Http" Version="4.3.4" />
-  </ItemGroup>
+	<ItemGroup Condition="'$(TargetFramework)' == 'net47'">
+		<PackageReference Include="gfoidl.Base64" Version="1.1.1" />
+		<PackageReference Include="System.Runtime" Version="4.3.1" />
+		<PackageReference Include="System.Memory" Version="4.5.5" />
+		<PackageReference Include="System.Numerics.Vectors" Version="4.5.0" />
+		<PackageReference Include="System.Buffers" Version="4.5.1" />
+		<PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="6.0.0" />
+		<PackageReference Include="System.Security.Cryptography.Cng" Version="5.0.0" />
+		<PackageReference Include="System.Security.Cryptography.Algorithms" Version="4.3.1" />
+		<PackageReference Include="System.Text.Json" Version="8.0.4" />
+		<PackageReference Include="System.Net.Http" Version="4.3.4" />
+	</ItemGroup>
 
-  <ItemGroup Condition="'$(TargetFramework)' == 'net47'">
-    <PackageReference Include="System.Runtime" Version="4.3.1" />
-    <PackageReference Include="System.Memory" Version="4.5.4" />
-    <PackageReference Include="System.Numerics.Vectors" Version="4.5.0" />
-    <PackageReference Include="System.Buffers" Version="4.5.1" />
-    <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="4.7.1" />
-    <PackageReference Include="System.Security.Cryptography.Cng" Version="4.7.0" />
-    <PackageReference Include="System.Security.Cryptography.Algorithms" Version="4.3.1" />
-    <PackageReference Include="System.Text.Json" Version="4.7.2" />
-    <PackageReference Include="System.Net.Http" Version="4.3.4" />
-  </ItemGroup>
-
-  <!--
+	<!--
   SUPPORT_ELLIPTIC_CURVE
   SUPPORT_ELLIPTIC_CURVE_SIGNATURE
   SUPPORT_ELLIPTIC_CURVE_KEYWRAPPING
@@ -90,30 +92,29 @@
   SUPPORT_JAVASCRIPT_ENCODER
   SUPPORT_SPAN_CRYPTO
   -->
-  <PropertyGroup Condition="'$(TargetFramework)' == 'net461'">
-    <DefineConstants>$(DefineConstants);SUPPORT_JAVASCRIPT_ENCODER</DefineConstants>
-    <NoWarn>CS8601;CS8602;CS8604;CS8618</NoWarn>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(TargetFramework)' == 'net47'">
-    <DefineConstants>$(DefineConstants);SUPPORT_ELLIPTIC_CURVE;SUPPORT_ELLIPTIC_CURVE_SIGNATURE;SUPPORT_ELLIPTIC_CURVE_KEYWRAPPING</DefineConstants>
-    <DefineConstants>$(DefineConstants);SUPPORT_JAVASCRIPT_ENCODER</DefineConstants>
-    <NoWarn>CS8601;CS8602;CS8604;CS8618</NoWarn>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
-    <DefineConstants>$(DefineConstants);SUPPORT_ELLIPTIC_CURVE;SUPPORT_ELLIPTIC_CURVE_SIGNATURE</DefineConstants>
-    <NoWarn>CS8601;CS8602;CS8604;CS8618</NoWarn>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(TargetFramework)' == 'netcoreapp2.1'">
-    <DefineConstants>$(DefineConstants);SUPPORT_ELLIPTIC_CURVE;SUPPORT_ELLIPTIC_CURVE_SIGNATURE;SUPPORT_ELLIPTIC_CURVE_KEYWRAPPING</DefineConstants>
-    <DefineConstants>$(DefineConstants);SUPPORT_JAVASCRIPT_ENCODER;SUPPORT_SPAN_CRYPTO;SUPPORT_SPAN_STREAM</DefineConstants>
-    <NoWarn>CS8601;CS8602;CS8604;CS8618</NoWarn>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(TargetFramework)' == 'netcoreapp3.1'">
-    <DefineConstants>$(DefineConstants);SUPPORT_ELLIPTIC_CURVE;SUPPORT_ELLIPTIC_CURVE_SIGNATURE;SUPPORT_ELLIPTIC_CURVE_KEYWRAPPING;SUPPORT_SIMD</DefineConstants>
-    <DefineConstants>$(DefineConstants);SUPPORT_AESGCM;SUPPORT_JAVASCRIPT_ENCODER;SUPPORT_SPAN_CRYPTO;SUPPORT_RUNE;SUPPORT_SPAN_STREAM</DefineConstants>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(TargetFramework)' == 'net5.0'">
-    <DefineConstants>$(DefineConstants);SUPPORT_ELLIPTIC_CURVE;SUPPORT_ELLIPTIC_CURVE_SIGNATURE;SUPPORT_ELLIPTIC_CURVE_KEYWRAPPING;SUPPORT_SIMD</DefineConstants>
-    <DefineConstants>$(DefineConstants);SUPPORT_AESGCM;SUPPORT_JAVASCRIPT_ENCODER;SUPPORT_SPAN_CRYPTO;SUPPORT_RUNE;SUPPORT_SPAN_STREAM;SUPPORT_SKIPLOCALINIT</DefineConstants>
-  </PropertyGroup>
+	<PropertyGroup Condition="'$(TargetFramework)' == 'net462'">
+		<DefineConstants>$(DefineConstants);SUPPORT_JAVASCRIPT_ENCODER</DefineConstants>
+		<NoWarn>CS8601;CS8602;CS8604;CS8618</NoWarn>
+	</PropertyGroup>
+	<PropertyGroup Condition="'$(TargetFramework)' == 'net47'">
+		<DefineConstants>$(DefineConstants);SUPPORT_ELLIPTIC_CURVE;SUPPORT_ELLIPTIC_CURVE_SIGNATURE;SUPPORT_ELLIPTIC_CURVE_KEYWRAPPING</DefineConstants>
+		<DefineConstants>$(DefineConstants);SUPPORT_JAVASCRIPT_ENCODER</DefineConstants>
+		<NoWarn>CS8601;CS8602;CS8604;CS8618</NoWarn>
+	</PropertyGroup>
+	<PropertyGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
+		<DefineConstants>$(DefineConstants);SUPPORT_ELLIPTIC_CURVE;SUPPORT_ELLIPTIC_CURVE_SIGNATURE</DefineConstants>
+		<NoWarn>CS8601;CS8602;CS8604;CS8618</NoWarn>
+	</PropertyGroup>
+	<PropertyGroup Condition="'$(TargetFramework)' == 'net6.0'">
+		<DefineConstants>$(DefineConstants);SUPPORT_ELLIPTIC_CURVE;SUPPORT_ELLIPTIC_CURVE_SIGNATURE;SUPPORT_ELLIPTIC_CURVE_KEYWRAPPING;SUPPORT_SIMD</DefineConstants>
+		<DefineConstants>$(DefineConstants);SUPPORT_AESGCM;SUPPORT_JAVASCRIPT_ENCODER;SUPPORT_SPAN_CRYPTO;SUPPORT_RUNE;SUPPORT_SPAN_STREAM;SUPPORT_SKIPLOCALINIT</DefineConstants>
+	</PropertyGroup>
+	<PropertyGroup Condition="'$(TargetFramework)' == 'net7.0'">
+		<DefineConstants>$(DefineConstants);SUPPORT_ELLIPTIC_CURVE;SUPPORT_ELLIPTIC_CURVE_SIGNATURE;SUPPORT_ELLIPTIC_CURVE_KEYWRAPPING;SUPPORT_SIMD</DefineConstants>
+		<DefineConstants>$(DefineConstants);SUPPORT_AESGCM;SUPPORT_JAVASCRIPT_ENCODER;SUPPORT_SPAN_CRYPTO;SUPPORT_RUNE;SUPPORT_SPAN_STREAM;SUPPORT_SKIPLOCALINIT</DefineConstants>
+	</PropertyGroup>
+	<PropertyGroup Condition="'$(TargetFramework)' == 'net8.0'">
+		<DefineConstants>$(DefineConstants);SUPPORT_ELLIPTIC_CURVE;SUPPORT_ELLIPTIC_CURVE_SIGNATURE;SUPPORT_ELLIPTIC_CURVE_KEYWRAPPING;SUPPORT_SIMD</DefineConstants>
+		<DefineConstants>$(DefineConstants);SUPPORT_AESGCM;SUPPORT_JAVASCRIPT_ENCODER;SUPPORT_SPAN_CRYPTO;SUPPORT_RUNE;SUPPORT_SPAN_STREAM;SUPPORT_SKIPLOCALINIT</DefineConstants>
+	</PropertyGroup>
 </Project>

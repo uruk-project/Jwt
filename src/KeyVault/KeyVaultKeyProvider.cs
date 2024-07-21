@@ -76,7 +76,7 @@ namespace JsonWebToken.KeyVault
                 }
 #endif
 
-                if (!(key is null))
+                if (key is not null)
                 {
 
                     key.Kid = JsonEncodedText.Encode(kvKey.Value.Key.Id);

@@ -9,6 +9,10 @@ namespace JsonWebToken.Cryptography
         public static ReadOnlySpan<char> PrivateRsaKeyLabel => new[] { 'R', 'S', 'A', ' ', 'P', 'R', 'I', 'V', 'A', 'T', 'E', ' ', 'K', 'E', 'Y', '-', '-', '-', '-', '-' };
 
 #if SUPPORT_ELLIPTIC_CURVE
+        public static ReadOnlySpan<char> PrivateECKeyPrefix => "-----BEGIN EC PRIVATE KEY-----".AsSpan();
+
+        public static ReadOnlySpan<char> PrivateECKeySuffix => new[] { '-', '-', '-', '-', '-', 'E', 'N', 'D', ' ', 'E', 'C', ' ', 'P', 'R', 'I', 'V', 'A', 'T', 'E', ' ', 'K', 'E', 'Y', '-', '-', '-', '-', '-' };
+
         public static ReadOnlySpan<char> PrivateECKeyLabel => new[] { 'E', 'C', ' ', 'P', 'R', 'I', 'V', 'A', 'T', 'E', ' ', 'K', 'E', 'Y', '-', '-', '-', '-', '-' };
 #endif
 

@@ -24,7 +24,7 @@ namespace JsonWebToken.Cryptography
 #if SUPPORT_SPAN_CRYPTO
             _rsa = RSA.Create(key.ExportParameters());
 #else
-#if NET461 || NET47
+#if NET462 || NET47
             _rsa = new RSACng();
 #else
             _rsa = RSA.Create();

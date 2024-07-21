@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
+using System.Threading.Tasks;
 using BenchmarkDotNet.Attributes;
 
 namespace JsonWebToken.Performance
@@ -18,7 +19,7 @@ namespace JsonWebToken.Performance
             var token = GetTokenValues().First();
             JsonWebToken(token);
             Wilson(token);
-            WilsonJwt(token);
+            WilsonJwtAsync(token).Wait();
         }
 
         [Benchmark(Baseline = true)]
@@ -39,9 +40,9 @@ namespace JsonWebToken.Performance
 
         [Benchmark]
         [ArgumentsSource(nameof(GetTokenValues))]
-        public override Microsoft.IdentityModel.Tokens.TokenValidationResult WilsonJwt(BenchmarkToken token)
+        public override async Task<Microsoft.IdentityModel.Tokens.TokenValidationResult> WilsonJwtAsync(BenchmarkToken token)
         {
-            return WilsonJwtCore(token.TokenString, wilsonParameters);
+            return await WilsonJwtCoreAsync(token.TokenString, wilsonParameters);
         }
 
         public override Dictionary<string, object> jose_jwt(BenchmarkToken token)

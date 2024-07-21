@@ -4,6 +4,7 @@
 #if SUPPORT_SIMD
 using System;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Runtime.Intrinsics;
@@ -71,7 +72,7 @@ namespace JsonWebToken.Cryptography
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static void KeyGenAssist1(ref Vector128<byte> tmp1, Vector128<byte> tmp3, byte control)
+        private static void KeyGenAssist1(ref Vector128<byte> tmp1, Vector128<byte> tmp3, [ConstantExpected] byte control)
         {
             var keyGened = Aes.KeygenAssist(tmp3, control);
             keyGened = Sse2.Shuffle(keyGened.AsInt32(), 0xFF).AsByte();
@@ -94,7 +95,7 @@ namespace JsonWebToken.Cryptography
 
         public void Clear()
         {
-            ref byte that = ref Unsafe.As<Aes256DecryptionKeys, byte>(ref Unsafe.AsRef(this));
+            ref byte that = ref Unsafe.As<Aes256DecryptionKeys, byte>(ref Unsafe.AsRef(in this));
             Unsafe.InitBlock(ref that, 0, Count * 16);
         }
     }

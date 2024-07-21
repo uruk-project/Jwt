@@ -91,7 +91,7 @@ namespace JsonWebToken
                 }
             }
 
-            if (!(reader.TokenType is JsonTokenType.EndObject))
+            if (reader.TokenType is not JsonTokenType.EndObject)
             {
                 ThrowHelper.ThrowArgumentException_MalformedKey();
             }
@@ -434,8 +434,8 @@ namespace JsonWebToken
             return key;
         }
 
-        private static ReadOnlySpan<byte> StartCanonicalizeValue => new byte[] { (byte)'{', (byte)'"', (byte)'k', (byte)'"', (byte)':', (byte)'"' };
-        private static ReadOnlySpan<byte> EndCanonicalizeValue => new byte[] { (byte)'"', (byte)',', (byte)'"', (byte)'k', (byte)'t', (byte)'y', (byte)'"', (byte)':', (byte)'"', (byte)'o', (byte)'c', (byte)'t', (byte)'"', (byte)'}' };
+        private static ReadOnlySpan<byte> StartCanonicalizeValue => "{\"k\":\""u8;
+        private static ReadOnlySpan<byte> EndCanonicalizeValue => "\",\"kty\":\"oct\"}"u8;
 
         /// <inheritdoc />      
         protected internal override void Canonicalize(Span<byte> buffer)
@@ -492,7 +492,7 @@ namespace JsonWebToken
                 return true;
             }
 
-            if (!(other is SymmetricJwk key))
+            if (other is not SymmetricJwk key)
             {
                 return false;
             }

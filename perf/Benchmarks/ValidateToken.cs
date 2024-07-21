@@ -4,6 +4,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Security.Claims;
 using System.Text;
+using System.Threading.Tasks;
 using Jose;
 using JWT;
 using JWT.Algorithms;
@@ -97,11 +98,11 @@ namespace JsonWebToken.Performance
             return Handler.ValidateToken(token, parameters, out var securityToken);
         }
 
-        public abstract Microsoft.IdentityModel.Tokens.TokenValidationResult WilsonJwt(BenchmarkToken token);
+        public abstract Task<Microsoft.IdentityModel.Tokens.TokenValidationResult> WilsonJwtAsync(BenchmarkToken token);
 
-        protected Microsoft.IdentityModel.Tokens.TokenValidationResult WilsonJwtCore(string token, TokenValidationParameters parameters)
+        protected async Task<Microsoft.IdentityModel.Tokens.TokenValidationResult> WilsonJwtCoreAsync(string token, TokenValidationParameters parameters)
         {
-            return Handler2.ValidateToken(token, parameters);
+            return await Handler2.ValidateTokenAsync(token, parameters);
         }
 
         public abstract Dictionary<string, object> jose_jwt(BenchmarkToken token);
