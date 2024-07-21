@@ -156,8 +156,10 @@ namespace JsonWebToken.Tests
             var key2 = ECJwk.GeneratePrivateKey(crv.SupportedSignatureAlgorithm);
             Assert.NotNull(key2);
         }
-
-        public static IEnumerable<object[]> SupportedCurves => EllipticalCurve.SupportedCurves.Select(c => new object[] { c }).ToArray();
+        public static IEnumerable<object[]> SupportedCurves
+            => EllipticalCurve
+            .SupportedCurves
+            .Select(c => new object[] { c }).ToArray();
 
         [Theory]
         [MemberData(nameof(GetWrappingKeys))]
@@ -184,7 +186,9 @@ namespace JsonWebToken.Tests
         [InlineData("ES256")]
         [InlineData("ES384")]
         [InlineData("ES512")]
+#if !TARGET_MACOS
         [InlineData("ES256K")]
+#endif
         public override void Canonicalize(string alg)
         {
             var jwk = ECJwk.GeneratePrivateKey((SignatureAlgorithm)alg);
