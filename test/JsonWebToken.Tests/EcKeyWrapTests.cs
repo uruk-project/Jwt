@@ -43,10 +43,22 @@ namespace JsonWebToken.Tests
             Assert.Equal(expected, cek.AsSpan().ToArray());
         }
 
-        [Fact]
-        public void Unwrap()
+        [Theory]
+        [InlineData("A128CBC-HS256", "ECDH-ES+A128KW")]
+        [InlineData("A128CBC-HS256", "ECDH-ES+A192KW")]
+        [InlineData("A128CBC-HS256", "ECDH-ES+A256KW")]
+        [InlineData("A192CBC-HS384", "ECDH-ES+A128KW")]
+        [InlineData("A192CBC-HS384", "ECDH-ES+A192KW")]
+        [InlineData("A192CBC-HS384", "ECDH-ES+A256KW")]
+        [InlineData("A256CBC-HS512", "ECDH-ES+A128KW")]
+        [InlineData("A256CBC-HS512", "ECDH-ES+A192KW")]
+        [InlineData("A256CBC-HS512", "ECDH-ES+A256KW")]
+        [InlineData("A128CBC-HS256", "ECDH-ES")]
+        [InlineData("A192CBC-HS384", "ECDH-ES")]
+        [InlineData("A256CBC-HS512", "ECDH-ES")]
+        public void Unwrap(string enc, string alg)
         {
-            var kwp = new EcdhKeyWrapper(_bobKey, EncryptionAlgorithm.A128CbcHS256, KeyManagementAlgorithm.EcdhEsA128KW);
+            var kwp = new EcdhKeyWrapper(_bobKey, (EncryptionAlgorithm)enc, (KeyManagementAlgorithm)alg);
             byte[] wrappedKey = new byte[kwp.GetKeyWrapSize()];
             var header = new JwtHeader
             {
@@ -56,7 +68,7 @@ namespace JsonWebToken.Tests
 
             kwp.WrapKey(_aliceKey, header, wrappedKey);
 
-            var kuwp = new EcdhKeyUnwrapper(_bobKey, EncryptionAlgorithm.A128CbcHS256, KeyManagementAlgorithm.EcdhEsA128KW);
+            var kuwp = new EcdhKeyUnwrapper(_bobKey, (EncryptionAlgorithm)enc, (KeyManagementAlgorithm)alg);
             var apu = Encoding.UTF8.GetString(Base64Url.Encode("Alice")); ;
             var apv = Encoding.UTF8.GetString(Base64Url.Encode("Bob"));
             header.TryGetValue(JwtHeaderParameterNames.Epk, out var epkElement);
@@ -66,33 +78,6 @@ namespace JsonWebToken.Tests
 
             byte[] unwrappedKey = new byte[kuwp.GetKeyUnwrapSize(wrappedKey.Length)];
             var unwrapped = kuwp.TryUnwrapKey(wrappedKey, unwrappedKey, jwtHeader, out _);
-
-            Assert.True(unwrapped);
-        }
-
-        [Fact]
-        public void Unwrap2()
-        {
-            var kwp = new EcdhKeyWrapper(_bobKey, EncryptionAlgorithm.A128CbcHS256, KeyManagementAlgorithm.EcdhEsA128KW);
-            byte[] wrappedKey = new byte[kwp.GetKeyWrapSize()];
-            var header = new JwtHeader
-            {
-                { JwtHeaderParameterNames.Apu, Utf8.GetString(Base64Url.Encode("Alice")) },
-                { JwtHeaderParameterNames.Apv, Utf8.GetString(Base64Url.Encode("Bob")) }
-            };
-
-            kwp.WrapKey(_aliceKey, header, wrappedKey);
-
-            var kuwp = new EcdhKeyUnwrapper(_bobKey, EncryptionAlgorithm.A128CbcHS256, KeyManagementAlgorithm.EcdhEsA128KW);
-            var apu = Encoding.UTF8.GetString(Base64Url.Encode("Alice")); ;
-            var apv = Encoding.UTF8.GetString(Base64Url.Encode("Bob"));
-            header.TryGetValue(JwtHeaderParameterNames.Epk, out var epkElement);
-            var epk = (Jwk)epkElement.Value;
-            var parsed = JwtHeaderDocument.TryParseHeader(Encoding.UTF8.GetBytes($"{{\"apu\":\"{apu}\",\"apv\":\"{apv}\",\"epk\":{epk}}}"), null, TokenValidationPolicy.NoValidation, out var jwtHeader, out var error);
-            Assert.True(parsed);
-
-            byte[] unwrappedKey = new byte[kuwp.GetKeyUnwrapSize(wrappedKey.Length)];
-            var unwrapped = kuwp.TryUnwrapKey(wrappedKey, unwrappedKey, jwtHeader, out int bytesWritten);
 
             Assert.True(unwrapped);
         }

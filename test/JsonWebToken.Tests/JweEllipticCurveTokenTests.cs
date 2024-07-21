@@ -17,8 +17,21 @@ namespace JsonWebToken.Tests
         private readonly SymmetricJwk _signingKey = SymmetricJwk.GenerateKey(SignatureAlgorithm.HS256);
 
         [Theory]
-        [MemberData(nameof(GetSupportedAlgorithm))]
-        public void Encode_Decode(string enc, byte[] alg)
+#if SUPPORT_ELLIPTIC_CURVE                                                         
+        [InlineData("A128CBC-HS256", "ECDH-ES+A128KW")]
+        [InlineData("A128CBC-HS256", "ECDH-ES+A192KW")]
+        [InlineData("A128CBC-HS256", "ECDH-ES+A256KW")]
+        [InlineData("A192CBC-HS384", "ECDH-ES+A128KW")]
+        [InlineData("A192CBC-HS384", "ECDH-ES+A192KW")]
+        [InlineData("A192CBC-HS384", "ECDH-ES+A256KW")]
+        [InlineData("A256CBC-HS512", "ECDH-ES+A128KW")]
+        [InlineData("A256CBC-HS512", "ECDH-ES+A192KW")]
+        [InlineData("A256CBC-HS512", "ECDH-ES+A256KW")]
+#endif
+        [InlineData("A128CBC-HS256", "ECDH-ES")]
+        [InlineData("A192CBC-HS384", "ECDH-ES")]
+        [InlineData("A256CBC-HS512", "ECDH-ES")]
+        public void Encode_Decode(string enc, string alg)
         {
             var writer = new JwtWriter();
 
@@ -45,19 +58,6 @@ namespace JsonWebToken.Tests
             Assert.True(jwt.Payload.TryGetClaim("sub", out var sub));
             Assert.Equal("Alice", sub.GetString());
             jwt.Dispose();
-        }
-
-        public static IEnumerable<object[]> GetSupportedAlgorithm()
-        {
-            yield return new object[] { (string)EncryptionAlgorithm.A128CbcHS256, (byte[])KeyManagementAlgorithm.EcdhEs };
-            yield return new object[] { (string)EncryptionAlgorithm.A192CbcHS384, (byte[])KeyManagementAlgorithm.EcdhEs };
-            yield return new object[] { (string)EncryptionAlgorithm.A256CbcHS512, (byte[])KeyManagementAlgorithm.EcdhEs };
-#if SUPPORT_ELLIPTIC_CURVE
-            yield return new object[] { (string)EncryptionAlgorithm.A128CbcHS256, (byte[])KeyManagementAlgorithm.EcdhEsA128KW };
-            yield return new object[] { (string)EncryptionAlgorithm.A128CbcHS256, (byte[])KeyManagementAlgorithm.EcdhEsA192KW };
-            yield return new object[] { (string)EncryptionAlgorithm.A128CbcHS256, (byte[])KeyManagementAlgorithm.EcdhEsA256KW };
-#endif
-            yield break;
         }
     }
 }
