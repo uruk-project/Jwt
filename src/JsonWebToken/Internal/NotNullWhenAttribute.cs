@@ -1,7 +1,7 @@
 ﻿// Copyright (c) 2020 Yann Crumeyrolle. All rights reserved.
 // Licensed under the MIT license. See LICENSE in the project root for license information.
 
-#if NETSTANDARD2_0 || NET461 || NET47 || NETCOREAPP2_2
+#if NETSTANDARD2_0 || NET462 || NET47 || NETCOREAPP2_2
 namespace System.Diagnostics.CodeAnalysis
 {
     /// <summary>Specifies that when a method returns <see cref="ReturnValue"/>, the parameter will not be null even if the corresponding type allows it.</summary>

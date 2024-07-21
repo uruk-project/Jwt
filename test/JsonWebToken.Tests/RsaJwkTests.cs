@@ -588,7 +588,7 @@ y6T3Y16v8maAqNihK6YdWZI19n2ctNWPF4PTykPnjwpauqYkB5k2wMOp
         {
             yield return new object[] { PrivateRsa2048Key, EncryptionAlgorithm.A128CbcHS256, KeyManagementAlgorithm.Rsa1_5 };
             yield return new object[] { PrivateRsa2048Key, EncryptionAlgorithm.A128CbcHS256, KeyManagementAlgorithm.RsaOaep };
-#if !NET461 && !NET47
+#if !NET462 && !NET47
             yield return new object[] { PrivateRsa2048Key, EncryptionAlgorithm.A128CbcHS256, KeyManagementAlgorithm.RsaOaep256 };
             yield return new object[] { PrivateRsa2048Key, EncryptionAlgorithm.A128CbcHS256, KeyManagementAlgorithm.RsaOaep384 };
             yield return new object[] { PrivateRsa2048Key, EncryptionAlgorithm.A128CbcHS256, KeyManagementAlgorithm.RsaOaep512 };

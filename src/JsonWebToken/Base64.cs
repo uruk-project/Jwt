@@ -217,7 +217,7 @@ namespace JsonWebToken
         public static int GetArraySizeRequiredToEncode(int count)
             => gfoidl.Base64.Base64.Default.GetEncodedLength(count);
 
-#if NET461 || NET47 || NETSTANDARD
+#if NET462 || NET47 || NETSTANDARD
         internal static unsafe bool IsBase64String(string value)
             => IsBase64String(value.AsSpan());
 #endif

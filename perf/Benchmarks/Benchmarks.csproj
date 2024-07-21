@@ -34,7 +34,7 @@
 		<None Remove="BenchmarkDotNet.Artifacts\results\**" />
 	</ItemGroup>
 	<ItemGroup>
-		<PackageReference Include="BenchmarkDotNet" Version="0.12.1" />
+		<PackageReference Include="BenchmarkDotNet" Version="0.13.12" />
 		<PackageReference Include="jose-jwt" Version="5.0.0" />
 		<PackageReference Include="JWT" Version="10.1.1" />
 		<PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="7.5.1" />

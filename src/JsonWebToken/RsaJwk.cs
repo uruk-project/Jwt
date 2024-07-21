@@ -508,7 +508,7 @@ namespace JsonWebToken
 #if SUPPORT_SPAN_CRYPTO
             using RSA rsa = RSA.Create(sizeInBits);
 #else
-#if NET461 || NET47
+#if NET462 || NET47
             using RSA rsa = new RSACng(sizeInBits);
 #else
             using RSA rsa = RSA.Create();
@@ -524,7 +524,7 @@ namespace JsonWebToken
 #if SUPPORT_SPAN_CRYPTO
             using RSA rsa = RSA.Create(sizeInBits);
 #else
-#if NET461 || NET47
+#if NET462 || NET47
             using RSA rsa = new RSACng(sizeInBits);
 #else
             using RSA rsa = RSA.Create();
@@ -542,7 +542,7 @@ namespace JsonWebToken
 #if SUPPORT_SPAN_CRYPTO
             using RSA rsa = RSA.Create(sizeInBits);
 #else
-#if NET461 || NET47
+#if NET462 || NET47
             using RSA rsa = new RSACng(sizeInBits);
 #else
             using RSA rsa = RSA.Create();
