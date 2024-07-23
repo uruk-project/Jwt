@@ -6,7 +6,26 @@ namespace JsonWebToken
     /// <summary>Defines a signed ID token. <seealso cref="EncryptedIdTokenDescriptor"/> for encrypted ID token.</summary>
     public sealed class IdTokenDescriptor : JwsDescriptor
     {
-        public IdTokenDescriptor(SignatureAlgorithm alg, Jwk signingKey, string? typ = null, string? cty = null)
+        /// <summary>Initializes a new instance of <see cref="IdTokenDescriptor"/> without signature, algorithm "none".</summary>
+        /// <param name="typ">Optional. The media type.</param>
+        /// <param name="cty">Optional. The content type.</param>
+        /// <remarks>This descriptor does not manage signature, it cannot be considered as secure.</remarks>
+        public IdTokenDescriptor(string? typ = null, string? cty = null)
+            : base(Jwk.None, SignatureAlgorithm.None, typ, cty)
+        {
+        }
+        
+        public IdTokenDescriptor(SymmetricSignatureAlgorithm alg, SymmetricJwk signingKey, string? typ = null, string? cty = null)
+            : base(signingKey, alg, typ, cty)
+        {
+        }
+        
+        public IdTokenDescriptor(RsaSignatureAlgorithm alg, RsaJwk signingKey, string? typ = null, string? cty = null)
+            : base(signingKey, alg, typ, cty)
+        {
+        }
+        
+        public IdTokenDescriptor(ECSignatureAlgorithm alg, ECJwk signingKey, string? typ = null, string? cty = null)
             : base(signingKey, alg, typ, cty)
         {
         }

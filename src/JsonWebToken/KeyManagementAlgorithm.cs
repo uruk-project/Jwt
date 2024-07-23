@@ -5,13 +5,14 @@ using System;
 using System.Collections.ObjectModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
+using System.Security.Cryptography;
 using System.Text.Json;
 using JsonWebToken.Cryptography;
 
 namespace JsonWebToken
 {
     /// <summary>Defines key management algorithm.</summary>
-    public sealed partial class KeyManagementAlgorithm : IEquatable<KeyManagementAlgorithm>, IAlgorithm
+    public partial class KeyManagementAlgorithm : IEquatable<KeyManagementAlgorithm>, IAlgorithm
     {
         [MagicNumber("dir")]
         private const uint _dir = 7498084U;
@@ -96,62 +97,62 @@ namespace JsonWebToken
         /// <summary>Empty</summary>
         internal static readonly KeyManagementAlgorithm Empty = new KeyManagementAlgorithm(id: 0, "Empty", AlgorithmCategory.None, produceEncryptedKey: false);
 
-        /// <summary>'dir'</summary>
-        public static readonly KeyManagementAlgorithm Dir = new KeyManagementAlgorithm(id: AlgorithmId.Dir, "dir", AlgorithmCategory.Direct, produceEncryptedKey: false);
+        /// <summary>'dir', Direct use of a shared symmetric key as the CEK.</summary>
+        public static readonly SymmetricKeyManagementAlgorithm Dir = new SymmetricKeyManagementAlgorithm(id: AlgorithmId.Dir, "dir", AlgorithmCategory.Direct, produceEncryptedKey: false);
 
-        /// <summary>'A128KW'</summary>
-        public static readonly KeyManagementAlgorithm A128KW = new KeyManagementAlgorithm(id: AlgorithmId.A128KW, "A128KW", AlgorithmCategory.Aes, requiredKeySizeInBits: 128);
+        /// <summary>'A128KW', AES Key Wrap with default initial value using 128-bit key.</summary>
+        public static readonly SymmetricKeyManagementAlgorithm A128KW = new SymmetricKeyManagementAlgorithm(id: AlgorithmId.A128KW, "A128KW", AlgorithmCategory.Aes, requiredKeySizeInBits: 128);
 
-        /// <summary>'A192KW'</summary>
-        public static readonly KeyManagementAlgorithm A192KW = new KeyManagementAlgorithm(id: AlgorithmId.A192KW, "A192KW", AlgorithmCategory.Aes, requiredKeySizeInBits: 192);
+        /// <summary>'A192KW', AES Key Wrap with default initial value using 192-bit key.</summary>
+        public static readonly SymmetricKeyManagementAlgorithm A192KW = new SymmetricKeyManagementAlgorithm(id: AlgorithmId.A192KW, "A192KW", AlgorithmCategory.Aes, requiredKeySizeInBits: 192);
 
-        /// <summary>'A256KW'</summary>
-        public static readonly KeyManagementAlgorithm A256KW = new KeyManagementAlgorithm(id: AlgorithmId.A256KW, "A256KW", AlgorithmCategory.Aes, requiredKeySizeInBits: 256);
+        /// <summary>'A256KW', AES Key Wrap with default initial value using 256-bit key.</summary>
+        public static readonly SymmetricKeyManagementAlgorithm A256KW = new SymmetricKeyManagementAlgorithm(id: AlgorithmId.A256KW, "A256KW", AlgorithmCategory.Aes, requiredKeySizeInBits: 256);
 
-        /// <summary>'A128GCMKW'</summary>
-        public static readonly KeyManagementAlgorithm A128GcmKW = new KeyManagementAlgorithm(id: AlgorithmId.A128GcmKW, "A128GCMKW", AlgorithmCategory.AesGcm, requiredKeySizeInBits: 128);
+        /// <summary>'A128GCMKW', Key wrapping with AES GCM using 128-bit key.</summary>
+        public static readonly SymmetricKeyManagementAlgorithm A128GcmKW = new SymmetricKeyManagementAlgorithm(id: AlgorithmId.A128GcmKW, "A128GCMKW", AlgorithmCategory.AesGcm, requiredKeySizeInBits: 128);
 
-        /// <summary>'A192GCMKW'</summary>
-        public static readonly KeyManagementAlgorithm A192GcmKW = new KeyManagementAlgorithm(id: AlgorithmId.A192GcmKW, "A192GCMKW", AlgorithmCategory.AesGcm, requiredKeySizeInBits: 192);
+        /// <summary>'A192GCMKW', Key wrapping with AES GCM using 192-bit key.</summary>
+        public static readonly SymmetricKeyManagementAlgorithm A192GcmKW = new SymmetricKeyManagementAlgorithm(id: AlgorithmId.A192GcmKW, "A192GCMKW", AlgorithmCategory.AesGcm, requiredKeySizeInBits: 192);
 
-        /// <summary>'A256GCMKW'</summary>
-        public static readonly KeyManagementAlgorithm A256GcmKW = new KeyManagementAlgorithm(id: AlgorithmId.A256GcmKW, "A256GCMKW", AlgorithmCategory.AesGcm, requiredKeySizeInBits: 256);
+        /// <summary>'A256GCMKW', Key wrapping with AES GCM using 256-bit key.</summary>
+        public static readonly SymmetricKeyManagementAlgorithm A256GcmKW = new SymmetricKeyManagementAlgorithm(id: AlgorithmId.A256GcmKW, "A256GCMKW", AlgorithmCategory.AesGcm, requiredKeySizeInBits: 256);
 
-        /// <summary>'RSA1_5'. This algorithm is deprecated.</summary>
-        public static readonly KeyManagementAlgorithm Rsa1_5 = new KeyManagementAlgorithm(id: AlgorithmId.Rsa1_5, "RSA1_5", AlgorithmCategory.Rsa, requiredKeySizeInBits: 2048);
+        /// <summary>'RSA1_5', RSAES-PKCS1-v1_5. This algorithm is deprecated.</summary>
+        public static readonly RsaKeyManagementAlgorithm Rsa1_5 = new RsaKeyManagementAlgorithm(id: AlgorithmId.Rsa1_5, "RSA1_5", AlgorithmCategory.Rsa, requiredKeySizeInBits: 2048);
 
-        /// <summary>'RSA-OAEP'</summary>
-        public static readonly KeyManagementAlgorithm RsaOaep = new KeyManagementAlgorithm(id: AlgorithmId.RsaOaep, "RSA-OAEP", AlgorithmCategory.Rsa, requiredKeySizeInBits: 2048);
+        /// <summary>'RSA-OAEP', RSAES OAEP using SHA-1 and MGF1 with SHA-1.</summary>
+        public static readonly RsaKeyManagementAlgorithm RsaOaep = new RsaKeyManagementAlgorithm(id: AlgorithmId.RsaOaep, "RSA-OAEP", AlgorithmCategory.Rsa, requiredKeySizeInBits: 2048);
 
-        /// <summary>'RSA-OAEP-128'</summary>
-        public static readonly KeyManagementAlgorithm RsaOaep256 = new KeyManagementAlgorithm(id: AlgorithmId.RsaOaep256, "RSA-OAEP-256", AlgorithmCategory.Rsa, requiredKeySizeInBits: 2048);
+        /// <summary>'RSA-OAEP-128', RSAES OAEP using SHA-256 and MGF1 with SHA-256.</summary>
+        public static readonly RsaKeyManagementAlgorithm RsaOaep256 = new RsaKeyManagementAlgorithm(id: AlgorithmId.RsaOaep256, "RSA-OAEP-256", AlgorithmCategory.Rsa, requiredKeySizeInBits: 2048);
 
-        /// <summary>'RSA-OAEP-192'</summary>
-        public static readonly KeyManagementAlgorithm RsaOaep384 = new KeyManagementAlgorithm(id: AlgorithmId.RsaOaep384, "RSA-OAEP-384", AlgorithmCategory.Rsa, requiredKeySizeInBits: 2048);
+        /// <summary>'RSA-OAEP-192', RSAES OAEP using SHA-384 and MGF1 with SHA-384.</summary>
+        public static readonly RsaKeyManagementAlgorithm RsaOaep384 = new RsaKeyManagementAlgorithm(id: AlgorithmId.RsaOaep384, "RSA-OAEP-384", AlgorithmCategory.Rsa, requiredKeySizeInBits: 2048);
 
-        /// <summary>'RSA-OAEP-256'</summary>
-        public static readonly KeyManagementAlgorithm RsaOaep512 = new KeyManagementAlgorithm(id: AlgorithmId.RsaOaep512, "RSA-OAEP-512", AlgorithmCategory.Rsa, requiredKeySizeInBits: 2048);
+        /// <summary>'RSA-OAEP-256', RSAES OAEP using SHA-512 and MGF1 with SHA-512.</summary>
+        public static readonly RsaKeyManagementAlgorithm RsaOaep512 = new RsaKeyManagementAlgorithm(id: AlgorithmId.RsaOaep512, "RSA-OAEP-512", AlgorithmCategory.Rsa, requiredKeySizeInBits: 2048);
 
-        /// <summary>'ECDH-ES'</summary>
-        public static readonly KeyManagementAlgorithm EcdhEs = new KeyManagementAlgorithm(id: AlgorithmId.EcdhEs, "ECDH-ES", AlgorithmCategory.EllipticCurve | AlgorithmCategory.EllipticCurve, produceEncryptedKey: false);
+        /// <summary>'ECDH-ES', Elliptic Curve Diffie-Hellman Ephemeral Static key agreement using Concat KDF.</summary>
+        public static readonly ECKeyManagementAlgorithm EcdhEs = new ECKeyManagementAlgorithm(id: AlgorithmId.EcdhEs, "ECDH-ES", AlgorithmCategory.EllipticCurve | AlgorithmCategory.EllipticCurve, produceEncryptedKey: false);
 
-        /// <summary>'ECDH-ES+A128KW'</summary>
-        public static readonly KeyManagementAlgorithm EcdhEsA128KW = new KeyManagementAlgorithm(id: AlgorithmId.EcdhEsA128KW, "ECDH-ES+A128KW", AlgorithmCategory.EllipticCurve, wrappedAlgorithm: A128KW);
+        /// <summary>'ECDH-ES+A128KW', ECDH-ES using Concat KDF and CEK wrapped with "A128KW".</summary>
+        public static readonly ECKeyManagementAlgorithm EcdhEsA128KW = new ECKeyManagementAlgorithm(id: AlgorithmId.EcdhEsA128KW, "ECDH-ES+A128KW", AlgorithmCategory.EllipticCurve, wrappedAlgorithm: A128KW);
 
-        /// <summary>'ECDH-ES+A192KW'</summary>
-        public static readonly KeyManagementAlgorithm EcdhEsA192KW = new KeyManagementAlgorithm(id: AlgorithmId.EcdhEsA192KW, "ECDH-ES+A192KW", AlgorithmCategory.EllipticCurve, wrappedAlgorithm: A192KW);
+        /// <summary>'ECDH-ES+A192KW', ECDH-ES using Concat KDF and CEK wrapped with "A192KW".</summary>
+        public static readonly ECKeyManagementAlgorithm EcdhEsA192KW = new ECKeyManagementAlgorithm(id: AlgorithmId.EcdhEsA192KW, "ECDH-ES+A192KW", AlgorithmCategory.EllipticCurve, wrappedAlgorithm: A192KW);
 
-        /// <summary>'ECDH-ES+A256KW'</summary>
-        public static readonly KeyManagementAlgorithm EcdhEsA256KW = new KeyManagementAlgorithm(id: AlgorithmId.EcdhEsA256KW, "ECDH-ES+A256KW", AlgorithmCategory.EllipticCurve, wrappedAlgorithm: A256KW);
+        /// <summary>'ECDH-ES+A256KW', ECDH-ES using Concat KDF and CEK wrapped with "A256KW".</summary>
+        public static readonly ECKeyManagementAlgorithm EcdhEsA256KW = new ECKeyManagementAlgorithm(id: AlgorithmId.EcdhEsA256KW, "ECDH-ES+A256KW", AlgorithmCategory.EllipticCurve, wrappedAlgorithm: A256KW);
 
-        /// <summary>'PBES2-HS256+A128KW'</summary>
-        public static readonly KeyManagementAlgorithm Pbes2HS256A128KW = new KeyManagementAlgorithm(id: AlgorithmId.Pbes2HS256A128KW, "PBES2-HS256+A128KW", AlgorithmCategory.Pbkdf2, wrappedAlgorithm: A128KW, sha2: Sha256.Shared);
+        /// <summary>'PBES2-HS256+A128KW'. This algorithm is dedicated for JWK encryption.</summary>
+        public static readonly PasswordBasedKeyManagementAlgorithm Pbes2HS256A128KW = new PasswordBasedKeyManagementAlgorithm(id: AlgorithmId.Pbes2HS256A128KW, "PBES2-HS256+A128KW", AlgorithmCategory.Pbkdf2, wrappedAlgorithm: A128KW, sha2: Sha256.Shared);
 
-        /// <summary>'PBES2-HS394+A192KW'</summary>
-        public static readonly KeyManagementAlgorithm Pbes2HS384A192KW = new KeyManagementAlgorithm(id: AlgorithmId.Pbes2HS384A192KW, "PBES2-HS384+A192KW", AlgorithmCategory.Pbkdf2, wrappedAlgorithm: A192KW, sha2: Sha384.Shared);
+        /// <summary>'PBES2-HS394+A192KW'. This algorithm is dedicated for JWK encryption.</summary>
+        public static readonly PasswordBasedKeyManagementAlgorithm Pbes2HS384A192KW = new PasswordBasedKeyManagementAlgorithm(id: AlgorithmId.Pbes2HS384A192KW, "PBES2-HS384+A192KW", AlgorithmCategory.Pbkdf2, wrappedAlgorithm: A192KW, sha2: Sha384.Shared);
 
-        /// <summary>'PBES2-HS512+A256KW'</summary>
-        public static readonly KeyManagementAlgorithm Pbes2HS512A256KW = new KeyManagementAlgorithm(id: AlgorithmId.Pbes2HS512A256KW, "PBES2-HS512+A256KW", AlgorithmCategory.Pbkdf2, wrappedAlgorithm: A256KW, sha2: Sha512.Shared);
+        /// <summary>'PBES2-HS512+A256KW'. This algorithm is dedicated for JWK encryption.</summary>
+        public static readonly PasswordBasedKeyManagementAlgorithm Pbes2HS512A256KW = new PasswordBasedKeyManagementAlgorithm(id: AlgorithmId.Pbes2HS512A256KW, "PBES2-HS512+A256KW", AlgorithmCategory.Pbkdf2, wrappedAlgorithm: A256KW, sha2: Sha512.Shared);
 
         private readonly AlgorithmId _id;
         private readonly ushort _requiredKeySizeInBits;
@@ -185,7 +186,7 @@ namespace JsonWebToken
         /// <summary>Gets whether the algorithm produce an encryption key.</summary>
         public bool ProduceEncryptionKey => _produceEncryptionKey;
 
-        internal static readonly KeyManagementAlgorithm[] _algorithms = new[]
+        internal static readonly KeyManagementAlgorithm[] _algorithms = new KeyManagementAlgorithm[]
         {
             EcdhEsA128KW,
             EcdhEsA256KW,

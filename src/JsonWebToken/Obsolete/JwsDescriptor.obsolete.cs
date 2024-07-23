@@ -9,12 +9,6 @@ namespace JsonWebToken
 {
     public partial class JwsDescriptor
     {
-        /// <summary>Initializes a new instance of <see cref="JwsDescriptor"/>.</summary>
-        [Obsolete("This constructor is obsolete. Use the constructor JwsDescriptor(Jwk signingKey, SignatureAlgorithm alg, string? typ = null, string? cty = null) instead.", true)]
-        [EditorBrowsable(EditorBrowsableState.Never)]
-        public JwsDescriptor()
-            => throw new NotImplementedException();
-
         /// <summary>Gets or sets the algorithm header.</summary>
         [Obsolete("This property is obsolete. Use the constructor for passing this value instead.", true)]
         [EditorBrowsable(EditorBrowsableState.Never)]

@@ -14,7 +14,7 @@ namespace JsonWebToken.Tests
         [Fact]
         public void Write_Success()
         {
-            var descriptor = new SecEventDescriptor(Jwk.None, SignatureAlgorithm.None)
+            var descriptor = new SecEventDescriptor()
             {
                 Payload = new JwtPayload
                 {
@@ -60,7 +60,7 @@ namespace JsonWebToken.Tests
 
         private static SecEventDescriptor CreateDescriptor(SecEvent evt)
         {
-            return new SecEventDescriptor(Jwk.None, SignatureAlgorithm.None)
+            return new SecEventDescriptor()
             {
                 Payload = new JwtPayload
                 {

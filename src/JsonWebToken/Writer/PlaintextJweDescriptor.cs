@@ -12,12 +12,25 @@ namespace JsonWebToken
         private string _payload;
 
         /// <summary>Initializes a new instance of <see cref="PlaintextJweDescriptor"/>.</summary>
-        public PlaintextJweDescriptor(Jwk encryptionKey, KeyManagementAlgorithm alg, EncryptionAlgorithm enc, CompressionAlgorithm? zip = null, string? typ = JwtMediaTypeValues.Plain, string? cty = null)
+        public PlaintextJweDescriptor(SymmetricJwk encryptionKey, SymmetricKeyManagementAlgorithm alg, EncryptionAlgorithm enc, CompressionAlgorithm? zip = null, string? typ = JwtMediaTypeValues.Plain, string? cty = null)
             : base(encryptionKey, alg, enc, zip, typ, cty)
         {
             _payload = string.Empty;
         }
 
+        /// <summary>Initializes a new instance of <see cref="PlaintextJweDescriptor"/>.</summary>
+        public PlaintextJweDescriptor(RsaJwk encryptionKey, RsaKeyManagementAlgorithm alg, EncryptionAlgorithm enc, CompressionAlgorithm? zip = null, string? typ = JwtMediaTypeValues.Plain, string? cty = null)
+            : base(encryptionKey, alg, enc, zip, typ, cty)
+        {
+            _payload = string.Empty;
+        }
+
+        /// <summary>Initializes a new instance of <see cref="PlaintextJweDescriptor"/>.</summary>
+        public PlaintextJweDescriptor(ECJwk encryptionKey, ECKeyManagementAlgorithm alg, EncryptionAlgorithm enc, CompressionAlgorithm? zip = null, string? typ = JwtMediaTypeValues.Plain, string? cty = null)
+            : base(encryptionKey, alg, enc, zip, typ, cty)
+        {
+            _payload = string.Empty;
+        }
 
         /// <inheritdoc/>
         public override string Payload

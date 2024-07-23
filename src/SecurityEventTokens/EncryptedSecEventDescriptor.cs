@@ -9,7 +9,21 @@ namespace JsonWebToken
         private SecEventDescriptor? _payload;
 
         /// <summary>Initializes a new instance of the <see cref="EncryptedSecEventDescriptor"/> class.</summary>
-        public EncryptedSecEventDescriptor(Jwk encryptionKey, KeyManagementAlgorithm alg, EncryptionAlgorithm enc, CompressionAlgorithm? zip = null, string? typ = null, string? cty = null)
+        public EncryptedSecEventDescriptor(SymmetricJwk encryptionKey, SymmetricKeyManagementAlgorithm alg, EncryptionAlgorithm enc, CompressionAlgorithm? zip = null, string? typ = null, string? cty = null)
+            : base(encryptionKey, alg, enc, zip, typ, cty)
+        {
+        }
+        
+
+        /// <summary>Initializes a new instance of the <see cref="EncryptedSecEventDescriptor"/> class.</summary>
+        public EncryptedSecEventDescriptor(RsaJwk encryptionKey, RsaKeyManagementAlgorithm alg, EncryptionAlgorithm enc, CompressionAlgorithm? zip = null, string? typ = null, string? cty = null)
+            : base(encryptionKey, alg, enc, zip, typ, cty)
+        {
+        }
+        
+
+        /// <summary>Initializes a new instance of the <see cref="EncryptedSecEventDescriptor"/> class.</summary>
+        public EncryptedSecEventDescriptor(ECJwk encryptionKey, ECKeyManagementAlgorithm alg, EncryptionAlgorithm enc, CompressionAlgorithm? zip = null, string? typ = null, string? cty = null)
             : base(encryptionKey, alg, enc, zip, typ, cty)
         {
         }
@@ -41,10 +55,7 @@ namespace JsonWebToken
         /// <inheritdoc/>
         public override void Validate()
         {
-            if (_payload != null)
-            {
-                _payload.Validate();
-            }
+            _payload?.Validate();
         }
     }
 }

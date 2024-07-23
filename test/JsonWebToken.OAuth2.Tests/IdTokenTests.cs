@@ -10,7 +10,7 @@ namespace JsonWebToken.Tests
         [Fact]
         public void Create()
         {
-            var descriptor = new IdTokenDescriptor(SignatureAlgorithm.None, Jwk.None)
+            var descriptor = new IdTokenDescriptor()
             {
                 Payload = new JwtPayload
                 {

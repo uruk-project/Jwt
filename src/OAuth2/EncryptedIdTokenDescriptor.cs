@@ -9,7 +9,19 @@ namespace JsonWebToken
         private IdTokenDescriptor? _payload;
 
         /// <summary>Initializes a new instance of the <see cref="EncryptedIdTokenDescriptor"/> class.</summary>
-        public EncryptedIdTokenDescriptor(Jwk encryptionKey, KeyManagementAlgorithm alg, EncryptionAlgorithm enc, CompressionAlgorithm? zip = null, string? typ = null, string? cty = null)
+        public EncryptedIdTokenDescriptor(SymmetricJwk encryptionKey, SymmetricKeyManagementAlgorithm alg, EncryptionAlgorithm enc, CompressionAlgorithm? zip = null, string? typ = null, string? cty = null)
+            : base(encryptionKey, alg, enc, zip, typ, cty)
+        {
+        }
+        
+        /// <summary>Initializes a new instance of the <see cref="EncryptedIdTokenDescriptor"/> class.</summary>
+        public EncryptedIdTokenDescriptor(RsaJwk encryptionKey, RsaKeyManagementAlgorithm alg, EncryptionAlgorithm enc, CompressionAlgorithm? zip = null, string? typ = null, string? cty = null)
+            : base(encryptionKey, alg, enc, zip, typ, cty)
+        {
+        }
+        
+        /// <summary>Initializes a new instance of the <see cref="EncryptedIdTokenDescriptor"/> class.</summary>
+        public EncryptedIdTokenDescriptor(ECJwk encryptionKey, ECKeyManagementAlgorithm alg, EncryptionAlgorithm enc, CompressionAlgorithm? zip = null, string? typ = null, string? cty = null)
             : base(encryptionKey, alg, enc, zip, typ, cty)
         {
         }

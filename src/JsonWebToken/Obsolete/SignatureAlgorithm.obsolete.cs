@@ -6,7 +6,7 @@ using System.ComponentModel;
 
 namespace JsonWebToken
 {
-    public sealed partial class SignatureAlgorithm
+    public partial class SignatureAlgorithm
     {
 #pragma warning disable CS8618 
         /// <summary>'HS256'</summary>

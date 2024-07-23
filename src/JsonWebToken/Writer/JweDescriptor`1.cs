@@ -24,7 +24,6 @@ namespace JsonWebToken
 #if NETSTANDARD2_0 || NET462 || NET47
         private static readonly RandomNumberGenerator _randomNumberGenerator = RandomNumberGenerator.Create();
 #endif
-
         /// <summary>Initializes a new instance of the <see cref="JweDescriptor{TPayload}"/> class.</summary>
         protected JweDescriptor(Jwk encryptionKey, KeyManagementAlgorithm alg, EncryptionAlgorithm enc, CompressionAlgorithm? zip = null, string? typ = null, string? cty = null)
         {

@@ -8,7 +8,24 @@ namespace JsonWebToken
     /// </summary>
     public sealed class ClientAssertionDescriptor : JwsDescriptor
     {
-        public ClientAssertionDescriptor(SignatureAlgorithm alg, Jwk signingKey)
+        /// <summary>Initializes a new instance of <see cref="ClientAssertionDescriptor"/> without signature, algorithm "none".</summary>
+        /// <remarks>This descriptor does not manage signature, it cannot be considered as secure.</remarks>
+        public ClientAssertionDescriptor()
+            : base(Jwk.None, SignatureAlgorithm.None)
+        {
+        }
+
+        public ClientAssertionDescriptor(SymmetricJwk signingKey, SymmetricSignatureAlgorithm alg)
+            : base(signingKey, alg)
+        {
+        }
+        
+        public ClientAssertionDescriptor(RsaJwk signingKey, RsaSignatureAlgorithm alg)
+            : base(signingKey, alg)
+        {
+        }
+
+        public ClientAssertionDescriptor(ECJwk signingKey, ECSignatureAlgorithm alg)
             : base(signingKey, alg)
         {
         }

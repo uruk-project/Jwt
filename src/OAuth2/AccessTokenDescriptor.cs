@@ -4,12 +4,30 @@
 namespace JsonWebToken
 {
     /// <summary>
-    /// https://tools.ietf.org/html/draft-ietf-oauth-access-token-jwt-10
+    /// https://datatracker.ietf.org/doc/html/rfc9068
     /// </summary>
     public sealed class AccessTokenDescriptor : JwsDescriptor
     {
-        public AccessTokenDescriptor(SignatureAlgorithm alg, Jwk signingKey)
-            : base(signingKey, alg)
+  
+        /// <summary>Initializes a new instance of <see cref="AccessTokenDescriptor"/> without signature, algorithm "none".</summary>
+        /// <remarks>This descriptor does not manage signature, it cannot be considered as secure.</remarks>
+        public AccessTokenDescriptor()
+            : base(Jwk.None, SignatureAlgorithm.None, typ: "at+JWT")
+        {
+        }
+
+        public AccessTokenDescriptor(SymmetricJwk signingKey, SymmetricSignatureAlgorithm alg)
+            : base(signingKey, alg, typ: "at+JWT")
+        {
+        }
+
+        public AccessTokenDescriptor(RsaJwk signingKey, RsaSignatureAlgorithm alg)
+            : base(signingKey, alg, typ: "at+JWT")
+        {
+        }
+        
+        public AccessTokenDescriptor(ECJwk signingKey, ECSignatureAlgorithm alg)
+            : base(signingKey, alg, typ: "at+JWT")
         {
         }
 

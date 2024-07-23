@@ -9,7 +9,19 @@ namespace JsonWebToken
         private StateDescriptor? _payload;
 
         /// <summary>Initializes a new instance of the <see cref="EncryptedStateDescriptor"/> class.</summary>
-        public EncryptedStateDescriptor(Jwk encryptionKey, KeyManagementAlgorithm alg, EncryptionAlgorithm enc, CompressionAlgorithm? zip = null)
+        public EncryptedStateDescriptor(SymmetricJwk encryptionKey, SymmetricKeyManagementAlgorithm alg, EncryptionAlgorithm enc, CompressionAlgorithm? zip = null)
+            : base(encryptionKey, alg, enc, zip)
+        {
+        }
+
+        /// <summary>Initializes a new instance of the <see cref="EncryptedStateDescriptor"/> class.</summary>
+        public EncryptedStateDescriptor(RsaJwk encryptionKey, RsaKeyManagementAlgorithm alg, EncryptionAlgorithm enc, CompressionAlgorithm? zip = null)
+            : base(encryptionKey, alg, enc, zip)
+        {
+        }
+
+        /// <summary>Initializes a new instance of the <see cref="EncryptedStateDescriptor"/> class.</summary>
+        public EncryptedStateDescriptor(ECJwk encryptionKey, ECKeyManagementAlgorithm alg, EncryptionAlgorithm enc, CompressionAlgorithm? zip = null)
             : base(encryptionKey, alg, enc, zip)
         {
         }

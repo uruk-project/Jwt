@@ -11,7 +11,21 @@ namespace JsonWebToken
         private byte[] _payload;
 
         /// <summary>Initializes a new instance of the <see cref="BinaryJweDescriptor"/> class.</summary>
-        public BinaryJweDescriptor(Jwk encryptionKey, KeyManagementAlgorithm alg, EncryptionAlgorithm enc, CompressionAlgorithm? zip = null, string? typ = JwtMediaTypeValues.OctetStream, string? cty = null)
+        public BinaryJweDescriptor(SymmetricJwk encryptionKey, SymmetricKeyManagementAlgorithm alg, EncryptionAlgorithm enc, CompressionAlgorithm? zip = null, string? typ = JwtMediaTypeValues.OctetStream, string? cty = null)
+            : base(encryptionKey, alg, enc, zip, typ, cty)
+        {
+            _payload = Array.Empty<byte>();
+        }
+
+        /// <summary>Initializes a new instance of the <see cref="BinaryJweDescriptor"/> class.</summary>
+        public BinaryJweDescriptor(RsaJwk encryptionKey, RsaKeyManagementAlgorithm alg, EncryptionAlgorithm enc, CompressionAlgorithm? zip = null, string? typ = JwtMediaTypeValues.OctetStream, string? cty = null)
+            : base(encryptionKey, alg, enc, zip, typ, cty)
+        {
+            _payload = Array.Empty<byte>();
+        }
+
+        /// <summary>Initializes a new instance of the <see cref="BinaryJweDescriptor"/> class.</summary>
+        public BinaryJweDescriptor(ECJwk encryptionKey, ECKeyManagementAlgorithm alg, EncryptionAlgorithm enc, CompressionAlgorithm? zip = null, string? typ = JwtMediaTypeValues.OctetStream, string? cty = null)
             : base(encryptionKey, alg, enc, zip, typ, cty)
         {
             _payload = Array.Empty<byte>();

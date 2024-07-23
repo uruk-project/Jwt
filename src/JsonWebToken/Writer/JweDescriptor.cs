@@ -9,7 +9,25 @@ namespace JsonWebToken
         private JwsDescriptor? _payload;
 
         /// <summary>Initializes a new instance of the <see cref="JweDescriptor"/> class.</summary>
-        public JweDescriptor(Jwk encryptionKey, KeyManagementAlgorithm alg, EncryptionAlgorithm enc, CompressionAlgorithm? zip = null, string? typ = null, string? cty = Constants.Jwt)
+        public JweDescriptor(SymmetricJwk encryptionKey, SymmetricKeyManagementAlgorithm alg, EncryptionAlgorithm enc, CompressionAlgorithm? zip = null, string? typ = null, string? cty = Constants.Jwt)
+            : base(encryptionKey, alg, enc, zip, typ, cty)
+        {
+        }
+
+        /// <summary>Initializes a new instance of the <see cref="JweDescriptor"/> class.</summary>
+        public JweDescriptor(RsaJwk encryptionKey, RsaKeyManagementAlgorithm alg, EncryptionAlgorithm enc, CompressionAlgorithm? zip = null, string? typ = null, string? cty = Constants.Jwt)
+            : base(encryptionKey, alg, enc, zip, typ, cty)
+        {
+        }
+        
+        /// <summary>Initializes a new instance of the <see cref="JweDescriptor"/> class.</summary>
+        public JweDescriptor(ECJwk encryptionKey, ECKeyManagementAlgorithm alg, EncryptionAlgorithm enc, CompressionAlgorithm? zip = null, string? typ = null, string? cty = Constants.Jwt)
+            : base(encryptionKey, alg, enc, zip, typ, cty)
+        {
+        }
+        
+        /// <summary>Initializes a new instance of the <see cref="JweDescriptor"/> class.</summary>
+        internal JweDescriptor(Jwk encryptionKey, KeyManagementAlgorithm alg, EncryptionAlgorithm enc, CompressionAlgorithm? zip = null, string? typ = null, string? cty = Constants.Jwt)
             : base(encryptionKey, alg, enc, zip, typ, cty)
         {
         }

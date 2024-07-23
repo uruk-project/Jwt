@@ -11,7 +11,7 @@ namespace JsonWebToken.Tests
         public IEnumerator<object[]> GetEnumerator()
         {
             var type = typeof(T);
-            var properties = type.GetFields(BindingFlags.Public | BindingFlags.Static).Where(p => p.FieldType == typeof(T));
+            var properties = type.GetFields(BindingFlags.Public | BindingFlags.Static).Where(p => typeof(T).IsAssignableFrom(p.FieldType));
             foreach (var item in properties)
             {
                 var obsolete = item.GetCustomAttribute<ObsoleteAttribute>();

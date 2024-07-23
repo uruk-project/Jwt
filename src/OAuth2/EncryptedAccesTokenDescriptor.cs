@@ -9,8 +9,20 @@ namespace JsonWebToken
         private AccessTokenDescriptor? _payload;
 
         /// <summary>Initializes a new instance of the <see cref="EncryptedAccesTokenDescriptor"/> class.</summary>
-        public EncryptedAccesTokenDescriptor(Jwk encryptionKey, KeyManagementAlgorithm alg, EncryptionAlgorithm enc, CompressionAlgorithm? zip = null)
-            : base(encryptionKey, alg, enc, zip)
+        public EncryptedAccesTokenDescriptor(SymmetricJwk encryptionKey, SymmetricKeyManagementAlgorithm alg, EncryptionAlgorithm enc, CompressionAlgorithm? zip = null)
+            : base(encryptionKey, alg, enc, zip, typ: "at+jwt")
+        {
+        }
+
+        /// <summary>Initializes a new instance of the <see cref="EncryptedAccesTokenDescriptor"/> class.</summary>
+        public EncryptedAccesTokenDescriptor(RsaJwk encryptionKey, RsaKeyManagementAlgorithm alg, EncryptionAlgorithm enc, CompressionAlgorithm? zip = null)
+            : base(encryptionKey, alg, enc, zip, typ: "at+jwt")
+        {
+        }
+
+        /// <summary>Initializes a new instance of the <see cref="EncryptedAccesTokenDescriptor"/> class.</summary>
+        public EncryptedAccesTokenDescriptor(ECJwk encryptionKey, ECKeyManagementAlgorithm alg, EncryptionAlgorithm enc, CompressionAlgorithm? zip = null)
+            : base(encryptionKey, alg, enc, zip, typ: "at+jwt")
         {
         }
 
