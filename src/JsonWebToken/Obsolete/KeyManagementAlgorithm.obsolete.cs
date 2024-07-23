@@ -6,7 +6,7 @@ using System.ComponentModel;
 
 namespace JsonWebToken
 {
-    public sealed partial class KeyManagementAlgorithm
+    public partial class KeyManagementAlgorithm
     {
 #pragma warning disable CS8618 
         /// <summary>'dir'</summary>

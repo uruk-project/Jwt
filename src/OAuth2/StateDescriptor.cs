@@ -8,7 +8,24 @@ namespace JsonWebToken
     /// </summary>
     public sealed class StateDescriptor : JwsDescriptor
     {
-        public StateDescriptor(SignatureAlgorithm alg, Jwk signingKey)
+        /// <summary>Initializes a new instance of <see cref="StateDescriptor"/> without signature, algorithm "none".</summary>
+        /// <remarks>This descriptor does not manage signature, it cannot be considered as secure.</remarks>
+        public StateDescriptor()
+            : base(Jwk.None, SignatureAlgorithm.None)
+        {
+        }
+
+        public StateDescriptor(SymmetricSignatureAlgorithm alg, SymmetricJwk signingKey)
+            : base(signingKey, alg)
+        {
+        }
+        
+        public StateDescriptor(RsaSignatureAlgorithm alg, RsaJwk signingKey)
+            : base(signingKey, alg)
+        {
+        }
+        
+        public StateDescriptor(ECSignatureAlgorithm alg, ECJwk signingKey)
             : base(signingKey, alg)
         {
         }

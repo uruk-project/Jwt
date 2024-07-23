@@ -15,18 +15,19 @@ namespace JsonWebToken.Compression
         /// <inheritdoc />
         public override unsafe int Compress(ReadOnlySpan<byte> ciphertext, Span<byte> destination)
         {
-            int result;
+            int compressedBytes;
             fixed (byte* pinnedCiphertext = destination)
             {
                 using var outputStream = new UnmanagedMemoryStream(pinnedCiphertext, destination.Length, destination.Length, FileAccess.Write);
                 using var compressionStream = CreateCompressionStream(outputStream);
                 compressionStream.Write(ciphertext);
                 compressionStream.Flush();
-                result = (int)outputStream.Length;
                 compressionStream.Close();
+                compressedBytes = (int)outputStream.Position + 1;
+                outputStream.Close();
             }
 
-            return result;
+            return compressedBytes;
         }
     }
 }

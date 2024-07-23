@@ -7,9 +7,32 @@ namespace JsonWebToken
     public sealed class SoftwareStatementDescriptor : JwsDescriptor
     {
         /// <summary>Initializes a new instance of the <see cref="SoftwareStatementDescriptor"/> class.</summary>
+        /// <remarks>This descriptor does not manage signature, it cannot be considered as secure.</remarks>
+        public SoftwareStatementDescriptor() 
+            : base(Jwk.None, SignatureAlgorithm.None)
+        {
+        }
+
+        /// <summary>Initializes a new instance of the <see cref="SoftwareStatementDescriptor"/> class.</summary>
         /// <param name="alg"></param>
         /// <param name="signingKey"></param>
-        public SoftwareStatementDescriptor(SignatureAlgorithm alg, Jwk signingKey) 
+        public SoftwareStatementDescriptor(SymmetricSignatureAlgorithm alg, SymmetricJwk signingKey) 
+            : base(signingKey, alg)
+        {
+        }
+
+        /// <summary>Initializes a new instance of the <see cref="SoftwareStatementDescriptor"/> class.</summary>
+        /// <param name="alg"></param>
+        /// <param name="signingKey"></param>
+        public SoftwareStatementDescriptor(RsaSignatureAlgorithm alg, RsaJwk signingKey) 
+            : base(signingKey, alg)
+        {
+        }
+        
+        /// <summary>Initializes a new instance of the <see cref="SoftwareStatementDescriptor"/> class.</summary>
+        /// <param name="alg"></param>
+        /// <param name="signingKey"></param>
+        public SoftwareStatementDescriptor(ECSignatureAlgorithm alg, ECJwk signingKey) 
             : base(signingKey, alg)
         {
         }

@@ -316,7 +316,7 @@ namespace JsonWebToken
         }
 
         /// <inheritdoc/>
-        public override bool HasPrivateKey => !(_parameters.D is null);
+        public override bool HasPrivateKey => _parameters.D is not null;
 
         /// <inheritsdoc />
         public override JsonEncodedText Kty => JwkTypeNames.EllipticCurve;
@@ -505,11 +505,11 @@ namespace JsonWebToken
                 Q = _parameters.Q
             };
             ECJwk publicKey;
-            if (!(KeyManagementAlgorithm is null))
+            if (KeyManagementAlgorithm is not null)
             {
                 publicKey = FromParameters(publicParameters, KeyManagementAlgorithm, computeThumbprint: false);
             }
-            else if (!(SignatureAlgorithm is null))
+            else if (SignatureAlgorithm is not null)
             {
                 publicKey = FromParameters(publicParameters, SignatureAlgorithm, computeThumbprint: false);
             }
@@ -522,10 +522,10 @@ namespace JsonWebToken
             return publicKey;
         }
 
-        private static ReadOnlySpan<byte> StartCanonicalizeValue => new byte[] { (byte)'{', (byte)'"', (byte)'c', (byte)'r', (byte)'v', (byte)'"', (byte)':', (byte)'"' };
-        private static ReadOnlySpan<byte> Middle1CanonicalizeValue => new byte[] { (byte)'"', (byte)',', (byte)'"', (byte)'k', (byte)'t', (byte)'y', (byte)'"', (byte)':', (byte)'"', (byte)'E', (byte)'C', (byte)'"', (byte)',', (byte)'"', (byte)'x', (byte)'"', (byte)':', (byte)'"' };
-        private static ReadOnlySpan<byte> Middle2CanonicalizeValue => new byte[] { (byte)'"', (byte)',', (byte)'"', (byte)'y', (byte)'"', (byte)':', (byte)'"' };
-        private static ReadOnlySpan<byte> EndCanonicalizeValue => new byte[] { (byte)'"', (byte)'}' };
+        private static ReadOnlySpan<byte> StartCanonicalizeValue => "{\"crv\":\""u8;
+        private static ReadOnlySpan<byte> Middle1CanonicalizeValue => "\",\"kty\":\"EC\",\"x\":\""u8;
+        private static ReadOnlySpan<byte> Middle2CanonicalizeValue => "\",\"y\":\""u8;
+        private static ReadOnlySpan<byte> EndCanonicalizeValue => "\"}"u8;
 
         /// <inheritdoc />
         protected internal override void Canonicalize(Span<byte> buffer)
@@ -770,7 +770,7 @@ namespace JsonWebToken
         public new static ECJwk FromPem(string pem)
         {
             Jwk jwk = Jwk.FromPem(pem);
-            if (!(jwk is ECJwk ecJwk))
+            if (jwk is not ECJwk ecJwk)
             {
                 jwk.Dispose();
                 ThrowHelper.ThrowInvalidOperationException_UnexpectedKeyType(jwk, JwkTypeNames.EllipticCurve.ToString());
@@ -829,7 +829,7 @@ namespace JsonWebToken
                 }
             }
 
-            if (!(reader.TokenType is JsonTokenType.EndObject))
+            if (reader.TokenType is not JsonTokenType.EndObject)
             {
                 ThrowHelper.ThrowArgumentException_MalformedKey();
             }
@@ -840,10 +840,7 @@ namespace JsonWebToken
 #if !NETSTANDARD2_0
         internal ECDiffieHellman CreateEcdhKey()
         {
-            if (_ecdhKey is null)
-            {
-                _ecdhKey = ECDiffieHellman.Create(_parameters);
-            }
+            _ecdhKey ??= ECDiffieHellman.Create(_parameters);
 
             return _ecdhKey;
         }
@@ -876,7 +873,7 @@ namespace JsonWebToken
                 return true;
             }
 
-            if (!(other is ECJwk key))
+            if (other is not ECJwk key)
             {
                 return false;
             }
@@ -907,10 +904,7 @@ namespace JsonWebToken
             CryptographicOperations.ZeroMemory(_parameters.Q.X);
             CryptographicOperations.ZeroMemory(_parameters.Q.Y);
 #if !NETSTANDARD2_0
-            if (!(_ecdhKey is null))
-            {
-                _ecdhKey.Dispose();
-            }
+            _ecdhKey?.Dispose();
 #endif
         }
 

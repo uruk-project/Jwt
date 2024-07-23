@@ -7,7 +7,7 @@ namespace JsonWebToken.Tests
         [Fact]
         public void Create()
         {   
-            var descriptor = new ClientAssertionDescriptor(SignatureAlgorithm.None, Jwk.None)
+            var descriptor = new ClientAssertionDescriptor(SymmetricJwk.GenerateKey(256), SignatureAlgorithm.HS256)
             {
                 Payload = new JwtPayload
                 {

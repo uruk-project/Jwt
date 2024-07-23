@@ -27,14 +27,18 @@ namespace JsonWebToken.Cryptography
             {
                 ThrowHelper.ThrowArgumentOutOfRangeException_EncryptionKeyTooSmall(_encryptionAlgorithm, _encryptionAlgorithm.RequiredKeySizeInBytes << 3, key.Length << 8);
             }
-      
-            using var aes = new AesGcm(key);
+
+#if NET8_0_OR_GREATER
+            using var aesGcm = new AesGcm(key, authenticationTag.Length);
+#else
+            using var aesGcm = new AesGcm(key);
+#endif
             if (ciphertext.Length > plaintext.Length)
             {
                 ciphertext = ciphertext.Slice(0, plaintext.Length);
             }
 
-            aes.Encrypt(nonce, plaintext, ciphertext, authenticationTag, associatedData);
+            aesGcm.Encrypt(nonce, plaintext, ciphertext, authenticationTag, associatedData);
             authenticationTagBytesWritten = authenticationTag.Length;
         }
 

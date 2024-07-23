@@ -11,7 +11,21 @@ namespace JsonWebToken
         private Jwks _payload;
 
         /// <summary>Initializes a new instance of the <see cref="JwksJweDescriptor"/> class.</summary>
-        public JwksJweDescriptor(Jwk encryptionKey, KeyManagementAlgorithm alg, EncryptionAlgorithm enc, CompressionAlgorithm? zip = null, string? typ = null, string? cty = JwtContentTypeValues.Jwks)
+        public JwksJweDescriptor(SymmetricJwk encryptionKey, SymmetricKeyManagementAlgorithm alg, EncryptionAlgorithm enc, CompressionAlgorithm? zip = null, string? typ = null, string? cty = JwtContentTypeValues.Jwks)
+            : base(encryptionKey, alg, enc, zip, typ, cty)
+        {
+            _payload = new Jwks();
+        }
+
+        /// <summary>Initializes a new instance of the <see cref="JwksJweDescriptor"/> class.</summary>
+        public JwksJweDescriptor(RsaJwk encryptionKey, RsaKeyManagementAlgorithm alg, EncryptionAlgorithm enc, CompressionAlgorithm? zip = null, string? typ = null, string? cty = JwtContentTypeValues.Jwks)
+            : base(encryptionKey, alg, enc, zip, typ, cty)
+        {
+            _payload = new Jwks();
+        }
+
+        /// <summary>Initializes a new instance of the <see cref="JwksJweDescriptor"/> class.</summary>
+        public JwksJweDescriptor(ECJwk encryptionKey, ECKeyManagementAlgorithm alg, EncryptionAlgorithm enc, CompressionAlgorithm? zip = null, string? typ = null, string? cty = JwtContentTypeValues.Jwks)
             : base(encryptionKey, alg, enc, zip, typ, cty)
         {
             _payload = new Jwks();

@@ -10,7 +10,7 @@ namespace JsonWebToken.Compression
     {
         public override DeflateStream CreateCompressionStream(Stream outputStream)
         {
-            return new DeflateStream(outputStream, CompressionLevel.Optimal, false);
+            return new DeflateStream(outputStream, CompressionLevel.Optimal, true);
         }
     }
 }

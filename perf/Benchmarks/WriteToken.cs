@@ -163,7 +163,7 @@ namespace JsonWebToken.Performance
             JwtDescriptor = JwtPayloads[name];
             JoseDescriptor = DictionaryPayloads[name];
             WilsonDescriptor = WilsonPayloads[name];
-            WilsonJwtDescriptor = Tokens.Payloads[name.Substring(name.LastIndexOf('6') - 1).Trim().Substring(0, 1)].ToString();
+            WilsonJwtDescriptor = Tokens.Payloads[name.Substring(name.LastIndexOf('6') - 1).Trim()[..1]].ToString();
         }
 
         public string Name { get; }
@@ -198,7 +198,7 @@ namespace JsonWebToken.Performance
                             descriptor.Payload!.Add(property.Name, (long)property.Value);
                             break;
                         default:
-                            descriptor.Payload!.Add(property.Name, (string)property.Value);
+                            descriptor.Payload!.Add(property.Name, (string)property.Value!);
                             break;
                     }
                 }
@@ -220,7 +220,7 @@ namespace JsonWebToken.Performance
                             descriptor.Payload!.Add(property.Name, (long)property.Value);
                             break;
                         default:
-                            descriptor.Payload!.Add(property.Name, (string)property.Value);
+                            descriptor.Payload!.Add(property.Name, (string)property.Value!);
                             break;
                     }
                 }
@@ -242,7 +242,7 @@ namespace JsonWebToken.Performance
                             descriptor.Payload!.Add(property.Name, (long)property.Value);
                             break;
                         default:
-                            descriptor.Payload!.Add(property.Name, (string)property.Value);
+                            descriptor.Payload!.Add(property.Name, (string)property.Value!);
                             break;
                     }
                 }
@@ -285,7 +285,7 @@ namespace JsonWebToken.Performance
                         case "exp":
                             break;
                         default:
-                            descriptor.Subject.AddClaim(new Claim(property.Name, (string)property.Value));
+                            descriptor.Subject.AddClaim(new Claim(property.Name, (string)property.Value!));
                             break;
                     }
                 }
@@ -312,7 +312,7 @@ namespace JsonWebToken.Performance
                         case "exp":
                             break;
                         default:
-                            descriptor.Subject.AddClaim(new Claim(property.Name, (string)property.Value));
+                            descriptor.Subject.AddClaim(new Claim(property.Name, (string)property.Value!));
                             break;
                     }
                 }
@@ -340,7 +340,7 @@ namespace JsonWebToken.Performance
                         case "exp":
                             break;
                         default:
-                            descriptor.Subject.AddClaim(new Claim(property.Name, (string)property.Value));
+                            descriptor.Subject.AddClaim(new Claim(property.Name, (string)property.Value!));
                             break;
                     }
                 }
@@ -369,7 +369,7 @@ namespace JsonWebToken.Performance
                         case "exp":
                             break;
                         default:
-                            descriptor.Subject.AddClaim(new Claim(property.Name, (string)property.Value));
+                            descriptor.Subject.AddClaim(new Claim(property.Name, (string)property.Value!));
                             break;
                     }
                 }
@@ -400,7 +400,7 @@ namespace JsonWebToken.Performance
                                 descriptor.Add(property.Name, (long)property.Value);
                                 break;
                             default:
-                                descriptor.Add(property.Name, (string)property.Value);
+                                descriptor.Add(property.Name, (string)property.Value!);
                                 break;
                         }
                     }

@@ -11,8 +11,8 @@ namespace JsonWebToken
     /// <summary>Represents a <see cref="IKeyProvider"/> that retrieve the key set from an HTTP resource as JWKS.</summary>
     public sealed class JwksHttpKeyProvider : CachedKeyProvider
     {
-        private static ReadOnlySpan<byte> IssuerName => new byte[6] { (byte)'i', (byte)'s', (byte)'s', (byte)'u', (byte)'e', (byte)'r' };
-        private static ReadOnlySpan<byte> JwksUriName => new byte[8] { (byte)'j', (byte)'w', (byte)'k', (byte)'s', (byte)'_', (byte)'u', (byte)'r', (byte)'i' };
+        private static ReadOnlySpan<byte> IssuerName => "issuer"u8;
+        private static ReadOnlySpan<byte> JwksUriName => "jwks_uri"u8;
 
         private readonly string _issuer;
         private readonly Func<HttpDocumentRetriever> _documentRetrieverFactory;

@@ -11,9 +11,9 @@ namespace ValidatePerf
         private static readonly Jwk signingKey1 = SymmetricJwk.GenerateKey(SignatureAlgorithm.HS256);
         private static readonly Jwk signingKey2 = ECJwk.GeneratePrivateKey(SignatureAlgorithm.ES256);
         private static readonly Jwk signingKey3 = RsaJwk.GeneratePrivateKey(SignatureAlgorithm.RS256);
-        private static readonly Jwk encryptionKey1 = SymmetricJwk.GenerateKey(KeyManagementAlgorithm.A128KW);
-        private static readonly Jwk encryptionKey2 = ECJwk.GeneratePrivateKey(EllipticalCurve.P256, KeyManagementAlgorithm.EcdhEsA256KW);
-        private static readonly Jwk encryptionKey3 = RsaJwk.GeneratePrivateKey(4096, KeyManagementAlgorithm.RsaOaep256);
+        private static readonly SymmetricJwk encryptionKey1 = SymmetricJwk.GenerateKey(KeyManagementAlgorithm.A128KW);
+        private static readonly ECJwk encryptionKey2 = ECJwk.GeneratePrivateKey(EllipticalCurve.P256, KeyManagementAlgorithm.EcdhEsA256KW);
+        private static readonly RsaJwk encryptionKey3 = RsaJwk.GeneratePrivateKey(4096, KeyManagementAlgorithm.RsaOaep256);
         private static readonly ReadOnlyMemory<byte> _jws = CreateJws();
         private static readonly TokenValidationPolicy _policy =
             new TokenValidationPolicyBuilder()

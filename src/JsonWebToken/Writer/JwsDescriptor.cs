@@ -18,12 +18,51 @@ namespace JsonWebToken
         private readonly string? _typ;
         private JwtPayload _payload;
 
+        /// <summary>Initializes a new instance of <see cref="JwsDescriptor"/> without signature, algorithm "none".</summary>
+        /// <param name="typ">Optional. The media type.</param>
+        /// <param name="cty">Optional. The content type.</param>
+        /// <remarks>This descriptor does not manage signature, it cannot be considered as secure.</remarks>
+        public JwsDescriptor(string? typ = null, string? cty = null)
+            : this(Jwk.None, SignatureAlgorithm.None, typ, cty)
+        {
+        }
+
         /// <summary>Initializes a new instance of <see cref="JwsDescriptor"/>.</summary>
         /// <param name="signingKey">The signing key.</param>
         /// <param name="alg">The signature algorithm.</param>
         /// <param name="typ">Optional. The media type.</param>
         /// <param name="cty">Optional. The content type.</param>
-        public JwsDescriptor(Jwk signingKey, SignatureAlgorithm alg, string? typ = null, string? cty = null)
+        public JwsDescriptor(SymmetricJwk signingKey, SymmetricSignatureAlgorithm alg, string? typ = null, string? cty = null)
+            : this((Jwk)signingKey, (SignatureAlgorithm)alg, typ, cty)
+        {
+        }
+
+        /// <summary>Initializes a new instance of <see cref="JwsDescriptor"/>.</summary>
+        /// <param name="signingKey">The signing key.</param>
+        /// <param name="alg">The signature algorithm.</param>
+        /// <param name="typ">Optional. The media type.</param>
+        /// <param name="cty">Optional. The content type.</param>
+        public JwsDescriptor(RsaJwk signingKey, RsaSignatureAlgorithm alg, string? typ = null, string? cty = null)
+            : this((Jwk)signingKey, (SignatureAlgorithm)alg, typ, cty)
+        {
+        }
+
+        /// <summary>Initializes a new instance of <see cref="JwsDescriptor"/>.</summary>
+        /// <param name="signingKey">The signing key.</param>
+        /// <param name="alg">The signature algorithm.</param>
+        /// <param name="typ">Optional. The media type.</param>
+        /// <param name="cty">Optional. The content type.</param>
+        public JwsDescriptor(ECJwk signingKey, ECSignatureAlgorithm alg, string? typ = null, string? cty = null)
+            : this((Jwk)signingKey, (SignatureAlgorithm)alg, typ, cty)
+        {
+        }
+
+        /// <summary>Initializes a new instance of <see cref="JwsDescriptor"/>.</summary>
+        /// <param name="signingKey">The signing key.</param>
+        /// <param name="alg">The signature algorithm.</param>
+        /// <param name="typ">Optional. The media type.</param>
+        /// <param name="cty">Optional. The content type.</param>
+        internal JwsDescriptor(Jwk signingKey, SignatureAlgorithm alg, string? typ = null, string? cty = null)
         {
             _alg = alg ?? throw new ArgumentNullException(nameof(alg));
             _signingKey = signingKey ?? throw new ArgumentNullException(nameof(signingKey));
@@ -94,7 +133,7 @@ namespace JsonWebToken
         {
             var key = _signingKey;
             var alg = _alg;
-            if (!(key is null) && key.TryGetSigner(alg, out var signer))
+            if (key is not null && key.TryGetSigner(alg, out var signer))
             {
                 if (context.TokenLifetimeInSeconds != 0 || context.GenerateIssuedTime)
                 {
@@ -155,7 +194,7 @@ namespace JsonWebToken
                 signature = signature.Slice(0, signer.HashSizeInBytes);
                 try
                 {
-                    if(! signer.TrySign(buffer.Slice(0, offset++), signature, out int signatureBytesWritten))
+                    if (!signer.TrySign(buffer.Slice(0, offset++), signature, out int signatureBytesWritten))
                     {
                         ThrowHelper.ThrowCryptographicException_SignatureFailed(alg, _signingKey);
                     }
@@ -184,7 +223,7 @@ namespace JsonWebToken
         internal bool TryGetClaim(JsonEncodedText name, out JwtMember value)
             => _payload.TryGetValue(name, out value);
 
-        internal bool TryGetClaim(string name, out JwtMember value) 
+        internal bool TryGetClaim(string name, out JwtMember value)
             => _payload.TryGetValue(JsonEncodedText.Encode(name), out value);
 
         /// <summary>Validates the presence and the type of a required claim.</summary>

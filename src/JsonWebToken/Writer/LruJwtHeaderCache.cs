@@ -218,10 +218,7 @@ namespace JsonWebToken
                             _head = node;
                         }
 
-                        if (_tail is null)
-                        {
-                            _tail = node;
-                        }
+                        _tail ??= node;
                     }
                     finally
                     {
@@ -511,10 +508,7 @@ namespace JsonWebToken
                             _head = node;
                         }
 
-                        if (_tail is null)
-                        {
-                            _tail = node;
-                        }
+                        _tail ??= node;
                     }
                     finally
                     {

@@ -341,7 +341,7 @@ namespace JsonWebToken.Performance
         public void Dispose()
         {
             var entries = _entries;
-            if (!(entries is null))
+            if (entries is not null)
             {
                 for (int i = 0; i < _count; i++)
                 {

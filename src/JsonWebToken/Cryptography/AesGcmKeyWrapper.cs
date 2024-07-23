@@ -39,25 +39,26 @@ namespace JsonWebToken.Cryptography
             RandomNumberGenerator.Fill(nonce);
 
             Span<byte> tag = stackalloc byte[TagSize];
-
-            using (var aesGcm = new AesGcm(_key.K))
+#if NET8_0_OR_GREATER
+            using var aesGcm = new AesGcm(_key.K, TagSize);
+#else
+            using var aesGcm = new AesGcm(_key.K);
+#endif
+            var keyBytes = cek.AsSpan();
+            if (destination.Length > keyBytes.Length)
             {
-                var keyBytes = cek.AsSpan();
-                if (destination.Length > keyBytes.Length)
-                {
-                    destination = destination.Slice(0, keyBytes.Length);
-                }
-
-                aesGcm.Encrypt(nonce, keyBytes, destination, tag);
-
-                Span<byte> nonceB64 = stackalloc byte[IVB64Size];
-                Base64Url.Encode(nonce, nonceB64);
-                header.Add(JwtHeaderParameterNames.IV, Utf8.GetString(nonceB64));
-
-                Span<byte> tagB64 = stackalloc byte[TagB64Size];
-                Base64Url.Encode(tag, tagB64);
-                header.Add(JwtHeaderParameterNames.Tag, Utf8.GetString(tagB64));
+                destination = destination.Slice(0, keyBytes.Length);
             }
+
+            aesGcm.Encrypt(nonce, keyBytes, destination, tag);
+
+            Span<byte> nonceB64 = stackalloc byte[IVB64Size];
+            Base64Url.Encode(nonce, nonceB64);
+            header.Add(JwtHeaderParameterNames.IV, Utf8.GetString(nonceB64));
+
+            Span<byte> tagB64 = stackalloc byte[TagB64Size];
+            Base64Url.Encode(tag, tagB64);
+            header.Add(JwtHeaderParameterNames.Tag, Utf8.GetString(tagB64));
 
             return cek;
         }

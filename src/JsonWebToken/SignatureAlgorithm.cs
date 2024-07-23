@@ -12,7 +12,7 @@ using JsonWebToken.Cryptography;
 namespace JsonWebToken
 {
     /// <summary>Defines signature algorithm.</summary>
-    public sealed partial class SignatureAlgorithm : IEquatable<SignatureAlgorithm>, IAlgorithm
+    public partial class SignatureAlgorithm : IEquatable<SignatureAlgorithm>, IAlgorithm
     {
         [MagicNumber("S256")]
         private const uint _S256 = 909455955u;
@@ -29,47 +29,47 @@ namespace JsonWebToken
         [MagicNumber("ES256K")]
         private const ulong _ES256K = 82696192807749u;
 
-        /// <summary>'none'</summary>
+        /// <summary>'none', No digital signature or MAC performed.</summary>
         public static readonly SignatureAlgorithm None = new SignatureAlgorithm(id: AlgorithmId.None, "none", AlgorithmCategory.None, requiredKeySizeInBits: 0, new HashAlgorithmName());
 
-        /// <summary>'HS256'</summary>
-        public static readonly SignatureAlgorithm HS256 = new SignatureAlgorithm(id: AlgorithmId.HS256, "HS256", AlgorithmCategory.Hmac, requiredKeySizeInBits: 128/*?*/, HashAlgorithmName.SHA256);
+        /// <summary>'HS256', HMAC using SHA-256.</summary>
+        public static readonly SymmetricSignatureAlgorithm HS256 = new SymmetricSignatureAlgorithm(id: AlgorithmId.HS256, "HS256", AlgorithmCategory.Hmac, requiredKeySizeInBits: 128/*?*/, HashAlgorithmName.SHA256);
 
-        /// <summary>'HS384'</summary>
-        public static readonly SignatureAlgorithm HS384 = new SignatureAlgorithm(id: AlgorithmId.HS384, "HS384", AlgorithmCategory.Hmac, requiredKeySizeInBits: 192/*?*/, HashAlgorithmName.SHA384);
+        /// <summary>'HS384', HMAC using SHA-384.</summary>
+        public static readonly SymmetricSignatureAlgorithm HS384 = new SymmetricSignatureAlgorithm(id: AlgorithmId.HS384, "HS384", AlgorithmCategory.Hmac, requiredKeySizeInBits: 192/*?*/, HashAlgorithmName.SHA384);
 
-        /// <summary>'HS512'</summary>
-        public static readonly SignatureAlgorithm HS512 = new SignatureAlgorithm(id: AlgorithmId.HS512, "HS512", AlgorithmCategory.Hmac, requiredKeySizeInBits: 256/*?*/, HashAlgorithmName.SHA512);
+        /// <summary>'HS512', HMAC using SHA-512.</summary>
+        public static readonly SymmetricSignatureAlgorithm HS512 = new SymmetricSignatureAlgorithm(id: AlgorithmId.HS512, "HS512", AlgorithmCategory.Hmac, requiredKeySizeInBits: 256/*?*/, HashAlgorithmName.SHA512);
 
-        /// <summary>'RS256'</summary>
-        public static readonly SignatureAlgorithm RS256 = new SignatureAlgorithm(id: AlgorithmId.RS256, "RS256", AlgorithmCategory.Rsa, requiredKeySizeInBits: 2048/*?*/, HashAlgorithmName.SHA256);
+        /// <summary>'RS256', RSASSA-PKCS1-v1_5 using SHA-256.</summary>
+        public static readonly RsaSignatureAlgorithm RS256 = new RsaSignatureAlgorithm(id: AlgorithmId.RS256, "RS256", AlgorithmCategory.Rsa, requiredKeySizeInBits: 2048/*?*/, HashAlgorithmName.SHA256);
 
-        /// <summary>'RS384'</summary>
-        public static readonly SignatureAlgorithm RS384 = new SignatureAlgorithm(id: AlgorithmId.RS384, "RS384", AlgorithmCategory.Rsa, requiredKeySizeInBits: 2048/*?*/, HashAlgorithmName.SHA384);
+        /// <summary>'RS384', RSASSA-PKCS1-v1_5 using SHA-384.</summary>
+        public static readonly RsaSignatureAlgorithm RS384 = new RsaSignatureAlgorithm(id: AlgorithmId.RS384, "RS384", AlgorithmCategory.Rsa, requiredKeySizeInBits: 2048/*?*/, HashAlgorithmName.SHA384);
 
-        /// <summary>'RS512'</summary>
-        public static readonly SignatureAlgorithm RS512 = new SignatureAlgorithm(id: AlgorithmId.RS512, "RS512", AlgorithmCategory.Rsa, requiredKeySizeInBits: 2048/*?*/, HashAlgorithmName.SHA512);
+        /// <summary>'RS512', RSASSA-PKCS1-v1_5 using SHA-512.</summary>
+        public static readonly RsaSignatureAlgorithm RS512 = new RsaSignatureAlgorithm(id: AlgorithmId.RS512, "RS512", AlgorithmCategory.Rsa, requiredKeySizeInBits: 2048/*?*/, HashAlgorithmName.SHA512);
 
-        /// <summary>'ES256K'</summary>
-        public static readonly SignatureAlgorithm ES256K = new SignatureAlgorithm(id: AlgorithmId.ES256K, "ES256K", AlgorithmCategory.EllipticCurve, requiredKeySizeInBits: 256, HashAlgorithmName.SHA256);
+        /// <summary>'ES256K', ECDSA using secp256k1 curve and SHA-256.</summary>
+        public static readonly ECSignatureAlgorithm ES256K = new ECSignatureAlgorithm(id: AlgorithmId.ES256K, "ES256K", AlgorithmCategory.EllipticCurve, requiredKeySizeInBits: 256, HashAlgorithmName.SHA256);
 
-        /// <summary>'ES256'</summary>
-        public static readonly SignatureAlgorithm ES256 = new SignatureAlgorithm(id: AlgorithmId.ES256, "ES256", AlgorithmCategory.EllipticCurve, requiredKeySizeInBits: 256, HashAlgorithmName.SHA256);
+        /// <summary>'ES256', ECDSA using P-256 and SHA-256.</summary>
+        public static readonly ECSignatureAlgorithm ES256 = new ECSignatureAlgorithm(id: AlgorithmId.ES256, "ES256", AlgorithmCategory.EllipticCurve, requiredKeySizeInBits: 256, HashAlgorithmName.SHA256);
 
-        /// <summary>'ES384'</summary>
-        public static readonly SignatureAlgorithm ES384 = new SignatureAlgorithm(id: AlgorithmId.ES384, "ES384", AlgorithmCategory.EllipticCurve, requiredKeySizeInBits: 384, HashAlgorithmName.SHA384);
+        /// <summary>'ES384', ECDSA using P-384 and SHA-384.</summary>
+        public static readonly ECSignatureAlgorithm ES384 = new ECSignatureAlgorithm(id: AlgorithmId.ES384, "ES384", AlgorithmCategory.EllipticCurve, requiredKeySizeInBits: 384, HashAlgorithmName.SHA384);
 
-        /// <summary>'ES512'</summary>
-        public static readonly SignatureAlgorithm ES512 = new SignatureAlgorithm(id: AlgorithmId.ES512, "ES512", AlgorithmCategory.EllipticCurve, requiredKeySizeInBits: 521, HashAlgorithmName.SHA512);
+        /// <summary>'ES512', ECDSA using P-521 and SHA-512.</summary>
+        public static readonly ECSignatureAlgorithm ES512 = new ECSignatureAlgorithm(id: AlgorithmId.ES512, "ES512", AlgorithmCategory.EllipticCurve, requiredKeySizeInBits: 521, HashAlgorithmName.SHA512);
 
-        /// <summary>'PS256'</summary>
-        public static readonly SignatureAlgorithm PS256 = new SignatureAlgorithm(id: AlgorithmId.PS256, "PS256", AlgorithmCategory.Rsa, requiredKeySizeInBits: 2048, HashAlgorithmName.SHA256);
+        /// <summary>'PS256', RSASSA-PSS using SHA-256 and MGF1 with SHA-256.</summary>
+        public static readonly RsaSignatureAlgorithm PS256 = new RsaSignatureAlgorithm(id: AlgorithmId.PS256, "PS256", AlgorithmCategory.Rsa, requiredKeySizeInBits: 2048, HashAlgorithmName.SHA256);
 
-        /// <summary>'PS384'</summary>
-        public static readonly SignatureAlgorithm PS384 = new SignatureAlgorithm(id: AlgorithmId.PS384, "PS384", AlgorithmCategory.Rsa, requiredKeySizeInBits: 2048, HashAlgorithmName.SHA384);
+        /// <summary>'PS384', RSASSA-PSS using SHA-384 and MGF1 with SHA-384.</summary>
+        public static readonly RsaSignatureAlgorithm PS384 = new RsaSignatureAlgorithm(id: AlgorithmId.PS384, "PS384", AlgorithmCategory.Rsa, requiredKeySizeInBits: 2048, HashAlgorithmName.SHA384);
 
-        /// <summary>'PS512'</summary>
-        public static readonly SignatureAlgorithm PS512 = new SignatureAlgorithm(id: AlgorithmId.PS512, "PS512", AlgorithmCategory.Rsa, requiredKeySizeInBits: 2048, HashAlgorithmName.SHA512);
+        /// <summary>'PS512', RSASSA-PSS using SHA-512 and MGF1 with SHA-512.</summary>
+        public static readonly RsaSignatureAlgorithm PS512 = new RsaSignatureAlgorithm(id: AlgorithmId.PS512, "PS512", AlgorithmCategory.Rsa, requiredKeySizeInBits: 2048, HashAlgorithmName.SHA512);
 
         private readonly AlgorithmId _id;
         private readonly JsonEncodedText _name;
@@ -145,7 +145,7 @@ namespace JsonWebToken
 
         /// <summary>Determines whether two specified <see cref="SignatureAlgorithm"/> objects have the same value.</summary>
         public bool Equals(SignatureAlgorithm? other)
-            => other is null ? false : _id == other._id;
+            => other is not null && _id == other._id;
 
         /// <summary>Returns the hash code for this <see cref="SignatureAlgorithm"/>.</summary>
         public override int GetHashCode()

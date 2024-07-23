@@ -92,7 +92,7 @@ namespace JsonWebToken.Performance
         private static unsafe bool AreEqual_Current(ref byte first, ref byte second, int l)
         {
             IntPtr length = (IntPtr)l;
-#if !NETSTANDARD2_0 && !NET461 && !NET47 && !NETCOREAPP2_1
+#if !NETSTANDARD2_0 && !NET462 && !NET47 && !NETCOREAPP2_2
             if (Avx2.IsSupported && (byte*)length == (byte*)64)
             {
                 return

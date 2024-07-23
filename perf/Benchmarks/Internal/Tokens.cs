@@ -108,7 +108,7 @@ namespace JsonWebToken.Performance
                             descriptor.Payload!.Add(property.Name, (long)property.Value);
                             break;
                         default:
-                            descriptor.Payload!.Add(property.Name, (string)property.Value);
+                            descriptor.Payload!.Add(property.Name, (string)property.Value!);
                             break;
                     }
                 }
@@ -130,7 +130,7 @@ namespace JsonWebToken.Performance
                             descriptor.Payload!.Add(property.Name, (long)property.Value);
                             break;
                         default:
-                            descriptor.Payload!.Add(property.Name, (string)property.Value);
+                            descriptor.Payload!.Add(property.Name, (string)property.Value!);
                             break;
                     }
                 }
@@ -152,7 +152,7 @@ namespace JsonWebToken.Performance
                             descriptor.Payload!.Add(property.Name, (long)property.Value);
                             break;
                         default:
-                            descriptor.Payload!.Add(property.Name, (string)property.Value);
+                            descriptor.Payload!.Add(property.Name, (string)property.Value!);
                             break;
                     }
                 }
@@ -179,7 +179,7 @@ namespace JsonWebToken.Performance
                             descriptor.Payload!.Add(property.Name, (long)property.Value);
                             break;
                         default:
-                            descriptor.Payload!.Add(property.Name, (string)property.Value);
+                            descriptor.Payload!.Add(property.Name, (string)property.Value!);
                             break;
                     }
                 }
@@ -312,10 +312,10 @@ namespace JsonWebToken.Performance
                 }
 
 
-                switch (kvp.Value.Type)
+                switch (kvp.Value?.Type)
                 {
                     case JTokenType.Object:
-                        payload.Add(kvp.Key, (object)kvp.Value);
+                        payload.Add(kvp.Key, kvp.Value);
                         break;
                     case JTokenType.Array:
                         payload.Add(kvp.Key, (object[])(object)kvp.Value);
@@ -327,13 +327,15 @@ namespace JsonWebToken.Performance
                         payload.Add(kvp.Key, (double)kvp.Value);
                         break;
                     case JTokenType.String:
-                        payload.Add(kvp.Key, (string)kvp.Value);
+                        payload.Add(kvp.Key, (string)kvp.Value!);
                         break;
                     case JTokenType.Boolean:
                         payload.Add(kvp.Key, (bool)kvp.Value);
                         break;
                     case JTokenType.Null:
                         payload.Add(kvp.Key, (object)kvp.Value);
+                        break;
+                    default:
                         break;
                 }
             }

@@ -11,12 +11,32 @@ namespace JsonWebToken
         private Jwk _payload;
 
         /// <summary>Initializes a new instance of the <see cref="JwkJweDescriptor"/> class.</summary>
-        public JwkJweDescriptor(Jwk encryptionKey, KeyManagementAlgorithm alg, EncryptionAlgorithm enc, CompressionAlgorithm? zip = null, string? typ = null, string? cty = JwtContentTypeValues.Jwk)
+        public JwkJweDescriptor(SymmetricJwk encryptionKey, SymmetricKeyManagementAlgorithm alg, EncryptionAlgorithm enc, CompressionAlgorithm? zip = null, string? typ = null, string? cty = JwtContentTypeValues.Jwk)
+            : base(encryptionKey, alg, enc, zip, typ, cty)
+        {
+            _payload = Jwk.None;
+        }
+        
+        /// <summary>Initializes a new instance of the <see cref="JwkJweDescriptor"/> class.</summary>
+        public JwkJweDescriptor(PasswordBasedJwk encryptionKey, PasswordBasedKeyManagementAlgorithm alg, EncryptionAlgorithm enc, CompressionAlgorithm? zip = null, string? typ = null, string? cty = JwtContentTypeValues.Jwk)
             : base(encryptionKey, alg, enc, zip, typ, cty)
         {
             _payload = Jwk.None;
         }
 
+        /// <summary>Initializes a new instance of the <see cref="JwkJweDescriptor"/> class.</summary>
+        public JwkJweDescriptor(RsaJwk encryptionKey, RsaKeyManagementAlgorithm alg, EncryptionAlgorithm enc, CompressionAlgorithm? zip = null, string? typ = null, string? cty = JwtContentTypeValues.Jwk)
+            : base(encryptionKey, alg, enc, zip, typ, cty)
+        {
+            _payload = Jwk.None;
+        }
+
+        /// <summary>Initializes a new instance of the <see cref="JwkJweDescriptor"/> class.</summary>
+        public JwkJweDescriptor(ECJwk encryptionKey, ECKeyManagementAlgorithm alg, EncryptionAlgorithm enc, CompressionAlgorithm? zip = null, string? typ = null, string? cty = JwtContentTypeValues.Jwk)
+            : base(encryptionKey, alg, enc, zip, typ, cty)
+        {
+            _payload = Jwk.None;
+        }
 
         /// <inheritdoc/>
         public override Jwk Payload

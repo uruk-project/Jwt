@@ -1,8 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net5.0;netcoreapp3.1</TargetFrameworks>
-    <TargetFrameworks Condition="'$(OS)' == 'Windows_NT'">$(TargetFrameworks);netcoreapp2.1;net461;net47</TargetFrameworks>
+    <TargetFrameworks>net6.0;net7.0;net8.0</TargetFrameworks>
+    <TargetFrameworks Condition="'$(OS)' == 'Windows_NT'">$(TargetFrameworks);net462;net47</TargetFrameworks>
 
     <LangVersion>9.0</LangVersion>
     <SignAssembly>true</SignAssembly>
@@ -15,13 +15,13 @@
     <ProjectReference Include="..\..\src\JsonWebToken\JsonWebToken.csproj" />
   </ItemGroup>
   
-  <ItemGroup Condition="'$(TargetFramework)' == 'net461'">
+  <ItemGroup Condition="'$(TargetFramework)' == 'net462'">
     <PackageReference Include="System.Net.Http" Version="4.3.4" />
-    <PackageReference Include="System.Memory" Version="4.5.4" />
+    <PackageReference Include="System.Memory" Version="4.5.5" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     <!--<PackageReference Include="xunit" Version="2.4.1" />-->
   </ItemGroup>
 </Project>

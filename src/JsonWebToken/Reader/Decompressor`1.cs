@@ -27,10 +27,6 @@ namespace JsonWebToken.Compression
                 {
                     uncompressedLength += readData;
                     bufferWritter.Advance(readData);
-                    if (readData < buffer.Length)
-                    {
-                        break;
-                    }
 
                     buffer = bufferWritter.GetSpan(Constants.DecompressionBufferLength);
                 }

@@ -19,27 +19,22 @@ jobs:
       NUGET_PACKAGES: ${{ github.workspace }}/.nuget/packages
       
     steps:
-      - uses: actions/checkout@master
-      - name: Setup dotnet '1.1.x'
-        uses: actions/setup-dotnet@v1
+      - uses: actions/checkout@v4
+      - name: Setup dotnet
+        uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '2.1.x'
-      - name: Setup dotnet '3.1.x'
-        uses: actions/setup-dotnet@v1
-        with:
-          dotnet-version: '3.1.x'
-      - name: Setup dotnet '5.x'
-        uses: actions/setup-dotnet@v1
-        with:
-          dotnet-version: '5.0.100'
+          dotnet-version: | 
+              6.x
+              7.x
+              8.x
       - name: Install dependencies
         run: dotnet restore
       - name: Build
         run: dotnet build --configuration Release --no-restore
       - name: Validate Benchmark
-        run: dotnet run -c Release -f net5 -p ./perf/Benchmarks -- --filter JsonWebToken.Performance.Validate* --join
+        run: dotnet run -c Release -f net8 -p ./perf/Benchmarks -- --filter JsonWebToken.Performance.Validate* --join
       - name: Write Benchmark
-        run: dotnet run -c Release -f net5 -p ./perf/Benchmarks -- --filter JsonWebToken.Performance.Write* --join
+        run: dotnet run -c Release -f net8 -p ./perf/Benchmarks -- --filter JsonWebToken.Performance.Write* --join
       - name: Upload results
         uses: actions/upload-artifact@v2
         with:

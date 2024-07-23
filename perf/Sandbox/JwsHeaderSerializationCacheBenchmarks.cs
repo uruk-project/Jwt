@@ -127,8 +127,8 @@ namespace JsonWebToken.Performance
     [GroupBenchmarksBy(BenchmarkLogicalGroupRule.ByCategory)]
     public class JweHeaderSerializationCacheBenchmarks
     {
-        private static readonly Jwk _signingKey = SymmetricJwk.GenerateKey(SignatureAlgorithm.HS256);
-        private static readonly Jwk _encryptionKey = SymmetricJwk.GenerateKey(EncryptionAlgorithm.A128Gcm);
+        private static readonly SymmetricJwk _signingKey = SymmetricJwk.GenerateKey(SignatureAlgorithm.HS256);
+        private static readonly SymmetricJwk _encryptionKey = SymmetricJwk.GenerateKey(EncryptionAlgorithm.A128Gcm);
         private static readonly DisabledJwtHeaderCache _disabledCache = new DisabledJwtHeaderCache();
         private static readonly LruJwtHeaderCache _enabledCache = new LruJwtHeaderCache();
         private static readonly FixedSizedBufferWriter _output = new FixedSizedBufferWriter(8192);

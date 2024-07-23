@@ -1,7 +1,7 @@
 ﻿// Copyright (c) 2020 Yann Crumeyrolle. All rights reserved.
 // Licensed under the MIT license. See LICENSE in the project root for license information.
 
-#if NETSTANDARD2_0 || NET461 || NET47
+#if NETSTANDARD2_0 || NET462 || NET47
 using System;
 using System.ComponentModel;
 using System.Text;

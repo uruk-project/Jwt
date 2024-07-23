@@ -64,7 +64,7 @@ namespace JsonWebToken
 
         /// <summary>Determines whether two specified <see cref="CompressionAlgorithm"/> objects have the same value.</summary>
         public bool Equals(CompressionAlgorithm? other) 
-            => other is null ? false : Id == other.Id;
+            => other is not null && Id == other.Id;
 
         /// <summary>Returns the hash code for this <see cref="CompressionAlgorithm"/>.</summary>
         public override int GetHashCode()
@@ -194,7 +194,7 @@ namespace JsonWebToken
 
         /// <summary>Cast the <see cref="CompressionAlgorithm"/> into its <see cref="byte"/> array representation.</summary>
         public static explicit operator byte[]?(CompressionAlgorithm? value)
-            => value is null ? null : value._utf8Name.EncodedUtf8Bytes.ToArray();
+            => value?._utf8Name.EncodedUtf8Bytes.ToArray();
 
         /// <inheritsddoc />
         public override string ToString()

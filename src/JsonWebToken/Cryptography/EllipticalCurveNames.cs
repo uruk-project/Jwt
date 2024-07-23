@@ -11,16 +11,16 @@ namespace JsonWebToken
     public static class EllipticalCurveNames
     {
         /// <summary>'P-256'.</summary>
-        public static readonly JsonEncodedText P256 = JsonEncodedText.Encode(new byte[] { (byte)'P', (byte)'-', (byte)'2', (byte)'5', (byte)'6' });
+        public static readonly JsonEncodedText P256 = JsonEncodedText.Encode("P-256"u8);
    
         /// <summary>'P-384'.</summary>
-        public static readonly JsonEncodedText P384 = JsonEncodedText.Encode(new byte[] { (byte)'P', (byte)'-', (byte)'3', (byte)'8', (byte)'4' });
+        public static readonly JsonEncodedText P384 = JsonEncodedText.Encode("P-384"u8);
         
         /// <summary>'P-521'.</summary>    
-        public static readonly JsonEncodedText P521 = JsonEncodedText.Encode(new byte[] { (byte)'P', (byte)'-', (byte)'5', (byte)'2', (byte)'1' });
+        public static readonly JsonEncodedText P521 = JsonEncodedText.Encode("P-521"u8);
         
         /// <summary>'secp256k1'.</summary>    
-        public static readonly JsonEncodedText Secp256k1 = JsonEncodedText.Encode(new byte[] { (byte)'s', (byte)'e', (byte)'c', (byte)'p', (byte)'2', (byte)'5', (byte)'6', (byte)'k', (byte)'1' });
+        public static readonly JsonEncodedText Secp256k1 = JsonEncodedText.Encode("secp256k1"u8);
 
         /// <summary>Gets all the well-known curve names.</summary>
         public static JsonEncodedText[] All => new[] { P256, P384, P521, Secp256k1 };

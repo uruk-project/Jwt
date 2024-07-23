@@ -6,7 +6,26 @@ namespace JsonWebToken
     /// <summary>Defines a signed Security Event Token. <seealso cref="EncryptedSecEventDescriptor"/> for encrypted Security Event Token.</summary>
     public sealed class SecEventDescriptor : JwsDescriptor
     {
-        public SecEventDescriptor(Jwk signingKey, SignatureAlgorithm alg, string? typ = SecEventsMediaTypes.SecEvent, string? cty = null)
+        /// <summary>Initializes a new instance of <see cref="SecEventDescriptor"/> without signature, algorithm "none".</summary>
+        /// <param name="typ">Optional. The media type.</param>
+        /// <param name="cty">Optional. The content type.</param>
+        /// <remarks>This descriptor does not manage signature, it cannot be considered as secure.</remarks>
+        public SecEventDescriptor(string? typ = SecEventsMediaTypes.SecEvent, string? cty = null)
+            : base(Jwk.None, SignatureAlgorithm.None, typ, cty)
+        {
+        }
+        
+        public SecEventDescriptor(SymmetricJwk signingKey, SymmetricSignatureAlgorithm alg, string? typ = SecEventsMediaTypes.SecEvent, string? cty = null)
+            : base(signingKey, alg, typ, cty)
+        {
+        }
+        
+        public SecEventDescriptor(RsaJwk signingKey, RsaSignatureAlgorithm alg, string? typ = SecEventsMediaTypes.SecEvent, string? cty = null)
+            : base(signingKey, alg, typ, cty)
+        {
+        }
+        
+        public SecEventDescriptor(ECJwk signingKey, ECSignatureAlgorithm alg, string? typ = SecEventsMediaTypes.SecEvent, string? cty = null)
             : base(signingKey, alg, typ, cty)
         {
         }
