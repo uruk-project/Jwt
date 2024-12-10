@@ -44,6 +44,11 @@ namespace JsonWebToken
             Debug.Assert(location >= 0);
             Debug.Assert(sizeOrLength >= UnknownSize);
 
+            if (location < 0)
+            {
+                throw new System.Exception($"{location}");
+            }
+
             _location = location;
             _lengthUnion = sizeOrLength;
             _numberOfItemsAndTypeUnion = (int)jsonTokenType << 28;

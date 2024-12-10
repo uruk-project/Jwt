@@ -302,7 +302,7 @@ namespace JsonWebToken.Tests
         [Fact]
         public void JwtHeaderDocument_TryParse()
         {
-            var json = Encoding.UTF8.GetBytes("{\"string\":\"hello\",\"number\":1234,\"boolean\":true,\"object\":{\"value\":1},\"null\":null,\"array\":[\"hello\",\"world\"]}");
+            var json = Encoding.UTF8.GetBytes("{\"string\":\"hello\",\"number\":1234,\"boolean\":true,\"object\":{\"value\":1},\"null\":null,\"array\":[\"hello\",\"world\"],\"€$cap€d\":true,\"Loooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooong €$cap€d\":true}");
 
             var result = JwtHeaderDocument.TryParseHeader(json, null, TokenValidationPolicy.NoValidation, out var header, out var error);
             Assert.True(result);
@@ -312,13 +312,16 @@ namespace JsonWebToken.Tests
             Assert.Equal(1, GetProperty(header, "object").GetJsonDocument().RootElement.GetProperty("value").GetInt64());
             Assert.NotNull(GetProperty(header, "array").GetJsonDocument().RootElement.EnumerateArray().ToArray());
             Assert.Equal(JsonValueKind.Null, GetProperty(header, "null").ValueKind);
+            Assert.Equal(JsonValueKind.True, GetProperty(header, "€$cap€d").ValueKind);
+            Assert.Equal(JsonValueKind.True, GetProperty(header, "Loooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooong €$cap€d").ValueKind);
+            Assert.Equal(default, GetProperty(header, "unknonw"));
             Assert.Null(error);
         }
 
         [Fact]
         public void JwtPayloadDocument_TryParse()
         {
-            var json = Encoding.UTF8.GetBytes("{\"string\":\"hello\",\"number\":1234,\"boolean\":true,\"object\":{\"value\":1},\"null\":null,\"array\":[\"hello\",\"world\"]}");
+            var json = Encoding.UTF8.GetBytes("{\"Loooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooong €$cap€d\":true,\"string\":\"hello\",\"number\":1234,\"boolean\":true,\"object\":{\"value\":1},\"null\":null,\"array\":[\"hello\",\"world\"],\"€$cap€d\":true,\"escaped_value\":\"€$cap€d value\"}");
 
             var result = JwtPayloadDocument.TryParsePayload(json, null, TokenValidationPolicy.NoValidation, out var payload, out var error);
             Assert.True(result);
@@ -328,7 +331,16 @@ namespace JsonWebToken.Tests
             Assert.Equal(1, GetProperty(payload, "object").GetJsonDocument().RootElement.GetProperty("value").GetInt64());
             Assert.NotNull(GetProperty(payload, "array").GetJsonDocument().RootElement.EnumerateArray().ToArray());
             Assert.Equal(JsonValueKind.Null, GetProperty(payload, "null").ValueKind);
+            Assert.Equal(JsonValueKind.True, GetProperty(payload, "€$cap€d").ValueKind);
+            Assert.Equal(JsonValueKind.True, GetProperty(payload, "Loooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooong €$cap€d").ValueKind);
+            Assert.Equal(default, GetProperty(payload, "unknown"));
             Assert.Null(error);
+
+            var rawText = GetProperty(payload, "null").GetPropertyRawText();
+            Assert.Equal("\"null\":null", rawText);
+
+            var escapedValue = GetProperty(payload, "escaped_value");
+            Assert.True(escapedValue.ValueEquals("€$cap€d value"));
         }
 
         private static JwtElement GetProperty(JwtHeaderDocument document, string name)

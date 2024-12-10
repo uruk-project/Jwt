@@ -156,6 +156,8 @@ namespace JsonWebToken.Tests
             Assert.ThrowsAny<Exception>(() => Jwks.FromJson(issuer, json));
         }
 
+        private readonly object _lock = new object();
+
         [Fact]
         public void OnJwksRefreshed()
         {
@@ -178,14 +180,17 @@ namespace JsonWebToken.Tests
                 key384,
                 key512
             };
-            Jwks.OnJwksRefreshed += Jwks_OnJwksRefreshed;
-            try
+            lock (_lock)
             {
-                Jwks.PublishJwksRefreshed(oldJwks, newJwks);
-            }
-            finally
-            {
-                Jwks.OnJwksRefreshed -= Jwks_OnJwksRefreshed;
+                Jwks.OnJwksRefreshed += Jwks_OnJwksRefreshed;
+                try
+                {
+                    Jwks.PublishJwksRefreshed(oldJwks, newJwks);
+                }
+                finally
+                {
+                    Jwks.OnJwksRefreshed -= Jwks_OnJwksRefreshed;
+                }
             }
         }
 
